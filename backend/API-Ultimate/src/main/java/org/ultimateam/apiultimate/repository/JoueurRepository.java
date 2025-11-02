@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import org.ultimateam.apiultimate.model.Joueur;
 
 @Repository
-public interface JoueurRespository  extends CrudRepository<Joueur, Long> {
+public interface JoueurRepository extends CrudRepository<Joueur, Long> {
 }
