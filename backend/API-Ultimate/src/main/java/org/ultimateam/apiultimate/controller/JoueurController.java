@@ -21,8 +21,8 @@ public class JoueurController {
         return (List<Joueur>) joueurService.getAll();
     }
 
-    @GetMapping
-    public Joueur getJoueurById(@RequestParam("id") Long id) {
+    @GetMapping("/{id}")
+    public Joueur getJoueurById(@PathVariable Long id) {
         return joueurService.getById(id);
     }
 
