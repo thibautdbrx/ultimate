@@ -15,7 +15,7 @@ public class Equipe {
 
     private String nom_equipe;
 
-    //A compléter pour afficher la liste des joueurs
+
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Joueur> joueurs = new ArrayList<>();
@@ -33,12 +33,10 @@ public class Equipe {
     public void setNom_equipe(String nom_equipe) { this.nom_equipe = nom_equipe; }
 
     public void addJoueur(Joueur joueur) {
-        joueurs.add(joueur);
         joueur.setEquipe(this);
     }
 
     public void removeJoueur(Joueur joueur) {
-        joueurs.remove(joueur);
         joueur.setEquipe(null);
     }
 }

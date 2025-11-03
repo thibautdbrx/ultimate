@@ -30,13 +30,23 @@ public class JoueurService {
     }
 
 
-    public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
+    public Equipe assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
         Equipe equipe =equipeService.getById(id_equipe);
         equipe.addJoueur(joueur);
         joueur.setEquipe(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
-        return joueur;
+        return equipe;
+    }
+    public Equipe deleteEquipe(Long id_joueur, Long id_equipe) {
+        Joueur joueur = getById(id_joueur);
+        Equipe equipe = equipeService.getById(id_equipe);
+        equipe.removeJoueur(joueur);
+        joueur.setEquipe(null);
+        joueurRepository.save(joueur);
+        equipeService.save(equipe);
+
+        return equipe;
     }
 }
