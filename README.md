@@ -119,6 +119,12 @@ git push origin --delete feature/nom-fonctionnalite
 
 ## 👥 Équipe
 
+Becker Florent
+Caudron Corentin
+Debreux Thibaut
+Gicquel Loup
+Joseph-Schenfeigel Simeon
+Thirion Valentine
 
 ---
 
