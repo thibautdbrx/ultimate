@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,6 +19,7 @@ public class Joueur {
 
     @ManyToOne
     @JoinColumn(name = "id_equipe")
+    @JsonBackReference
     private Equipe equipe;
 
     public Joueur() {}

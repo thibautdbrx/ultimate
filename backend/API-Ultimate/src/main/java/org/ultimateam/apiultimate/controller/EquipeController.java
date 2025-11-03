@@ -18,7 +18,7 @@ public class EquipeController {
     public List<Equipe> findAll() { return (List<Equipe>) equipeService.findAll(); }
 
     @GetMapping("/{id}")
-    public Equipe findById(@PathVariable Long id) { return equipeService.findById(id); }
+    public Equipe findById(@PathVariable Long id) { return equipeService.getById(id); }
 
     @PostMapping
     public Equipe createEquipe(@RequestBody Equipe equipe) { return equipeService.save(equipe); }

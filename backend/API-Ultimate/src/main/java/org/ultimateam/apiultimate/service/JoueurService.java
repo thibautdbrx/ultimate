@@ -32,8 +32,11 @@ public class JoueurService {
 
     public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
-        Equipe equipe =equipeService.findById(id_equipe);
+        Equipe equipe =equipeService.getById(id_equipe);
+        equipe.addJoueur(joueur);
         joueur.setEquipe(equipe);
+        joueurRepository.save(joueur);
+        equipeService.save(equipe);
         return joueur;
     }
 }
