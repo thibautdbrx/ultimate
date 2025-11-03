@@ -1,6 +1,7 @@
 package org.ultimateam.apiultimate.controller;
 
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.service.JoueurService;
 
@@ -32,7 +33,10 @@ public class JoueurController {
     }
 
     @PostMapping("/{id_joueur}/equipe/{id_equipe}")
-    public Joueur assignerEquipe(@PathVariable Long id_joueur, @PathVariable Long id_equipe) { return joueurService.assignerEquipe(id_joueur, id_equipe); }
+    public Equipe assignerEquipe(@PathVariable Long id_joueur, @PathVariable Long id_equipe) { return joueurService.assignerEquipe(id_joueur, id_equipe); }
+
+    @DeleteMapping("/{id_joueur}/equipe/{id_equipe}")
+    public Equipe deleteEquipe(@PathVariable Long id_joueur, @PathVariable Long id_equipe) { return joueurService.deleteEquipe(id_joueur, id_equipe); }
 
     @DeleteMapping("/{id}")
     public void deleteJoueur(@PathVariable Long id) {
