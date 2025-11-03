@@ -47,6 +47,6 @@ ehthumbs.db
 Desktop.ini
 
 # Environment / configuration
-application.properties
+
 application.yml
 .env
