@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -22,8 +23,8 @@ public class Equipe {
     private String nom_equipe;
 
     //A compléter pour afficher la liste des joueurs
-    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "equipe", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Joueur> joueurs = new ArrayList<>();
 
     public Equipe(String nom_equipe) {
