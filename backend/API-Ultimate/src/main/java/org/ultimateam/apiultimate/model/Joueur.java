@@ -2,7 +2,11 @@ package org.ultimateam.apiultimate.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 public class Joueur {
     public enum Genre {MALE, FEMALE}
@@ -36,19 +40,4 @@ public class Joueur {
         this.genre = genre;
         this.equipe = equipe;
     }
-
-    public long getId_joueur() { return id_joueur; }
-    public String getNom_joueur() { return nom_joueur; }
-    public String getPrenom_joueur() { return prenom_joueur; }
-    public Genre getGenre() { return genre; }
-    public Equipe getEquipe() { return equipe; }
-
-    public void setNom_joueur(String nom_joueur) { this.nom_joueur = nom_joueur; }
-    public void setPrenom_joueur(String prenom_joueur) { this.prenom_joueur = prenom_joueur; }
-    public void  setGenre(Genre genre) { this.genre = genre; }
-    public void setEquipe(Equipe equipe) { this.equipe = equipe; }
-
-
-
-
 }
