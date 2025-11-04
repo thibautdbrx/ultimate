@@ -1,13 +1,20 @@
 package org.ultimateam.apiultimate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 public class Equipe {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,22 +22,14 @@ public class Equipe {
 
     private String nom_equipe;
 
-
-    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    //A compléter pour afficher la liste des joueurs
+    @OneToMany(mappedBy = "equipe", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Joueur> joueurs = new ArrayList<>();
 
-    public Equipe() {}
     public Equipe(String nom_equipe) {
         this.nom_equipe = nom_equipe;
     }
-
-    public Long getId_equipe() { return id_equipe; }
-    public String getNom_equipe() { return nom_equipe; }
-
-
-    public void setId_equipe(Long id_equipe) { this.id_equipe = id_equipe; }
-    public void setNom_equipe(String nom_equipe) { this.nom_equipe = nom_equipe; }
 
     public void addJoueur(Joueur joueur) {
         joueur.setEquipe(this);
