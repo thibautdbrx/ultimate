@@ -61,13 +61,14 @@ Endpoints pour gérer les équipes.
 
 Endpoints pour gérer les joueurs et leur assignation aux équipes.
 
-| Méthode | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/joueur` | Récupère la liste de tous les joueurs. |
-| `GET` | `/api/joueur/{id}` | Récupère un joueur spécifique par son ID. |
-| `POST` | `/api/joueur` | Crée un nouveau joueur (non assigné). |
-| `POST` | `/api/joueur/{id_joueur}/equipe/{id_equipe}` | Assigne un joueur existant à une équipe existante. |
-| `DELETE` | `/api/joueur/{id}` | Supprime un joueur par son ID. |
+| Méthode  | Endpoint                                     | Description                                        |
+|:---------|:---------------------------------------------|:---------------------------------------------------|
+| `GET`    | `/api/joueur`                                | Récupère la liste de tous les joueurs.             |
+| `GET`    | `/api/joueur/{id}`                           | Récupère un joueur spécifique par son ID.          |
+| `POST`   | `/api/joueur`                                | Crée un nouveau joueur (non assigné).              |
+| `PUT`    | `/api/joueur/{id_joueur}/equipe/{id_equipe}` | Assigne un joueur existant à une équipe existante. |
+| `DELETE` | `/api/joueur/{id}`                           | Supprime un joueur par son ID.                     |
+| `DELETE` | `/api/joueur/{id_joueur}/equipe`             | Supprime un joueur par son ID de son équipe.       |
 
 **Exemple de Payload (POST /api/joueur)**
 
