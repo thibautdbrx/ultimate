@@ -2,8 +2,12 @@ package org.ultimateam.apiultimate.service;
 
 import org.springframework.stereotype.Service;
 import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class EquipeService {
@@ -18,4 +22,13 @@ public class EquipeService {
     public Equipe getById(Long id) { return equipeRepository.findById(id).orElse(null); }
     public Equipe save(Equipe equipe) { return equipeRepository.save(equipe);}
     public void deleteById(Long id) { equipeRepository.deleteById(id); }
+
+    public List<Indisponibilite> getIndisponibilites(Long equipeId) {
+        Equipe equipe = getById(equipeId);
+        if (equipe != null) {
+            return equipe.getIndisponibilites();
+        } else {
+            return Collections.emptyList();
+        }
+    }
 }

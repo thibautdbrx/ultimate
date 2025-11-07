@@ -5,6 +5,8 @@ import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
+import java.util.List;
+
 @Service
 public class JoueurService {
 
@@ -29,6 +31,9 @@ public class JoueurService {
         joueurRepository.deleteById(id);
     }
 
+    public List<Joueur> getJoueurByEquipe(Long idEquipe){
+        return joueurRepository.findAllByEquipe_IdEquipe(idEquipe);
+    }
 
     public Equipe assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);

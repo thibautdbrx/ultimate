@@ -27,6 +27,11 @@ public class JoueurController {
         return joueurService.getById(id);
     }
 
+    @GetMapping("/equipe/{idEquipe}")
+    public List<Joueur> getJoueurByEquipe(@PathVariable Long idEquipe) {
+        return joueurService.getJoueurByEquipe(idEquipe);
+    }
+
     @PostMapping
     public Joueur createJoueur(@RequestBody Joueur joueur) {
         return joueurService.addJoueur(joueur);
