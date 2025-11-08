@@ -37,16 +37,16 @@ public class IndisponibiliteController {
     }
 
     @PutMapping("/{id}/{id_equipe}")
-    public Indisponibilite editEquipe(@PathVariable Long id, @PathVariable Long id_equipe) {
-        return indisponibiliteService.editEquipe(id, id_equipe);
+    public IndisponibiliteDTO editEquipe(@PathVariable Long id, @PathVariable Long id_equipe) {
+        Indisponibilite updated = indisponibiliteService.editEquipe(id, id_equipe);
+        return indisponibiliteService.getByIdDTO(updated.getIdIndisponibilite());
     }
 
     //Json = "dateDebut" : "yyyy-MM-dd HH:mm", "dateFin" : "yyyy-MM-dd HH:mm"
     @PutMapping("/{id}")
-    public Indisponibilite updateIndisponibilite(
-            @PathVariable Long id,
-            @RequestBody IndisponibiliteDTO dto) {
-        return indisponibiliteService.updateIndisponibilite(id, dto);
+    public IndisponibiliteDTO updateIndisponibilite(@PathVariable Long id, @RequestBody IndisponibiliteDTO dto) {
+        Indisponibilite updated = indisponibiliteService.updateIndisponibilite(id, dto);
+        return indisponibiliteService.getByIdDTO(updated.getIdIndisponibilite());
     }
 
     @DeleteMapping("/{id}")

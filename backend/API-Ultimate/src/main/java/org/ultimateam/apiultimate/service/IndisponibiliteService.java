@@ -104,6 +104,8 @@ public class IndisponibiliteService {
 
     public Indisponibilite editEquipe(Long id, Long id_equipe) {
         Indisponibilite indisponibilite = getById(id);
+        if (indisponibilite == null)
+            throw new RuntimeException("L'indisponibilite n'existe pas");
         Equipe equipe = equipeService.getById(id_equipe);
         indisponibilite.setEquipe(equipe);
         return save(indisponibilite);
