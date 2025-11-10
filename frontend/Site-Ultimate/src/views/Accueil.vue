@@ -2,9 +2,8 @@
 import { ref, onMounted } from 'vue'
 
 import LiveIcon from '@/assets/icons/live.svg'
+import TrophyIcon from '@/assets/icons/trophy.svg'
 import CalendarIcon from '@/assets/icons/calendar.svg'
-import TrophyIcon from '@/assets/icons/trophy.svg?component'
-
 
 import CardInfo from '../components/Card_info.vue'
 import CardRes from '../components/Card_resultat.vue'
@@ -85,20 +84,23 @@ onMounted(() => {
         <CardInfo
             title="Matchs en direct"
             :value="stats.live"
-            icon=LiveIcon
-            color="#FFD6D6"
+            :icon="LiveIcon"
+            color1="#FFD6D6"
+            color2="#d31a42"
         />
         <CardInfo
             title="Matchs à venir"
             :value="stats.upcoming"
-            icon=CalendarIcon
-            color="#D6E5FF"
+            :icon="CalendarIcon"
+            color1="#dbeafe"
+            color2="#155dfc"
         />
         <CardInfo
             title="Compétitions"
             :value="stats.competitions"
-            icon=TrophyIcon
-            color="#F3D6FF"
+            :icon="TrophyIcon"
+            color1="#f3e8ff"
+            color2="#9810fa"
         />
       </section>
 

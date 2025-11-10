@@ -3,7 +3,8 @@ defineProps({
   title: String,
   value: Number,
   icon: String,
-  color: String
+  color1: String,
+  color2:String
 })
 </script>
 
@@ -13,8 +14,8 @@ defineProps({
       <h3>{{ title }}</h3>
       <div class="info">
         <p class="value">{{ value }}</p>
-        <div class="icon" :style="{ backgroundColor: color }">
-          <component :is="icon" alt="icon" class="card-svg-icon"/>
+        <div class="icon" :style="{ backgroundColor: color1 }">
+          <component :is="icon" alt="icon" class="card-svg-icon" :style="{color:color2}"/>
         </div>
       </div>
     </div>
@@ -61,11 +62,7 @@ defineProps({
   align-items: center;
 }
 
-.card-svg-icon {
-  width: 30px;
-  height: 30px;
-  color: white;
-}
+
 
 h3{
   margin: 0;
