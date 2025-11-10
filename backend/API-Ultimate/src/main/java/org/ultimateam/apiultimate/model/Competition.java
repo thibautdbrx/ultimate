@@ -15,6 +15,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type")
 public abstract class Competition {
     public enum Genre {MIXTE, FEMMME, HOMME};
     public enum Format {V5, v7};
