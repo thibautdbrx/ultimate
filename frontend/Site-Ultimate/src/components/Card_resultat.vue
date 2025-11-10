@@ -76,5 +76,7 @@ h3{
 
 .nom_equipe{
   margin: 0.5rem;
+  font-weight: bold;
 }
+
 </style>

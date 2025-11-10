@@ -7,14 +7,14 @@ import Footer from './components/Footer.vue'
 <template>
   <div id="app">
     <Header />
-    <router-view /> <!-- C’est ici que la “page actuelle” s’affiche -->
+    <router-view /> <!-- C’est ici que la page actuelle s’affiche -->
   <Footer />
   </div>
 </template>
 
 <style scoped>
 #app{
-  background-color: oklch(.984 .003 247.858);
+  background-color: #f8fafc;
 }
 
 
