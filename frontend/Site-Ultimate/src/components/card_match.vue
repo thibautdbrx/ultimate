@@ -3,8 +3,9 @@ defineProps({
   title: String,
   nom1: String,
   nom2: String,
-  points1: Number,
-  points2: Number,
+  points1: [Number, String],
+  points2: [Number, String],
+  fini: Boolean,
 })
 </script>
 
@@ -14,12 +15,12 @@ defineProps({
       <h3>{{ title }}</h3>
       <div class="info">
         <div class="equipe">
-          <p :style="{ color: points1 > points2 ? 'green': points1 < points2 ? 'red': 'gold'}" class="nom_equipe">{{ nom1 }}</p>
+          <p :style="{ color: !fini  ? 'black' : points1 > points2 ? 'green': points1 < points2 ? 'red': 'gold'}"  class="nom_equipe">{{ nom1 }}</p>
           <p class="points">{{ points1 }}</p>
         </div>
 
         <div class="equipe">
-          <p :style="{ color: points1 > points2 ? 'red': points1 < points2 ? 'green': 'gold'}" class="nom_equipe">{{ nom2 }}</p>
+          <p :style="{ color: !fini  ? 'black' : points1 > points2 ? 'red': points1 < points2 ? 'green': 'gold'}" class="nom_equipe">{{ nom2 }}</p>
           <p class="points">{{ points2 }}</p>
         </div>
 

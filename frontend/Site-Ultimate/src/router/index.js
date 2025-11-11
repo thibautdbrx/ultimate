@@ -3,6 +3,7 @@ import Accueil from '../views/Accueil.vue'
 import Connexion from '../views/Connexion.vue'
 import Competition from '../views/Competition.vue'
 import Equipe from '../views/Equipe.vue'
+import CompetitionDetail from '../views/CompetitionDetail.vue'
 
 
 
@@ -11,6 +12,7 @@ const routes = [
     { path: '/Connexion', component: Connexion },
     { path: '/Equipe', component: Equipe },
     { path: '/Competition', component: Competition },
+    { path: '/Competitions/:id', name: 'Competition-details', component:CompetitionDetail } ,
 
 ]
 
