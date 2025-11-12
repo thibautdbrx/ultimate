@@ -32,7 +32,7 @@ public class TournoisService {
     public void deleteTournoisById(Long id) {
         tournoisRepository.deleteById(id);
     }
-
+/**
     public void genererTournois(Long idTournois) {
         genererRoundRobin(idTournois);
     }
@@ -53,7 +53,8 @@ public class TournoisService {
 
         for (int x = 1; x <= nb_round/2+1; x++) {
             Match match = new Match();
-        */
         }
     }
+        */
+}
 

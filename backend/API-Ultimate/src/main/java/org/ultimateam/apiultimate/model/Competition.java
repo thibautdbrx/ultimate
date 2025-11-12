@@ -25,7 +25,9 @@ public abstract class Competition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_competition;
 
+    @Enumerated(EnumType.STRING)
     private Genre genre;
+    @Enumerated(EnumType.STRING)
     private Format format;
 
     private LocalDateTime date_debut;

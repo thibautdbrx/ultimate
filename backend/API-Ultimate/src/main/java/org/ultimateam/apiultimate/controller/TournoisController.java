@@ -1,5 +1,7 @@
 package org.ultimateam.apiultimate.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.service.TournoisService;
@@ -12,7 +14,8 @@ public class TournoisController {
 
     private TournoisService tournoisService;
 
-    public TournoisController(TournoisController TournoisService) { this.tournoisService = tournoisService; }
+    @Autowired
+    public TournoisController(@Lazy TournoisController TournoisService) { this.tournoisService = tournoisService; }
 
     @GetMapping
     public List<Tournois> findAll() { return (List<Tournois>) tournoisService.getAllTournois(); }
@@ -26,9 +29,11 @@ public class TournoisController {
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable Long id) { tournoisService.deleteTournoisById(id); }
 
+    /**
     @PostMapping("/Creation_tournois")
     public void genererTournois(Long idTournois){ tournoisService.genererTournois(idTournois);}
 
+    */
 
 
 }
