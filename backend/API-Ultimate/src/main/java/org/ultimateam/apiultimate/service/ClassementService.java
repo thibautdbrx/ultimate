@@ -1,5 +1,11 @@
 package org.ultimateam.apiultimate.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.ultimateam.apiultimate.model.Classement;
+import org.ultimateam.apiultimate.model.Match;
+import org.ultimateam.apiultimate.repository.MatchRepository;
+
 @Service
 @RequiredArgsConstructor
 public class ClassementService {
