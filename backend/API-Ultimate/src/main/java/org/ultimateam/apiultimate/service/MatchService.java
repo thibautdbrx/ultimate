@@ -8,6 +8,7 @@ import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.model.Match;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,13 +46,14 @@ public class MatchService {
      * @return Le match trouvé, ou null si aucun match ne correspond à l'ID.
      */
     public Match getById(Long id) { return matchRepository.findById(id).orElse(null);}
-
-    /**
-     * Sauvegarde un match (création ou mise à jour) dans la base de données.
-     *
-     * @param match Le match à sauvegarder.
-     * @return Le match sauvegardé (incluant l'ID généré si c'est une création).
-     */
+    public List<Match> getStarted(){
+        LocalDateTime now = LocalDateTime.now();
+        return matchRepository.findByDateDebutIsNotNullAndDateFinIsNull();
+    }
+    public List<Match> getNotStarted(){
+        LocalDateTime now = LocalDateTime.now();
+        return matchRepository.findByDateDebutIsNull();
+    }
     public Match save(Match match) { return matchRepository.save(match);}
 
     /**
@@ -83,6 +85,7 @@ public class MatchService {
 
         // Sauvegarde le match
         return save(match);
+
     }
 
 
@@ -102,7 +105,7 @@ public class MatchService {
         if (match.getStatus() == Match.Status.FINISHED)
             throw new IllegalStateException("Impossible de commencer un match terminé");
 
-        match.setDate_debut(LocalDateTime.now());
+        match.setDateDebut(LocalDateTime.now());
         match.setStatus(Match.Status.ONGOING);
         save(match);
 
@@ -130,7 +133,7 @@ public class MatchService {
         if (match.getStatus() == Match.Status.FINISHED)
             throw new IllegalStateException("Le match est déjà terminé");
 
-        match.setDate_fin(LocalDateTime.now());
+        match.setDateFin(LocalDateTime.now());
         match.setStatus(Match.Status.FINISHED);
         scheduler.shutdownNow();
         return save(match);
@@ -247,7 +250,7 @@ public class MatchService {
         }
 
         // Victoire par durée (90 min sans les pauses)
-        Duration dureeTotale = Duration.between(match.getDate_debut(), LocalDateTime.now()).minus(match.getDureePauseTotale());
+        Duration dureeTotale = Duration.between(match.getDateDebut(), LocalDateTime.now()).minus(match.getDureePauseTotale());
 
         if (dureeTotale.compareTo(Duration.ofMinutes(90)) >= 0) {
             finirMatch(match.getIdMatch());

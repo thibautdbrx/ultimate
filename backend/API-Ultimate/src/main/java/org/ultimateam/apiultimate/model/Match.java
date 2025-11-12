@@ -38,8 +38,8 @@ public class Match {
 
     private long score_equipe1;
     private long score_equipe2;
-    private LocalDateTime date_debut;
-    private LocalDateTime date_fin;
+    private LocalDateTime dateDebut;
+    private LocalDateTime dateFin;
     @JsonIgnore
     private LocalDateTime date_pause = null;
 
