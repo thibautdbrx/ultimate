@@ -189,9 +189,9 @@ public class MatchService {
         if (match.getStatus() == Match.Status.FINISHED)
             throw new IllegalStateException("Impossible d'ajouter un point, le match est terminé");
 
-        if (Objects.equals(equipe.getId_equipe(), match.getEquipe1().getId_equipe())) {
+        if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
             match.setScore_equipe1(match.getScore_equipe1() + 1);
-        } else if (Objects.equals(equipe.getId_equipe(), match.getEquipe2().getId_equipe())) {
+        } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
             match.setScore_equipe2(match.getScore_equipe2() + 1);
         } else {
             throw new IllegalArgumentException("Cette équipe ne fait pas partie du match");
@@ -217,9 +217,9 @@ public class MatchService {
         if (match.getStatus() == Match.Status.FINISHED)
             throw new IllegalStateException("Impossible de retirer un point, le match est terminé");
 
-        if (Objects.equals(equipe.getId_equipe(), match.getEquipe1().getId_equipe())) {
+        if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
             match.setScore_equipe1(Math.max(0, match.getScore_equipe1() - 1));
-        } else if (Objects.equals(equipe.getId_equipe(), match.getEquipe2().getId_equipe())) {
+        } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
             match.setScore_equipe2(Math.max(0, match.getScore_equipe2() - 1));
         } else {
             throw new IllegalArgumentException("Cette équipe ne fait pas partie du match");
@@ -242,7 +242,7 @@ public class MatchService {
 
         // Victoire par score
         if (match.getScore_equipe1() >= 15 || match.getScore_equipe2() >= 15) {
-            finirMatch(match.getMatchId());
+            finirMatch(match.getIdMatch());
             return;
         }
 
@@ -250,7 +250,7 @@ public class MatchService {
         Duration dureeTotale = Duration.between(match.getDate_debut(), LocalDateTime.now()).minus(match.getDureePauseTotale());
 
         if (dureeTotale.compareTo(Duration.ofMinutes(90)) >= 0) {
-            finirMatch(match.getMatchId());
+            finirMatch(match.getIdMatch());
         }
 
     }

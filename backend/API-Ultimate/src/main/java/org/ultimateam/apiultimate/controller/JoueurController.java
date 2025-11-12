@@ -50,13 +50,11 @@ public class JoueurController {
         return joueurService.getById(id);
     }
 
-    /**
-     * Crée un nouveau joueur.
-     * Mappe les requêtes HTTP POST sur /api/joueur.
-     *
-     * @param joueur L'objet Joueur à créer (désérialisé depuis le corps de la requête JSON).
-     * @return Le joueur nouvellement créé (avec son ID assigné).
-     */
+    @GetMapping("/equipe/{idEquipe}")
+    public List<Joueur> getJoueurByEquipe(@PathVariable Long idEquipe) {
+        return joueurService.getJoueurByEquipe(idEquipe);
+    }
+
     @PostMapping
     public Joueur createJoueur(@RequestBody Joueur joueur) {
         return joueurService.addJoueur(joueur);

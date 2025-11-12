@@ -5,6 +5,8 @@ import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
+import java.util.List;
+
 @Service
 public class JoueurService {
 
@@ -60,6 +62,9 @@ public class JoueurService {
         joueurRepository.deleteById(id);
     }
 
+    public List<Joueur> getJoueurByEquipe(Long idEquipe){
+        return joueurRepository.findAllByEquipe_IdEquipe(idEquipe);
+    }
 
     /**
      * Assigne un joueur à une équipe spécifique.

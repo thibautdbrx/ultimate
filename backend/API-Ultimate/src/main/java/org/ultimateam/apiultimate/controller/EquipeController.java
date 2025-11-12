@@ -2,6 +2,7 @@ package org.ultimateam.apiultimate.controller;
 
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.service.EquipeService;
 
 import java.util.List;
@@ -42,13 +43,11 @@ public class EquipeController {
     @GetMapping("/{id}")
     public Equipe findById(@PathVariable Long id) { return equipeService.getById(id); }
 
-    /**
-     * Crée une nouvelle équipe.
-     * Mappe les requêtes HTTP POST sur /api/equipe.
-     *
-     * @param equipe L'objet Equipe à créer (désérialisé depuis le corps de la requête JSON).
-     * @return L'équipe nouvellement créée (avec son ID assigné).
-     */
+    @GetMapping("/{id}/indisponibilite")
+    public List<Indisponibilite> getIndisponibilites(@PathVariable Long id) {
+        return equipeService.getIndisponibilites(id);
+    }
+
     @PostMapping
     public Equipe createEquipe(@RequestBody Equipe equipe) { return equipeService.save(equipe); }
 
@@ -60,4 +59,5 @@ public class EquipeController {
      */
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable Long id) { equipeService.deleteById(id); }
+
 }

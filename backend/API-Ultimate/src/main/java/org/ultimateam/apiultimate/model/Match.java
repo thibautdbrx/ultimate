@@ -8,10 +8,6 @@ import lombok.Setter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Entity
 @Getter
@@ -23,7 +19,7 @@ public class Match {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    private Long matchId;
+    private Long idMatch;
 
     @ManyToOne
     @JoinColumn(name = "id_equipe1")
