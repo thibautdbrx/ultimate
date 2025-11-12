@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.ultimateam.apiultimate"},{"l":"org.ultimateam.apiultimate.controller"},{"l":"org.ultimateam.apiultimate.model"},{"l":"org.ultimateam.apiultimate.repository"},{"l":"org.ultimateam.apiultimate.service"}];updateSearchResults();
