@@ -34,6 +34,11 @@ public abstract class Competition {
     @OneToMany(mappedBy = "id_competition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Match> matchs = new ArrayList<>();
 
-
+    public Competition(Genre genre, Format format, LocalDateTime date_debut, LocalDateTime date_fin) {
+        this.genre = genre;
+        this.format = format;
+        this.date_debut = date_debut;
+        this.date_fin = date_fin;
+    }
 
 }
