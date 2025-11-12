@@ -35,10 +35,22 @@ public class Equipe {
         this.nom_equipe = nom_equipe;
     }
 
+    /**
+     * Ajoute un joueur à l'équipe.
+     * Cette méthode établit la relation en définissant l'équipe pour le joueur spécifié.
+     *
+     * @param joueur Le joueur à ajouter à cette équipe.
+     */
     public void addJoueur(Joueur joueur) {
         joueur.setEquipe(this);
     }
 
+    /**
+     * Retire un joueur de l'équipe.
+     * Cette méthode rompt la relation en mettant l'équipe du joueur à null.
+     *
+     * @param joueur Le joueur à retirer de cette équipe.
+     */
     public void removeJoueur(Joueur joueur) {
         joueur.setEquipe(null);
     }
