@@ -107,7 +107,6 @@ public class MatchService {
 
         match.setDateDebut(LocalDateTime.now());
         match.setStatus(Match.Status.ONGOING);
-        save(match);
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
