@@ -14,13 +14,13 @@ L’objectif est de faciliter la gestion des tournois d’Ultimate (équipes, ma
 
 ### 1️⃣ Cloner le dépôt
 ```bash
-git clone https://gitlab.com/nom-du-groupe/ultimate.git
-cd ultimate
+git clone https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate.git
+cd pierre-ludmann-ultimate
 ```
 
 ### 2️⃣ Installation du backend
 ```bash
-cd backend
+cd backend/API-Ultimate
 mvn clean install
 ```
 
@@ -119,14 +119,20 @@ git push origin --delete feature/nom-fonctionnalite
 
 ## 👥 Équipe
 
+- Becker Florent
+- Caudron Corentin
+- Debreux Thibaut
+- Gicquel Loup
+- Joseph-Schenfeigel Simeon
+- Thirion Valentine
 
 ---
 
 ✅ **Résumé rapide :**
 ```bash
 # Cloner le projet
-git clone https://gitlab.com/nom-du-groupe/ultimate.git
-cd ultimate
+git clone https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate.git
+cd pierre-ludmann-ultimate
 
 # Créer une branche
 git checkout dev
