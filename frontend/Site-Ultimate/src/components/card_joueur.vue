@@ -1,7 +1,7 @@
 <script setup >
 defineProps({
   nom: String,
-  age: Number,
+  age: String,
   sexe: String
 })
 </script>
