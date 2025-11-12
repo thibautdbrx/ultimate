@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import Slider from "@/components/Slider_card.vue";
+import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue";
 import CardMatch from "@/components/card_match.vue";
 
 const route = useRoute()
@@ -51,21 +51,21 @@ const now = new Date() // la date et l'heure actuelles
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
     <div v-else class="prochain_matches">
       <h3>Matchs prochain</h3>
-      <Slider>
+      <SliderCardHorizontal :autoScroll="false" :autoScrollDelay="0">
       <div v-for="match in matches" :key="match.id" class="match-card">
 
           <CardMatch  v-if="(new Date(match.date) > now)" :title=match.date :nom1=match.team1 :nom2=match.team2 :points1=match.score1 :points2=match.score2 :fini=false />
 
       </div>
-      </Slider>
+      </SliderCardHorizontal>
 
 
       <h3>Matchs finis</h3>
-      <Slider>
+      <SliderCardHorizontal :autoScroll="false" :autoScrollDelay="0">
         <div v-for="match in matches" :key="match.id" class="match-card">
           <CardMatch v-if="(new Date(match.date) <= now)" :title=match.date :nom1=match.team1 :nom2=match.team2 :points1=match.score1 :points2=match.score2 :fini=true />
         </div>
-      </Slider>
+      </SliderCardHorizontal>
     </div>
   </main>
 </template>

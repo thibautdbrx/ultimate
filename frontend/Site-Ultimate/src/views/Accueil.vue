@@ -5,7 +5,7 @@ import LiveIcon from '@/assets/icons/live.svg'
 import TrophyIcon from '@/assets/icons/trophy.svg'
 import CalendarIcon from '@/assets/icons/calendar.svg'
 
-import Slider from '../components/Slider_card.vue'
+import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
 import CardRes from '../components/Card_resultat.vue'
 
@@ -34,7 +34,7 @@ onMounted(() => {
 <template>
   <main class="Acceuil">
     <div class="accueil_section">
-      <h2 class="titre_acceuil">Gerez vos match en toute simplicité</h2>
+      <h2 class="titre_acceuil">Gerez vos matchs en toute simplicité</h2>
       <section class="cards_info">
         <CardInfo
             title="Matchs en direct"
@@ -62,12 +62,12 @@ onMounted(() => {
     </div>
     <div class="accueil_section">
       <h2 class="titre_acceuil">Dernier resultats</h2>
-      <Slider>
+      <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
         <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
         <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
         <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
         <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
-      </Slider>
+      </SliderCardHorizontal>
     </div>
   </main>
 </template>

@@ -5,7 +5,7 @@ import { RouterLink } from 'vue-router'
 
 <template>
   <header class="header">
-    <h1>Ultimate Match Manager</h1>
+    <h1>UltiMATE</h1>
     <nav>
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
       <RouterLink to="/Equipe" class="nav-link">Equipe</RouterLink>

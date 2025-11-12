@@ -9,7 +9,7 @@ import Button from "@/components/Bouton.vue";
   <h3>Ultimate Match Manager</h3>
   <Button label="Connexion" />
   </div>
-  <p id="signature_footer">Novembre 2025</p>
+  <p id="signature_footer">©VAFLOURENTIB</p>
   </footer>
 </template>
 

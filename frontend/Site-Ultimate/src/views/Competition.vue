@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import ImageFond from "../assets/img/img_fresbee.jpg"
+import ImageFond from "../assets/img/img_coupe.jpg"
 
 const router = useRouter()
 

@@ -15,6 +15,7 @@ import Footer from './components/Footer.vue'
 <style scoped>
 #app{
   background-color: #f8fafc;
+  height:100%;
 }
 
 
