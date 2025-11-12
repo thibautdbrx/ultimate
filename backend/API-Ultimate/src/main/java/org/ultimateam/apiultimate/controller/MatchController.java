@@ -26,9 +26,15 @@ public class MatchController {
         return matchService.getById(id);
     }
 
-    @PostMapping("/equipe1/{id_equipe1}/equipe2/{id_equipe2}")
-    public Match createMatch(@PathVariable Long id_equipe1, @PathVariable Long id_equipe2) {
-        return matchService.creerMatch(id_equipe1, id_equipe2);
+    @GetMapping("/started")
+    public List<Match> getMatchStarted() {return matchService.getStarted();}
+
+    @GetMapping("/notstarted")
+    public List<Match> getMatchNotStarted() {return matchService.getNotStarted();}
+
+    @PostMapping
+    public Match createMatch(@RequestParam Long idEquipe1, @RequestParam Long idEquipe2) {
+        return matchService.creerMatch(idEquipe1, idEquipe2);
     }
     @PutMapping("/{id}/start")
     public Match startMatch(@PathVariable Long id) {
