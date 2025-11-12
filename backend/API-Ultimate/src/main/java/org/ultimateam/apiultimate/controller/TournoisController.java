@@ -27,5 +27,8 @@ public class TournoisController {
     public void deleteById(@PathVariable Long id) { tournoisService.deleteTournoisById(id); }
 
     @PostMapping("/Creation_tournois")
-    public void genererTournois(){ tournoisService.genererTournois();}
+    public void genererTournois(Long idTournois){ tournoisService.genererTournois(idTournois);}
+
+
+
 }
