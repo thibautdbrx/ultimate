@@ -32,14 +32,32 @@ public class Joueur {
     private Equipe equipe;
 
 
+    /**
+     * Constructeur par défaut pour créer une instance de Joueur vide.
+     */
     public Joueur() {}
 
+    /**
+     * Constructeur pour créer une nouvelle instance de Joueur avec le nom, prénom et genre spécifiés.
+     *
+     * @param nom_joueur    Le nom de famille du joueur.
+     * @param prenom_joueur Le prénom du joueur.
+     * @param genre         Le genre du joueur (MALE ou FEMALE).
+     */
     public Joueur(String nom_joueur, String prenom_joueur, Genre genre) {
         this.nom_joueur = nom_joueur;
         this.prenom_joueur = prenom_joueur;
         this.genre = genre;
     }
 
+    /**
+     * Constructeur pour créer une nouvelle instance de Joueur avec le nom, prénom, genre et l'équipe spécifiés.
+     *
+     * @param nom_joueur    Le nom de famille du joueur.
+     * @param prenom_joueur Le prénom du joueur.
+     * @param genre         Le genre du joueur (MALE ou FEMALE).
+     * @param equipe        L'équipe à laquelle le joueur est associé.
+     */
     public Joueur(String nom_joueur, String prenom_joueur, Genre genre, Equipe equipe) {
         this.nom_joueur = nom_joueur;
         this.prenom_joueur = prenom_joueur;
