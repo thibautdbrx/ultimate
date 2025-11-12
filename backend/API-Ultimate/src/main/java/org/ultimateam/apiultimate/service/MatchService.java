@@ -139,6 +139,7 @@ public class MatchService {
         return save(match);
     }
 
+
     /**
      * Met en pause un match qui est actuellement en cours (ONGOING).
      * Enregistre l'heure de début de la pause et change le statut à PAUSED.
