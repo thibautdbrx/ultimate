@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
@@ -13,6 +14,7 @@ import java.util.List;
  * et la gestion de leur assignation aux équipes.
  */
 @RestController
+@Tag(name = "Joueur", description = "Endpoints pour gérer les joueurs")
 @RequestMapping("/api/joueur")
 public class JoueurController {
 

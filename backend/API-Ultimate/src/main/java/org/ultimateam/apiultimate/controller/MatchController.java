@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.model.Match;
@@ -13,6 +14,7 @@ import java.util.List;
  * récupérer, supprimer et gérer le déroulement (démarrer, pause, etc.) des matchs.
  */
 @RestController
+@Tag(name = "Match", description = "Endpoints pour gérer les matchs")
 @RequestMapping("/api/match")
 public class MatchController {
 

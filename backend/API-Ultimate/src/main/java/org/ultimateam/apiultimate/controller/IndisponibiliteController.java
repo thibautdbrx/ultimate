@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.IndisponibiliteDTO;
 import org.ultimateam.apiultimate.model.Indisponibilite;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@Tag(name = "Indisponibilite", description = "Endpoints pour gérer les indisponibilités des équipes")
 @RequestMapping("/api/indisponibilite")
 public class IndisponibiliteController {
 

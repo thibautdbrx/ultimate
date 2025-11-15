@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
@@ -12,6 +13,7 @@ import java.util.List;
  * Expose les points de terminaison (endpoints) de l'API pour les opérations CRUD sur les équipes.
  */
 @RestController
+@Tag(name = "Equipe", description = "Endpoints pour gérer les équipes")
 @RequestMapping("/api/equipe")
 public class EquipeController {
 
