@@ -25,7 +25,7 @@ defineProps({
   border-radius: 14px;
   border: 1px solid #e4e4e4;
   padding: 0.8rem 1rem;
-  width: 180px;                /* plus fin pour empilement */
+  width: 180px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

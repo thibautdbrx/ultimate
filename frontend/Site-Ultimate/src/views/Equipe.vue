@@ -13,7 +13,7 @@ const error = ref(null)
 
 // Récupération des compétitions
 onMounted(() => {
-  fetch('https://api.exemple.com/equipes')
+  fetch('/api/equipe')
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
         return res.json()
@@ -24,23 +24,16 @@ onMounted(() => {
       })
       .catch(err => {
         console.error(err)
-        //error.value = "Impossible de charger les compétitions."
-        //loading.value = false
+        error.value = "Impossible de charger les compétitions."
+        loading.value = false
       })
 })
 
-// Valeur par défaut pour test
-equipes.value = [
-  {id: 1, name: 'Polypote', nb_joueur:20, image: ImageFond},
-  {id: 2, name: 'PSG',nb_joueur:79,image: ImageFond},
-  {id: 3, name: 'prout deluxe',nb_joueur:1, image: ImageFond},
-  {id: 4, name: 'tim2spor', nb_joueur: 10, image: ImageFond}
-]
-loading.value = false
+
 
 // Redirection vers la page d'une compétition
-function goToEquipe(id) {
-  router.push({ name: 'Equipe-details', params: { id } })
+function goToEquipe(id,nom) {
+  router.push({ name: 'Equipe-details', params: { id, nom } })
 }
 </script>
 
@@ -54,13 +47,13 @@ function goToEquipe(id) {
     <div v-else class="competition-list">
       <div
           v-for="equipe in equipes"
-          :key="equipe.id"
+          :key="equipe.idEquipe"
           class="competition-card"
-          @click="goToEquipe(equipe.id)"
+          @click="goToEquipe(equipe.idEquipe, equipe.nom_equipe)"
       >
-        <img :src="equipe.image" alt="Image compétition" class="competition-img" />
+        <img :src="ImageFond" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
-          <h3>{{ equipe.name }}</h3>
+          <h3>{{ equipe.nom_equipe }}</h3>
           <p>{{ equipe.nb_joueur }} licencié(e)s</p>
         </div>
       </div>

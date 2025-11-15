@@ -1,141 +1,88 @@
-<!-- components/SliderVertical.vue -->
 <script setup>
-import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue'
+import { ref, onMounted, onBeforeUnmount, defineProps } from "vue";
 
 const props = defineProps({
-  autoScroll: { type: Boolean, default: false },
-  autoScrollDelay: { type: Number, default: 1000 }
-})
+  speed: { type: Number, default: 0.5 }, // vitesse auto scroll
+  pauseDelay: { type: Number, default: 500 } // pause après scroll manuel
+});
 
-const slider = ref(null)
+const slider = ref(null);
+let direction = 1; // 1 = descend, -1 = monte
+let frame;
+let pauseTimeout;
+let paused = false;
 
-let isDown = false
-let startY = 0
-let scrollTopStart = 0
-let autoScrollSpeed = 0.3
-let animationFrameId
-let autoScrollTimeout
-const paused = ref(false)
-let scrollAccumulator = 0
+// ----- Auto-scroll -----
+function autoScroll() {
+  if (!slider.value) return;
 
-// --- Drag ---
-function handleMouseDown(e) {
-  if (!slider.value) return
-  isDown = true
-  slider.value.classList.add('active-drag')
+  if (!paused) {
+    slider.value.scrollTop += direction * props.speed;
 
-  startY = e.pageY
-  scrollTopStart = slider.value.scrollTop
-
-  paused.value = true
-  if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-}
-
-function handleMouseUp() {
-  isDown = false
-  if (slider.value) slider.value.classList.remove('active-drag')
-
-  if (props.autoScroll) {
-    if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-    autoScrollTimeout = setTimeout(() => {
-      paused.value = false
-    }, props.autoScrollDelay)
-  }
-}
-
-function handleMouseMove(e) {
-  if (!isDown || !slider.value) return
-  e.preventDefault()
-
-  const dy = e.pageY - startY
-  slider.value.scrollTop = scrollTopStart - dy * 1.5
-  checkInfiniteScroll()
-}
-
-// --- Boucle infinie ---
-function checkInfiniteScroll() {
-  if (!slider.value) return
-  const totalHeight = slider.value.scrollHeight
-
-  if (slider.value.scrollTop >= totalHeight / 2) {
-    slider.value.scrollTop -= totalHeight / 2
-  } else if (slider.value.scrollTop <= 0) {
-    slider.value.scrollTop += totalHeight / 2
-  }
-}
-
-function autoScrollLoop() {
-  if (!paused.value && !isDown && slider.value) {
-    scrollAccumulator += autoScrollSpeed
-    const delta = Math.floor(scrollAccumulator)
-    if (delta > 0) {
-      slider.value.scrollTop += delta
-      scrollAccumulator -= delta
+    // bas → change direction
+    if (slider.value.scrollTop + slider.value.clientHeight >= slider.value.scrollHeight) {
+      direction = -1;
     }
-    checkInfiniteScroll()
+
+    // haut → change direction
+    if (slider.value.scrollTop <= 0) {
+      direction = 1;
+    }
   }
-  animationFrameId = requestAnimationFrame(autoScrollLoop)
+
+  frame = requestAnimationFrame(autoScroll);
 }
 
-// --- Lifecycle ---
+// ----- Scroll manuel -----
+function handleUserScroll() {
+  paused = true; // pause auto-scroll
+
+  clearTimeout(pauseTimeout);
+
+  pauseTimeout = setTimeout(() => {
+    paused = false; // reprend après X ms
+  }, props.pauseDelay);
+}
+
 onMounted(() => {
-  if (slider.value && props.autoScroll) {
-    // clone les enfants pour boucle infinie
-    const children = Array.from(slider.value.children)
-    const len = children.length
-    for (let i = 0; i < len; i++) {
-      slider.value.appendChild(children[i].cloneNode(true))
-    }
-  }
+  frame = requestAnimationFrame(autoScroll);
 
-  document.addEventListener('mouseup', handleMouseUp)
-
-  if (props.autoScroll) {
-    paused.value = false
-    requestAnimationFrame(autoScrollLoop)
+  if (slider.value) {
+    slider.value.addEventListener("wheel", handleUserScroll, { passive: true });
+    slider.value.addEventListener("mousedown", handleUserScroll);
   }
-})
+});
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(animationFrameId)
-  document.removeEventListener('mouseup', handleMouseUp)
-  if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-})
+  cancelAnimationFrame(frame);
+  clearTimeout(pauseTimeout);
+
+  if (slider.value) {
+    slider.value.removeEventListener("wheel", handleUserScroll);
+    slider.value.removeEventListener("mousedown", handleUserScroll);
+  }
+});
 </script>
 
 <template>
-  <section
-      ref="slider"
-      class="slider"
-      @mousedown="handleMouseDown"
-      @mouseup="handleMouseUp"
-      @mousemove="handleMouseMove"
-      @mouseleave="handleMouseUp"
-  >
+  <section class="slider" ref="slider">
     <slot />
   </section>
 </template>
 
 <style scoped>
 .slider {
+  height: 400px;
+  overflow-y: auto;   /* <-- IMPORTANT pour le scroll manuel */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 2rem;
-  overflow-y: scroll;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  cursor: grab;
-  height: 400px;
-  scroll-behavior: auto;
+  padding: 1rem;
+
+  scrollbar-width: none; /* Firefox : cache scrollbar */
 }
 
 .slider::-webkit-scrollbar {
-  display: none;
-}
-
-.slider.active-drag {
-  cursor: grabbing;
-  user-select: none;
+  display: none; /* Chrome : cache scrollbar */
 }
 </style>
