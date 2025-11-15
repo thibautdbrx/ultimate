@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.model.Match;
@@ -71,9 +72,9 @@ public class MatchService {
      * @param id_equipe2 L'identifiant de la seconde équipe.
      * @return Le nouveau match créé et sauvegardé, avec le statut WAITING.
      */
-    public Match creerMatch(long id_equipe1, long id_equipe2) {
-        Equipe equipe1 = equipeService.getById(id_equipe1);
-        Equipe equipe2 = equipeService.getById(id_equipe2);
+    public Match creerMatch(MatchDTO matchDTO) {
+        Equipe equipe1 = equipeService.getById(matchDTO.getIdEquipes().get(0));
+        Equipe equipe2 = equipeService.getById(matchDTO.getIdEquipes().get(1));
 
         if (equipe1 == null || equipe2 == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Une des équipes n'existe pas");
@@ -150,7 +151,7 @@ public class MatchService {
         if (match.getStatus() != Match.Status.ONGOING)
             throw new IllegalStateException("Impossible de mettre en pause un match non démarré ou déjà en pause");
 
-        match.setDate_pause(LocalDateTime.now());
+        match.setDatePause(LocalDateTime.now());
         match.setStatus(Match.Status.PAUSED);
         return save(match);
     }
@@ -168,9 +169,9 @@ public class MatchService {
         if (match.getStatus() != Match.Status.PAUSED)
             throw new IllegalStateException("Impossible de reprendre un match qui n'est pas en pause");
 
-        Duration nouvellePause = Duration.between(match.getDate_pause(), LocalDateTime.now());
+        Duration nouvellePause = Duration.between(match.getDatePause(), LocalDateTime.now());
         match.setDureePauseTotale(match.getDureePauseTotale().plus(nouvellePause));
-        match.setDate_pause(null);
+        match.setDatePause(null);
         match.setStatus(Match.Status.ONGOING);
         return save(match);
     }
@@ -183,46 +184,28 @@ public class MatchService {
      * @param id_equipe L'identifiant de l'équipe qui marque le point.
      * @return Le match mis à jour avec le nouveau score.
      */
-    public Match ajouterPoint(long id_match, long id_equipe) {
+    public Match ajouterPoint(long id_match, long id_equipe, MatchDTO matchDTO) {
         Match match = getById(id_match);
         Equipe equipe = equipeService.getById(id_equipe);
         if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         if (equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         if (match.getStatus() == Match.Status.FINISHED)
             throw new IllegalStateException("Impossible d'ajouter un point, le match est terminé");
+        if (matchDTO.getPoint() == 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
-            match.setScore_equipe1(match.getScore_equipe1() + 1);
+            if (matchDTO.getPoint() > 0)
+                match.setScoreEquipe1(match.getScoreEquipe1() + matchDTO.getPoint());
+            else{
+                match.setScoreEquipe1(match.getScoreEquipe1() - matchDTO.getPoint());
+            }
         } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
-            match.setScore_equipe2(match.getScore_equipe2() + 1);
-        } else {
-            throw new IllegalArgumentException("Cette équipe ne fait pas partie du match");
-        }
-
-        checkVictory(match);
-        return save(match);
-    }
-
-    /**
-     * Retire un point à une équipe spécifique participant à un match.
-     * Le score de l'équipe ne peut pas descendre en dessous de 0.
-     *
-     * @param id_match L'identifiant du match concerné.
-     * @param id_equipe L'identifiant de l'équipe à qui retirer le point.
-     * @return Le match mis à jour avec le nouveau score.
-     */
-    public Match retirerPoint(long id_match, long id_equipe) {
-        Match match = getById(id_match);
-        Equipe equipe = equipeService.getById(id_equipe);
-        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        if (equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        if (match.getStatus() == Match.Status.FINISHED)
-            throw new IllegalStateException("Impossible de retirer un point, le match est terminé");
-
-        if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
-            match.setScore_equipe1(Math.max(0, match.getScore_equipe1() - 1));
-        } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
-            match.setScore_equipe2(Math.max(0, match.getScore_equipe2() - 1));
+            if (matchDTO.getPoint() > 0)
+                match.setScoreEquipe2(match.getScoreEquipe2() + matchDTO.getPoint());
+            else {
+                match.setScoreEquipe2(match.getScoreEquipe1() - matchDTO.getPoint());
+            }
         } else {
             throw new IllegalArgumentException("Cette équipe ne fait pas partie du match");
         }
@@ -243,7 +226,7 @@ public class MatchService {
             return;
 
         // Victoire par score
-        if (match.getScore_equipe1() >= 15 || match.getScore_equipe2() >= 15) {
+        if (match.getScoreEquipe1() >= 15 || match.getScoreEquipe2() >= 15) {
             finirMatch(match.getIdMatch());
             return;
         }
