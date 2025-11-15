@@ -1,4 +1,4 @@
-<script setup >
+<script setup>
 defineProps({
   nom: String,
   age: String,
@@ -8,61 +8,70 @@ defineProps({
 
 <template>
   <div class="card_joueur">
-    <div class="card-content">
+    <div class="header">
       <h3>{{ nom }}</h3>
-      <div class="info">
-        <p class="age">{{ age }}</p>
-        <p class="sexe">{{ sexe }}</p>
-        <div class="icon" ></div>
-      </div>
+      <span class="tag">{{ sexe }}</span>
+    </div>
+
+    <div class="footer">
+      <span class="age">{{ age }} ans</span>
     </div>
   </div>
 </template>
 
 <style scoped>
 .card_joueur {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 1rem 1.5rem;
-  width: 220px;
-  transition: transform 0.2s ease;
-}
-
-.card_joueur:hover {
-  transform: translateY(4px);
-}
-
-.card-content {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e4e4e4;
+  padding: 0.8rem 1rem;
+  width: 180px;                /* plus fin pour empilement */
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+
+  /* pour slider vertical : fine ombre */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.info {
+.card_joueur:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Header --- */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.age, .sexe {
-  font-size: 1.5rem;
+h3 {
+  font-size: 1.2rem;
+  margin: 0;
   font-weight: 600;
 }
 
-.icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
+/* Badge du sexe */
+.tag {
+  background: #ececec;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+/* --- Footer --- */
+.footer {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
 }
 
-
-
-h3{
-  margin: 0;
+.age {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #444;
 }
-
 </style>
