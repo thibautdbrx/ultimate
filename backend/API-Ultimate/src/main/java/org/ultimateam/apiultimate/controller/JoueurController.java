@@ -68,8 +68,8 @@ public class JoueurController {
      * @param id_equipe L'identifiant de l'équipe recevant le joueur.
      * @return L'équipe mise à jour avec le nouveau joueur.
      */
-    @PutMapping("/{id_joueur}/equipe/{id_equipe}")
-    public Equipe assignerEquipe(@PathVariable Long id_joueur, @PathVariable Long id_equipe) { return joueurService.assignerEquipe(id_joueur, id_equipe); }
+    @PutMapping("/{idJoueur}/equipe/{idEquipe}")
+    public Equipe assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
 
     /**
      * Retire un joueur d'une équipe.
@@ -79,8 +79,8 @@ public class JoueurController {
      * @param id_equipe L'identifiant de l'équipe dont le joueur est retiré.
      * @return L'équipe mise à jour après le retrait du joueur.
      */
-    @DeleteMapping("/{id_joueur}/equipe/{id_equipe}")
-    public Equipe deleteEquipe(@PathVariable Long id_joueur, @PathVariable Long id_equipe) { return joueurService.deleteEquipe(id_joueur, id_equipe); }
+    @DeleteMapping("/{idJoueur}/equipe/{idEquipe}")
+    public Equipe deleteEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.deleteEquipe(idJoueur, idEquipe); }
 
     /**
      * Supprime un joueur par son identifiant.

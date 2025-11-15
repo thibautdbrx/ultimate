@@ -23,7 +23,6 @@ public class EquipeController {
      * @param equipeService Le service chargé de la logique métier pour les équipes.
      */
     public EquipeController(EquipeService equipeService) { this.equipeService = equipeService; }
-
     /**
      * Récupère la liste de toutes les équipes.
      * Mappe les requêtes HTTP GET sur /api/equipe.

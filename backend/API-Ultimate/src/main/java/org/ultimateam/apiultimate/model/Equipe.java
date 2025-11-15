@@ -20,7 +20,7 @@ public class Equipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idEquipe;
 
-    private String nom_equipe;
+    private String nomEquipe;
 
     @OneToMany(mappedBy = "equipe", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -31,8 +31,8 @@ public class Equipe {
     @JsonBackReference
     private List<Indisponibilite> indisponibilites = new ArrayList<>();
 
-    public Equipe(String nom_equipe) {
-        this.nom_equipe = nom_equipe;
+    public Equipe(String nomEquipe) {
+        this.nomEquipe = nomEquipe;
     }
 
     /**

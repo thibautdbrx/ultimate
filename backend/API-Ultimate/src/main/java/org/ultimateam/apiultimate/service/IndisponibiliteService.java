@@ -30,8 +30,8 @@ public class IndisponibiliteService {
                 .map(indispo -> new IndisponibiliteDTO(
                         indispo.getIdIndisponibilite(),
                         indispo.getEquipe().getIdEquipe(),
-                        indispo.getDate_debut_indisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                        indispo.getDate_fin_indisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                        indispo.getDateDebutIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                        indispo.getDateFinIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 ))
                 .toList();
     }
@@ -46,11 +46,11 @@ public class IndisponibiliteService {
         if (indispo == null) return null;
 
         Long idEquipe = (indispo.getEquipe() != null) ? indispo.getEquipe().getIdEquipe() : null;
-        String dateDebut = (indispo.getDate_debut_indisponibilite() != null)
-                ? indispo.getDate_debut_indisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        String dateDebut = (indispo.getDateDebutIndisponibilite() != null)
+                ? indispo.getDateDebutIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 : null;
-        String dateFin = (indispo.getDate_fin_indisponibilite() != null)
-                ? indispo.getDate_fin_indisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        String dateFin = (indispo.getDateFinIndisponibilite() != null)
+                ? indispo.getDateFinIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 : null;
 
         return new IndisponibiliteDTO(
@@ -67,13 +67,13 @@ public class IndisponibiliteService {
 
         // Conversion des dates
         if (dto.getDateDebut() != null) {
-            indisponibilite.setDate_debut_indisponibilite(
+            indisponibilite.setDateDebutIndisponibilite(
                     LocalDateTime.parse(dto.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
 
         if (dto.getDateFin() != null) {
-            indisponibilite.setDate_fin_indisponibilite(
+            indisponibilite.setDateFinIndisponibilite(
                     LocalDateTime.parse(dto.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
@@ -101,8 +101,8 @@ public class IndisponibiliteService {
                 .map(indispo -> new IndisponibiliteDTO(
                         indispo.getIdIndisponibilite(),
                         indispo.getEquipe().getIdEquipe(),
-                        indispo.getDate_debut_indisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                        indispo.getDate_fin_indisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                        indispo.getDateDebutIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                        indispo.getDateFinIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 ))
                 .toList();
     }
@@ -119,13 +119,13 @@ public class IndisponibiliteService {
         Indisponibilite indisponibilite = getById(id);
 
         if(dto.getDateDebut() != null) {
-            indisponibilite.setDate_debut_indisponibilite(
+            indisponibilite.setDateDebutIndisponibilite(
                     LocalDateTime.parse(dto.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
 
         if(dto.getDateFin() != null) {
-            indisponibilite.setDate_fin_indisponibilite(
+            indisponibilite.setDateFinIndisponibilite(
                     LocalDateTime.parse(dto.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }

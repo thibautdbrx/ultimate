@@ -1,6 +1,7 @@
 package org.ultimateam.apiultimate.controller;
 
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.model.Match;
 import org.ultimateam.apiultimate.service.MatchService;
 
@@ -56,8 +57,8 @@ public class MatchController {
     public List<Match> getMatchNotStarted() {return matchService.getNotStarted();}
 
     @PostMapping
-    public Match createMatch(@RequestParam Long idEquipe1, @RequestParam Long idEquipe2) {
-        return matchService.creerMatch(idEquipe1, idEquipe2);
+    public Match createMatch(@RequestBody MatchDTO matchDTO) {
+        return matchService.creerMatch(matchDTO);
     }
 
     /**
@@ -116,23 +117,11 @@ public class MatchController {
      * @param id_equipe L'identifiant de l'équipe qui marque le point.
      * @return Le match mis à jour avec le score actualisé.
      */
-    @PutMapping("/{id_match}/addPoint/{id_equipe}")
-    public Match addPoint(@PathVariable Long id_match, @PathVariable Long id_equipe) {
-        return matchService.ajouterPoint(id_match, id_equipe);
+    @PatchMapping("/{idMatch}/equipe/{idEquipe}/point")
+    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe,@RequestBody MatchDTO matchDTO) {
+        return matchService.ajouterPoint(idMatch, idEquipe, matchDTO);
     }
 
-    /**
-     * Retire un point à une équipe lors d'un match.
-     * Mappe les requêtes HTTP PUT sur /api/match/{id_match}/removePoint/{id_equipe}.
-     *
-     * @param id_match L'identifiant du match concerné.
-     * @param id_equipe L'identifiant de l'équipe à qui retirer le point.
-     * @return Le match mis à jour avec le score actualisé.
-     */
-    @PutMapping("/{id_match}/removePoint/{id_equipe}")
-    public Match removePoint(@PathVariable Long id_match, @PathVariable Long id_equipe) {
-        return matchService.retirerPoint(id_match, id_equipe);
-    }
 
     /**
      * Supprime un match par son identifiant.
