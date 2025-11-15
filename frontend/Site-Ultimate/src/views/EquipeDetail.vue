@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
@@ -14,7 +14,7 @@ const teamName = ref("Équipe #" + teamId);
 const loading = ref(true);
 
 // --- Données des joueurs ---
-const joueurs = ref<any[]>([]);
+const joueurs = ref([]);
 
 // --- Données par défaut (mock) ---
 const mockJoueurs = [

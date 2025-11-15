@@ -1,31 +1,29 @@
-<!-- components/SliderCardHorizontal.vue -->
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue'
 
-const props = defineProps<{
-  autoScroll?: boolean,       // activer/désactiver le scroll automatique
-  autoScrollDelay?: number    // délai avant reprise après drag (ms)
-}>()
+const props = defineProps({
+  autoScroll: { type: Boolean, default: false },
+  autoScrollDelay: { type: Number, default: 1000 }
+})
 
-const slider = ref<HTMLElement | null>(null)
+const slider = ref(null)
 
 let isDown = false
 let startX = 0
 let scrollLeft = 0
 let autoScrollSpeed = 0.5
-let animationFrameId: number
-let autoScrollTimeout: number | undefined = undefined
-const paused = ref(false) // true = scroll en pause
+let animationFrameId
+let autoScrollTimeout
+const paused = ref(false)
 
 // --- Drag ---
-const handleMouseDown = (e: MouseEvent) => {
+const handleMouseDown = (e) => {
   isDown = true
   if (!slider.value) return
   slider.value.classList.add('active-drag')
   startX = e.pageX - slider.value.offsetLeft
   scrollLeft = slider.value.scrollLeft
 
-  // pause immédiate
   paused.value = true
   if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
 }
@@ -34,17 +32,15 @@ const handleMouseUp = () => {
   isDown = false
   if (slider.value) slider.value.classList.remove('active-drag')
 
-  // redémarre après delay
   if (props.autoScroll) {
-    const delay = props.autoScrollDelay ?? 1000
     if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-    autoScrollTimeout = window.setTimeout(() => {
+    autoScrollTimeout = setTimeout(() => {
       paused.value = false
-    }, delay)
+    }, props.autoScrollDelay)
   }
 }
 
-const handleMouseMove = (e: MouseEvent) => {
+const handleMouseMove = (e) => {
   if (!isDown || !slider.value) return
   e.preventDefault()
   const x = e.pageX - slider.value.offsetLeft
@@ -80,8 +76,7 @@ const autoScrollLoop = () => {
 }
 
 onMounted(() => {
-  if ((slider.value) && (props.autoScroll)){
-    // clone les enfants pour boucle infinie
+  if (slider.value && props.autoScroll) {
     const len = slider.value.children.length
     for (let i = 0; i < len; i++) {
       slider.value.appendChild(slider.value.children[i].cloneNode(true))

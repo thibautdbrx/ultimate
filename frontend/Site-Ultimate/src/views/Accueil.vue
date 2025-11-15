@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 
 import LiveIcon from '@/assets/icons/live.svg'
@@ -9,27 +9,55 @@ import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
 import CardRes from '../components/Card_resultat.vue'
 
-const stats = ref({ //valeur de base en attendant API
-  live: 999,
-  upcoming: 999,
-  competitions: 999
+const stats = ref({
+  live: 0,
+  upcoming: 0,
+  competitions: 0
 })
 
-onMounted(() => {
-  fetch('https://api.exemple.com/matchs/stats')
-      .then(res => res.json())
-      .then(data => {
-        stats.value = {
-          live: data.liveCount,
-          upcoming: data.upcomingCount,
-          competitions: data.competitionCount
-        }
-      })
-      .catch(err => console.error('Erreur lors du fetch', err))
+const derniersMatchs = ref([])
+const errorMsg = ref('')
+
+onMounted(async () => {
+  try {
+    // Matchs en direct
+    const liveRes = await fetch(`/api/match/started`)
+    const liveData = await liveRes.json()
+    stats.value.live = liveData.length    // ou liveData.count selon ton API
+
+    // Matchs à venir
+    const upcomingRes = await fetch(`/api/match/notstarted`)
+    const upcomingData = await upcomingRes.json()
+    stats.value.upcoming = upcomingData.length
+
+    // Compétitions
+    //const compRes = await fetch(`${API}/competition/all`)
+    //const compData = await compRes.json()
+    //stats.value.competitions = compData.length
+    stats.value.competitions = 5
+
+    const matchsRes = await fetch(`/api/match`)
+    const matchsData = await matchsRes.json()
+    const matchs = matchsData.sort((a, b) => {
+          if (a.dateDebut && b.dateDebut) {
+            return new Date(b.dateDebut) - new Date(a.dateDebut); // les plus récents en premier
+          } else if (a.dateDebut) {
+            return -1; // a a une date, b non => a avant b
+          } else if (b.dateDebut) {
+            return 1;  // b a une date, a non => b avant a
+          } else {
+            return 0;  // aucun des deux n'a de date => pas de changement
+          }
+        })
+    derniersMatchs.value = matchs.slice(0, 5)
+
+  } catch (err) {
+    errorMsg.value = "Impossible de récupérer les matchs."
+    console.error("Erreur lors du chargement des données:", err)
+  }
 })
-
-
 </script>
+
 
 <template>
   <main class="Acceuil">
@@ -62,11 +90,13 @@ onMounted(() => {
     </div>
     <div class="accueil_section">
       <h2 class="titre_acceuil">Dernier resultats</h2>
+      <p v-if="errorMsg" class="error-text">{{ errorMsg }}</p>
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
-        <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
-        <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
-        <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
-        <CardRes title="Championnat National" nom1="Polytech" nom2="Mines" :points1="13" :points2="2" />
+        <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card">
+          <CardRes :title="String(match.idMatch)" :nom1="match.equipe1.nom_equipe" :nom2="match.equipe2.nom_equipe" :points1="match.score_equipe1" :points2="match.score_equipe2"
+          />
+        </div>
+
       </SliderCardHorizontal>
     </div>
   </main>

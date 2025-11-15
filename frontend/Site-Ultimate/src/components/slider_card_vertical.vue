@@ -1,23 +1,25 @@
-<script setup lang="ts">
+<!-- components/SliderVertical.vue -->
+<script setup>
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue'
 
-const props = defineProps<{
-  autoScroll?: boolean,       // activer/désactiver le scroll automatique
-  autoScrollDelay?: number    // délai avant reprise après drag (ms)
-}>()
+const props = defineProps({
+  autoScroll: { type: Boolean, default: false },
+  autoScrollDelay: { type: Number, default: 1000 }
+})
 
-const slider = ref<HTMLElement | null>(null)
+const slider = ref(null)
 
 let isDown = false
 let startY = 0
 let scrollTopStart = 0
 let autoScrollSpeed = 0.3
-let animationFrameId: number
-let autoScrollTimeout: number | undefined = undefined
+let animationFrameId
+let autoScrollTimeout
 const paused = ref(false)
+let scrollAccumulator = 0
 
 // --- Drag ---
-const handleMouseDown = (e: MouseEvent) => {
+function handleMouseDown(e) {
   if (!slider.value) return
   isDown = true
   slider.value.classList.add('active-drag')
@@ -29,20 +31,19 @@ const handleMouseDown = (e: MouseEvent) => {
   if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
 }
 
-const handleMouseUp = () => {
+function handleMouseUp() {
   isDown = false
   if (slider.value) slider.value.classList.remove('active-drag')
 
   if (props.autoScroll) {
-    const delay = props.autoScrollDelay ?? 1000
     if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-    autoScrollTimeout = window.setTimeout(() => {
+    autoScrollTimeout = setTimeout(() => {
       paused.value = false
-    }, delay)
+    }, props.autoScrollDelay)
   }
 }
 
-const handleMouseMove = (e: MouseEvent) => {
+function handleMouseMove(e) {
   if (!isDown || !slider.value) return
   e.preventDefault()
 
@@ -52,7 +53,7 @@ const handleMouseMove = (e: MouseEvent) => {
 }
 
 // --- Boucle infinie ---
-const checkInfiniteScroll = () => {
+function checkInfiniteScroll() {
   if (!slider.value) return
   const totalHeight = slider.value.scrollHeight
 
@@ -63,10 +64,7 @@ const checkInfiniteScroll = () => {
   }
 }
 
-// --- Auto-scroll continu ---
-let scrollAccumulator = 0
-
-const autoScrollLoop = () => {
+function autoScrollLoop() {
   if (!paused.value && !isDown && slider.value) {
     scrollAccumulator += autoScrollSpeed
     const delta = Math.floor(scrollAccumulator)
@@ -79,9 +77,11 @@ const autoScrollLoop = () => {
   animationFrameId = requestAnimationFrame(autoScrollLoop)
 }
 
+// --- Lifecycle ---
 onMounted(() => {
   if (slider.value && props.autoScroll) {
-    const children = Array.from(slider.value.children) // snapshot initial
+    // clone les enfants pour boucle infinie
+    const children = Array.from(slider.value.children)
     const len = children.length
     for (let i = 0; i < len; i++) {
       slider.value.appendChild(children[i].cloneNode(true))
@@ -95,7 +95,6 @@ onMounted(() => {
     requestAnimationFrame(autoScrollLoop)
   }
 })
-
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(animationFrameId)

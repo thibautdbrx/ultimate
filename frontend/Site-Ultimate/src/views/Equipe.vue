@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
@@ -6,10 +6,10 @@ import ImageFond from "../assets/img/img_equipe.jpg"
 const router = useRouter()
 
 // Liste des compétitions récupérées depuis ton API
-const equipes = ref<{ id: number; name: string; nb_joueur: number; image: string }[]>([])
+const equipes = ref([])
 
 const loading = ref(true)
-const error = ref<string | null>(null)
+const error = ref(null)
 
 // Récupération des compétitions
 onMounted(() => {
@@ -29,20 +29,21 @@ onMounted(() => {
       })
 })
 
+// Valeur par défaut pour test
 equipes.value = [
   {id: 1, name: 'Polypote', nb_joueur:20, image: ImageFond},
   {id: 2, name: 'PSG',nb_joueur:79,image: ImageFond},
   {id: 3, name: 'prout deluxe',nb_joueur:1, image: ImageFond},
   {id: 4, name: 'tim2spor', nb_joueur: 10, image: ImageFond}
-
 ]
 loading.value = false
 
 // Redirection vers la page d'une compétition
-function goToEquipe(id: number) {
+function goToEquipe(id) {
   router.push({ name: 'Equipe-details', params: { id } })
 }
 </script>
+
 
 <template>
   <main class="equipes">
