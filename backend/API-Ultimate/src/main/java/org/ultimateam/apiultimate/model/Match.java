@@ -29,6 +29,10 @@ public class Match {
     @JoinColumn(name = "id_equipe2")
     private Equipe equipe2;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_winner")
+    private Equipe winner;
+
     /**
     @ManyToOne
     @JoinColumn(name = "id_competition")
