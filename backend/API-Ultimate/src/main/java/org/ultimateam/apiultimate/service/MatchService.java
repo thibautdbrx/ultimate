@@ -56,8 +56,8 @@ public class MatchService {
     // --------------------- MATCH STATE ---------------------
     public Match commencerMatch(long id) {
         Match match = getById(id);
-        if (match == null) throw new IllegalArgumentException("Le match n'existe pas");
-        if (match.getStatus() != Match.Status.WAITING) throw new IllegalStateException("Match déjà commencé ou terminé");
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        if (match.getStatus() != Match.Status.WAITING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match déjà commencé ou terminé");
 
         match.setDateDebut(LocalDateTime.now());
         match.setStatus(Match.Status.ONGOING);
@@ -68,7 +68,8 @@ public class MatchService {
 
     public Match mettreEnPause(long id) {
         Match match = getById(id);
-        if (match.getStatus() != Match.Status.ONGOING) throw new IllegalStateException("Match pas en cours");
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Match pas en cours");
 
         match.setDatePause(LocalDateTime.now());
         match.setStatus(Match.Status.PAUSED);
@@ -78,7 +79,8 @@ public class MatchService {
 
     public Match reprendreMatch(long id) {
         Match match = getById(id);
-        if (match.getStatus() != Match.Status.PAUSED) throw new IllegalStateException("Match pas en pause");
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        if (match.getStatus() != Match.Status.PAUSED) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match pas en pause");
 
         Duration pause = Duration.between(match.getDatePause(), LocalDateTime.now());
         match.setDureePauseTotale(match.getDureePauseTotale().plus(pause));
@@ -99,15 +101,15 @@ public class MatchService {
     public Match ajouterPoint(long id_match, long id_equipe, MatchDTO dto) {
         Match match = getById(id_match);
         Equipe equipe = equipeService.getById(id_equipe);
-        if (match == null || equipe == null) throw new IllegalArgumentException("Arguments invalides");
-        if (match.getStatus() != Match.Status.ONGOING) throw new IllegalArgumentException("Match n'est pas en cours");
-        if (dto.getPoint() == 0) throw new IllegalArgumentException("Impossible d'ajouter 0 point");
+        if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
+        if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
+        if (dto.getPoint() == 0) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
 
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
             match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
         } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
-        } else throw new IllegalArgumentException("Cette équipe ne fait pas partie du match");
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
 
         checkVictory(match);
         return save(match);
@@ -140,7 +142,7 @@ public class MatchService {
 
     public Match finirMatch(long id) {
         Match match = getById(id);
-        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
         finirMatchSafe(match);
         return match;
     }

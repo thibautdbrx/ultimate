@@ -48,9 +48,7 @@ public class MatchController {
      * @return Le match correspondant à l'ID, ou null si non trouvé.
      */
     @GetMapping("/{id}")
-    public Match getById(@PathVariable Long id) {
-        return matchService.getById(id);
-    }
+    public Match getById(@PathVariable Long id) {return matchService.getById(id);}
 
     @GetMapping("/started")
     public List<Match> getMatchStarted() {return matchService.getStarted();}
