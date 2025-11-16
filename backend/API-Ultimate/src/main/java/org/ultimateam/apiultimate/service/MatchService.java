@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
+import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.model.Match;
@@ -98,7 +99,7 @@ public class MatchService {
         return save(match);
     }
 
-    public Match ajouterPoint(long id_match, long id_equipe, MatchDTO dto) {
+    public Match ajouterPoint(long id_match, long id_equipe, MatchPointDTO dto) {
         Match match = getById(id_match);
         Equipe equipe = equipeService.getById(id_equipe);
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
