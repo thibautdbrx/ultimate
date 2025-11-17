@@ -62,21 +62,11 @@ public class IndisponibiliteService {
     }
     public IndisponibiliteDTO addIndisponibilite(IndisponibiliteDTO dto) {
         if (dto.getIdEquipe() == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veuillez associer à une équipe");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Veuillez associer à une équipe");
 
         Indisponibilite indispo = new Indisponibilite();
 
-        // Dates
-        if (dto.getDateDebut() != null) {
-            indispo.setDateDebutIndisponibilite(
-                    LocalDateTime.parse(dto.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-            );
-        }
-        if (dto.getDateFin() != null) {
-            indispo.setDateFinIndisponibilite(
-                    LocalDateTime.parse(dto.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-            );
-        }
+        checkDate(dto, indispo);
 
         Equipe equipe = equipeService.getById(dto.getIdEquipe());
         indispo.setEquipe(equipe);
@@ -114,19 +104,9 @@ public class IndisponibiliteService {
     public IndisponibiliteDTO updateIndisponibilite(IndisponibiliteDTO indisponibiliteDTO, long indisponibiliteId) {
         Indisponibilite indisponibilite = getById(indisponibiliteId);
         if (indisponibilite == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'indisponibilite n'existe pas");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'indisponibilite n'existe pas");
 
-        if(indisponibiliteDTO.getDateDebut() != null) {
-            indisponibilite.setDateDebutIndisponibilite(
-                    LocalDateTime.parse(indisponibiliteDTO.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-            );
-        }
-
-        if(indisponibiliteDTO.getDateFin() != null) {
-            indisponibilite.setDateFinIndisponibilite(
-                    LocalDateTime.parse(indisponibiliteDTO.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-            );
-        }
+        checkDate(indisponibiliteDTO, indisponibilite);
 
         Indisponibilite saved = save(indisponibilite);
 
@@ -136,6 +116,30 @@ public class IndisponibiliteService {
                 saved.getDateDebutIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                 saved.getDateFinIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
         );
+    }
+
+    private void checkDate(IndisponibiliteDTO dto, Indisponibilite indispo) {
+        // Dates
+        if (dto.getDateDebut() != null) {
+            indispo.setDateDebutIndisponibilite(
+                    LocalDateTime.parse(dto.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+            );
+        }
+        if (dto.getDateFin() != null) {
+            indispo.setDateFinIndisponibilite(
+                    LocalDateTime.parse(dto.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+            );
+        }
+
+        // Validation: dateDebut < dateFin
+        LocalDateTime dateDebut = indispo.getDateDebutIndisponibilite();
+        LocalDateTime dateFin = indispo.getDateFinIndisponibilite();
+        if (dateDebut != null && dateFin != null && !dateDebut.isBefore(dateFin)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "La date de début doit être avant la date de fin."
+            );
+        }
     }
 
 }
