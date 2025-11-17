@@ -55,6 +55,9 @@ public class SecurityConfig {
                                         "/api/equipe/**",
                                         "/api/competition/**",
                                         "/api/joueur/**",
+                                        "/documentation/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
                                         "/api/match/**").permitAll() // les GET sont publics
                                 .requestMatchers(HttpMethod.POST,
                                         "/api/equipe/**",
