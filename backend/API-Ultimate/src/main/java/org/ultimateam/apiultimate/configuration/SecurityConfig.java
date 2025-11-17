@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.configuration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -49,6 +50,37 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()  // Les URL /api/auth/**... sont public
+
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/equipe/**",
+                                        "/api/competition/**",
+                                        "/api/joueur/**",
+                                        "/api/match/**").permitAll() // les GET sont publics
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/equipe/**",
+                                        "/api/competition/**",
+                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN") // seuls les admins peuvent modifier ou supprimer
+                                .requestMatchers(HttpMethod.PUT,
+                                        "/api/equipe/**",
+                                        "/api/competition/**",
+                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN") // seuls les admins peuvent modifier ou supprimer
+                                .requestMatchers(HttpMethod.DELETE,
+                                        "/api/equipe/**",
+                                        "/api/competition/**",
+                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN")// seuls les admins peuvent modifier ou supprimer
+
+                                // les Arbitres doivent pouvoir gérer les matchs.
+                                //TODO a changer en fonction de ce que dois gérer un arbitre
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/match/**").hasAnyAuthority("ROLE_ADMIN","ROLE_ARBITRE")
+                                .requestMatchers(HttpMethod.PUT,
+                                        "/api/match/**").hasAnyAuthority("ROLE_ADMIN","ROLE_ARBITRE")
+                                .requestMatchers(HttpMethod.DELETE,
+                                        "/api/match/**").hasAnyAuthority("ROLE_ADMIN","ROLE_ARBITRE")
+
+
+
+
                                 .anyRequest().authenticated() // les autres doivent etre authentifiées
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //jamais créer de sessin, on a une api Stateless
