@@ -60,31 +60,35 @@ public class IndisponibiliteService {
                 dateFin
         );
     }
-    public Indisponibilite addIndisponibilite(IndisponibiliteDTO dto) {
-        if (dto.getIdIndisponibilite() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veuillez associer à une équipe");;
-        Indisponibilite indisponibilite = new Indisponibilite();
+    public IndisponibiliteDTO addIndisponibilite(IndisponibiliteDTO dto) {
+        if (dto.getIdEquipe() == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veuillez associer à une équipe");
 
+        Indisponibilite indispo = new Indisponibilite();
 
-        // Conversion des dates
+        // Dates
         if (dto.getDateDebut() != null) {
-            indisponibilite.setDateDebutIndisponibilite(
+            indispo.setDateDebutIndisponibilite(
                     LocalDateTime.parse(dto.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
-
         if (dto.getDateFin() != null) {
-            indisponibilite.setDateFinIndisponibilite(
+            indispo.setDateFinIndisponibilite(
                     LocalDateTime.parse(dto.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
 
-        // Récupérer l'équipe si idEquipe est fourni
-        if (dto.getIdEquipe() != 0) {  // ou null selon ton DTO
-            indisponibilite.setEquipe(equipeService.getById(dto.getIdEquipe()));
-        }
+        Equipe equipe = equipeService.getById(dto.getIdEquipe());
+        indispo.setEquipe(equipe);
 
+        Indisponibilite saved = indisponibiliteRepository.save(indispo);
 
-        return indisponibiliteRepository.save(indisponibilite);
+        return new IndisponibiliteDTO(
+                saved.getIdIndisponibilite(),
+                saved.getEquipe().getIdEquipe(),
+                saved.getDateDebutIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                saved.getDateFinIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        );
     }
     public Indisponibilite save(Indisponibilite indisponibilite) {
         return indisponibiliteRepository.save(indisponibilite);
@@ -107,30 +111,31 @@ public class IndisponibiliteService {
                 .toList();
     }
 
-    public Indisponibilite editEquipe(Long id, Long id_equipe) {
-        Indisponibilite indisponibilite = getById(id);
+    public IndisponibiliteDTO updateIndisponibilite(IndisponibiliteDTO indisponibiliteDTO, long indisponibiliteId) {
+        Indisponibilite indisponibilite = getById(indisponibiliteId);
         if (indisponibilite == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'indisponibilite n'existe pas");
-        Equipe equipe = equipeService.getById(id_equipe);
-        indisponibilite.setEquipe(equipe);
-        return save(indisponibilite);
-    }
-    public Indisponibilite updateIndisponibilite(Long id, IndisponibiliteDTO dto) {
-        Indisponibilite indisponibilite = getById(id);
 
-        if(dto.getDateDebut() != null) {
+        if(indisponibiliteDTO.getDateDebut() != null) {
             indisponibilite.setDateDebutIndisponibilite(
-                    LocalDateTime.parse(dto.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                    LocalDateTime.parse(indisponibiliteDTO.getDateDebut(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
 
-        if(dto.getDateFin() != null) {
+        if(indisponibiliteDTO.getDateFin() != null) {
             indisponibilite.setDateFinIndisponibilite(
-                    LocalDateTime.parse(dto.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                    LocalDateTime.parse(indisponibiliteDTO.getDateFin(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }
 
-        return save(indisponibilite);
+        Indisponibilite saved = save(indisponibilite);
+
+        return new IndisponibiliteDTO(
+                saved.getIdIndisponibilite(),
+                saved.getEquipe().getIdEquipe(),
+                saved.getDateDebutIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                saved.getDateFinIndisponibilite().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        );
     }
 
 }
