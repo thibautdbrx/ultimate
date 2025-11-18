@@ -56,7 +56,12 @@ public class EquipeService {
      *
      * @param id L'identifiant de l'équipe à supprimer.
      */
-    public void deleteById(Long id) { equipeRepository.deleteById(id); }
+    public void deleteById(Long id) {
+        if (!equipeRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'equipe n'existe pas");
+        }
+        equipeRepository.deleteById(id);
+    }
 
     public Equipe editName(EquipeNameDTO equipedto, long idEquipe) {
         Equipe equipe = getById(idEquipe);

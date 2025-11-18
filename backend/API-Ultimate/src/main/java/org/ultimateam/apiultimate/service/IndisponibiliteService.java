@@ -85,7 +85,9 @@ public class IndisponibiliteService {
     }
 
     public void deleteIndisponibilite(Long id) {
-
+        if (!indisponibiliteRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'indisponibilité n'existe pas");
+        }
         indisponibiliteRepository.deleteById(id);
     }
 

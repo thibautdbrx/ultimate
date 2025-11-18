@@ -36,7 +36,12 @@ public class MatchService {
     // --------------------- BASIC CRUD ---------------------
     public Match getById(Long id) { return matchRepository.findById(id).orElse(null); }
     public Match save(Match match) { return matchRepository.save(match); }
-    public void deleteById(Long id) { matchRepository.deleteById(id); }
+    public void deleteById(Long id) {
+        if (!matchRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        }
+        matchRepository.deleteById(id);
+    }
 
     public Iterable<Match> getAll() { return matchRepository.findAll(); }
     public List<Match> getStarted() { return matchRepository.findByDateDebutIsNotNullAndDateFinIsNull(); }
