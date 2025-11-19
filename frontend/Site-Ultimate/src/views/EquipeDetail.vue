@@ -48,7 +48,7 @@ onMounted(async () => {
         <SliderVertical v-if="!loading && joueurs.length">
           <Card_joueur
               v-for="j in joueurs"
-              :nom="(j.nom_joueur+' '+j.prenom_joueur)"
+              :nom="(j.nomJoueur+' '+j.prenomJoueur)"
               :genre="j.genre"
           />
         </SliderVertical>

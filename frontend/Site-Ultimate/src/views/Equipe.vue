@@ -49,12 +49,12 @@ function goToEquipe(id,nom) {
           v-for="equipe in equipes"
           :key="equipe.idEquipe"
           class="competition-card"
-          @click="goToEquipe(equipe.idEquipe, equipe.nom_equipe)"
+          @click="goToEquipe(equipe.idEquipe, equipe.nomEquipe)"
       >
         <img :src="ImageFond" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
-          <h3>{{ equipe.nom_equipe }}</h3>
-          <p>{{ equipe.nb_joueur }} licencié(e)s</p>
+          <h3>{{ equipe.nomEquipe }}</h3>
+          <p>{{ equipe.nbJoueur }} licencié(e)s</p>
         </div>
       </div>
     </div>
