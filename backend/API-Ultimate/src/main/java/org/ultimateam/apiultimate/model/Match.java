@@ -29,17 +29,22 @@ public class Match {
     @JoinColumn(name = "id_equipe2")
     private Equipe equipe2;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_winner")
+    private Equipe winner;
+
+    /**
     @ManyToOne
     @JoinColumn(name = "id_competition")
     private Competition id_competition;
 
 
-    private long score_equipe1;
-    private long score_equipe2;
+    private long scoreEquipe1;
+    private long scoreEquipe2;
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     @JsonIgnore
-    private LocalDateTime date_pause = null;
+    private LocalDateTime datePause = null;
 
     @JsonIgnore
     private Duration dureeTotale = Duration.ZERO;

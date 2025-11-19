@@ -1,0 +1,5 @@
+org.ultimateam.apiultimate
+org.ultimateam.apiultimate.controller
+org.ultimateam.apiultimate.model
+org.ultimateam.apiultimate.repository
+org.ultimateam.apiultimate.service
