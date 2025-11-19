@@ -21,7 +21,7 @@ const submitForm = () => {
     <champs_input
         label="Email"
         type="email"
-        placeholder="admin@example.com"
+        placeholder="jean.peuplu@example.com"
         v-model="email"
         :icon="EmailIcon"
     />

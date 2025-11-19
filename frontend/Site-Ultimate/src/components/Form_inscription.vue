@@ -40,7 +40,7 @@ const submitForminscription = () => {
     <champs_input
         label="Email"
         type="email"
-        placeholder="admin@example.com"
+        placeholder="Yves.vapabien@example.com"
         v-model="email"
         :icon="EmailIcon"
     />

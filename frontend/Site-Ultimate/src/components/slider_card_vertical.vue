@@ -37,6 +37,7 @@ function autoScroll() {
   frame = requestAnimationFrame(autoScroll);
 }
 
+
 // ----- Scroll manuel -----
 function handleUserScroll() {
   paused = true; // pause auto-scroll
@@ -84,10 +85,10 @@ onBeforeUnmount(() => {
   padding: 1rem;
   align-items: center;
 
-  scrollbar-width: none; /* Firefox : cache scrollbar */
+  scrollbar-width: none;
 }
 
 .slider::-webkit-scrollbar {
-  display: none; /* Chrome : cache scrollbar */
+  display: none;
 }
 </style>

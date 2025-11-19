@@ -1,6 +1,10 @@
 package org.ultimateam.apiultimate.service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
@@ -52,7 +56,21 @@ public class EquipeService {
      *
      * @param id L'identifiant de l'équipe à supprimer.
      */
-    public void deleteById(Long id) { equipeRepository.deleteById(id); }
+    public void deleteById(Long id) {
+        if (!equipeRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'equipe n'existe pas");
+        }
+        equipeRepository.deleteById(id);
+    }
+
+    public Equipe editName(EquipeNameDTO equipedto, long idEquipe) {
+        Equipe equipe = getById(idEquipe);
+        if (equipe == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'équipe n'existe pas");
+        }
+        equipe.setNomEquipe(equipedto.getNomEquipe());
+        return equipeRepository.save(equipe);
+    }
 
     public List<Indisponibilite> getIndisponibilites(Long equipeId) {
         Equipe equipe = getById(equipeId);

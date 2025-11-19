@@ -28,14 +28,14 @@ public class Indisponibilite {
 
     @JsonProperty("dateDebut")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime date_debut_indisponibilite;
+    private LocalDateTime dateDebutIndisponibilite;
     @JsonProperty("dateFin")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime date_fin_indisponibilite;
+    private LocalDateTime dateFinIndisponibilite;
 
-    public Indisponibilite(LocalDateTime date_debut_indisponibilite, LocalDateTime date_fin_indisponibilite, Equipe equipe){
-        this.date_debut_indisponibilite = date_debut_indisponibilite;
-        this.date_fin_indisponibilite = date_fin_indisponibilite;
+    public Indisponibilite(LocalDateTime dateDebutIndisponibilite, LocalDateTime dateFinIndisponibilite, Equipe equipe){
+        this.dateDebutIndisponibilite = dateDebutIndisponibilite;
+        this.dateFinIndisponibilite = dateFinIndisponibilite;
         this.equipe = equipe;
     }
 }
