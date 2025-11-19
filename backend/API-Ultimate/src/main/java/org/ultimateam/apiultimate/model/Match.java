@@ -36,8 +36,7 @@ public class Match {
     /**
     @ManyToOne
     @JoinColumn(name = "id_competition")
-    private Competition id_competition;
-
+    private Competition id_competition;*/
 
     private long scoreEquipe1;
     private long scoreEquipe2;
