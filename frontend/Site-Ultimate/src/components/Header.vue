@@ -1,11 +1,19 @@
 <script setup>
 import Button from './Bouton.vue'
 import { RouterLink } from 'vue-router'
+
+const clickhome = () => {
+  router.push("/")
+}
+
 </script>
 
 <template>
   <header class="header">
-    <h1>UltiMATE</h1>
+    <router-link to="/" active-class="no-active-style">
+      <h1 class="logo">UltiMATE</h1>
+    </router-link>
+
     <nav>
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
       <RouterLink to="/Equipe" class="nav-link">Equipe</RouterLink>
@@ -43,6 +51,11 @@ nav {
 .router-link-active {
   color: #515151;
   font-weight: bold;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
 

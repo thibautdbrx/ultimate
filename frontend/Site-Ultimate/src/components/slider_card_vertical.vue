@@ -13,22 +13,26 @@ let pauseTimeout;
 let paused = false;
 
 // ----- Auto-scroll -----
+
+let virtualPos = 0;
+
 function autoScroll() {
   if (!slider.value) return;
 
   if (!paused) {
-    slider.value.scrollTop += direction * props.speed;
+    virtualPos += direction * props.speed; // valeur décimale
+    slider.value.scrollTop = virtualPos;   // arrondi automatiquement
+  }
 
-    // bas → change direction
+
+  // haut → change direction
     if (slider.value.scrollTop + slider.value.clientHeight >= slider.value.scrollHeight) {
       direction = -1;
     }
-
-    // haut → change direction
     if (slider.value.scrollTop <= 0) {
       direction = 1;
+
     }
-  }
 
   frame = requestAnimationFrame(autoScroll);
 }
@@ -78,6 +82,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem;
+  align-items: center;
 
   scrollbar-width: none; /* Firefox : cache scrollbar */
 }
