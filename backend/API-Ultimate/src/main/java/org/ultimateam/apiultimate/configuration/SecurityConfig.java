@@ -1,6 +1,7 @@
 package org.ultimateam.apiultimate.configuration;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,6 +27,10 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtFilter jwtFilter;
 
+    @Value("${app.security.enabled}")
+    private boolean securityEnabled;
+
+
     @Bean //outil pour crypter les mdp
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,10 +51,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // --- MODE OUVERT (DEV)---
+        if (!securityEnabled) {
+            return http
+                    .csrf(AbstractHttpConfigurer::disable)
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) //tout le monde est accepté
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .build();
+        }
+
+        // --- MODE SÉCURISÉ ---
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**").permitAll()  // Les URL /api/auth/**... sont public
+                        auth.requestMatchers("/api/auth/**").permitAll()
 
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/equipe/**",
@@ -58,22 +74,20 @@ public class SecurityConfig {
                                         "/documentation/**",
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",
-                                        "/api/match/**").permitAll() // les GET sont publics
+                                        "/api/match/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,
                                         "/api/equipe/**",
                                         "/api/competition/**",
-                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN") // seuls les admins peuvent modifier ou supprimer
+                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers(HttpMethod.PUT,
                                         "/api/equipe/**",
                                         "/api/competition/**",
-                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN") // seuls les admins peuvent modifier ou supprimer
+                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers(HttpMethod.DELETE,
                                         "/api/equipe/**",
                                         "/api/competition/**",
-                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN")// seuls les admins peuvent modifier ou supprimer
+                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN")
 
-                                // les Arbitres doivent pouvoir gérer les matchs.
-                                //TODO a changer en fonction de ce que dois gérer un arbitre
                                 .requestMatchers(HttpMethod.POST,
                                         "/api/match/**").hasAnyAuthority("ROLE_ADMIN","ROLE_ARBITRE")
                                 .requestMatchers(HttpMethod.PUT,
@@ -81,12 +95,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE,
                                         "/api/match/**").hasAnyAuthority("ROLE_ADMIN","ROLE_ARBITRE")
 
-
-
-
-                                .anyRequest().authenticated() // les autres doivent etre authentifiées
+                                .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //jamais créer de sessin, on a une api Stateless
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
