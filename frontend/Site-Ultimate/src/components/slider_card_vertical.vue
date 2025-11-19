@@ -13,6 +13,7 @@ let pauseTimeout;
 let paused = false;
 
 // ----- Auto-scroll -----
+
 let virtualPos = 0;
 
 function autoScroll() {
@@ -23,13 +24,15 @@ function autoScroll() {
     slider.value.scrollTop = virtualPos;   // arrondi automatiquement
   }
 
-  // limites haut/bas
-  if (slider.value.scrollTop + slider.value.clientHeight >= slider.value.scrollHeight) {
-    direction = -1;
-  }
-  if (slider.value.scrollTop <= 0) {
-    direction = 1;
-  }
+
+  // haut → change direction
+    if (slider.value.scrollTop + slider.value.clientHeight >= slider.value.scrollHeight) {
+      direction = -1;
+    }
+    if (slider.value.scrollTop <= 0) {
+      direction = 1;
+
+    }
 
   frame = requestAnimationFrame(autoScroll);
 }
