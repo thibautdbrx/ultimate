@@ -23,9 +23,14 @@ public class ParticipationController {
         return participationService.getAll();
     }
 
-    @GetMapping("{id}")
-    public Participation getParticipationById(@PathVariable Long id) {
-        return participationService.getParticipationById(id);
+    @GetMapping("{tournoisid}")
+    public List<Participation> getParticipationByTournoisId(@PathVariable Long tournoisid) {
+        return participationService.getParticipationByTournoisId(tournoisid);
+    }
+
+    @GetMapping("{equipeid}")
+    public List<Participation> getParticipationByEquipeId(@PathVariable Long equipeid) {
+        return participationService.getParticipationByEquipeId(equipeid);
     }
 
     @PostMapping

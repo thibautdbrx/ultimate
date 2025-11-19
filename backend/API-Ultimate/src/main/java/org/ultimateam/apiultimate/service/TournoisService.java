@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Match;
 import org.ultimateam.apiultimate.model.Tournois;
+import org.ultimateam.apiultimate.repository.ParticipationRepository;
 import org.ultimateam.apiultimate.repository.TournoisRepository;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.List;
 public class TournoisService {
 
     private final TournoisRepository tournoisRepository;
+    private final ParticipationRepository participationRepository;
 
-    public TournoisService(TournoisRepository tournoisRepository) {
+    public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository) {
         this.tournoisRepository = tournoisRepository;
+        this.participationRepository = participationRepository;
     }
 
     public List<Tournois> getAllTournois() {
@@ -32,17 +35,16 @@ public class TournoisService {
     public void deleteTournoisById(Long id) {
         tournoisRepository.deleteById(id);
     }
-/**
+
     public void genererTournois(Long idTournois) {
         genererRoundRobin(idTournois);
     }
 
     public void genererRoundRobin(Long idTournois) {
-        /**
-         *
-         * Tournois tournois = getTournoisById(idTournois);
-        List<Equipe> liste_equipe;
-        int nb_equipe;
+
+        Tournois tournois = getTournoisById(idTournois);
+        List<Equipe> liste_equipe = participationRepository.findById_TournoisId(idTournois).get(0);
+        int nb_equipe = participationRepository.findById_TournoisId(idTournois).size();
 
         if (nb_equipe % 2 != 0) {
             nb_equipe = nb_equipe + 1;
@@ -55,6 +57,6 @@ public class TournoisService {
             Match match = new Match();
         }
     }
-        */
+
 }
 

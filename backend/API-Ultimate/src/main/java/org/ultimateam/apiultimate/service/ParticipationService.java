@@ -15,7 +15,9 @@ public class ParticipationService {
 
     public List<Participation> getAll(){return participationRepository.findAll();}
 
-    public Participation getParticipationById(Long idTournois){return participationRepository.findById(idTournois).orElse(null);}
+    public List<Participation> getParticipationByTournoisId(Long idTournois){return participationRepository.findById_TournoisId(idTournois);}
+
+    public List<Participation> getParticipationByEquipeId(Long idEquipe){return participationRepository.findById_EquipeId(idEquipe);}
 
     public Participation save(Participation participation){return participationRepository.save(participation);}
 
