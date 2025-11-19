@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class ParticipationId implements Serializable {
+
     private Long idEquipe;
     private Long idCompetition;
 }

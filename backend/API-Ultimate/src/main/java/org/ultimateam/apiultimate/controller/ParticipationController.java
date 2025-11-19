@@ -40,4 +40,6 @@ public class ParticipationController {
 
     @PostMapping("{id}")
     public void deleteParticipation(@PathVariable Long id) {participationService.deleteById(id);}
+
+
 }

@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
@@ -9,13 +10,16 @@ import org.ultimateam.apiultimate.service.TournoisService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/Tournois")
+@RequestMapping("/api/tournois")
 public class TournoisController {
 
-    private TournoisService tournoisService;
+
+    private final TournoisService tournoisService;
 
     @Autowired
-    public TournoisController(@Lazy TournoisController TournoisService) { this.tournoisService = tournoisService; }
+    public TournoisController(TournoisService tournoisService) {
+        this.tournoisService = tournoisService;
+    }
 
     @GetMapping
     public List<Tournois> findAll() { return (List<Tournois>) tournoisService.getAllTournois(); }

@@ -41,7 +41,7 @@ public class TournoisService {
     }
 
     public void genererRoundRobin(Long idTournois) {
-
+/**
         Tournois tournois = getTournoisById(idTournois);
         List<Equipe> liste_equipe = participationRepository.findById_TournoisId(idTournois).get(0);
         int nb_equipe = participationRepository.findById_TournoisId(idTournois).size();
@@ -55,7 +55,7 @@ public class TournoisService {
 
         for (int x = 1; x <= nb_round/2+1; x++) {
             Match match = new Match();
-        }
+        } */
     }
 
 }
