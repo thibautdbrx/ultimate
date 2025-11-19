@@ -33,8 +33,9 @@ public abstract class Competition {
     private LocalDateTime date_debut;
     private LocalDateTime date_fin;
 
-    @OneToMany(mappedBy = "id_competition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Match> matchs = new ArrayList<>();
+    /**
+    @OneToMany(mappedBy = "idCompetition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Match> matchs = new ArrayList<>();*/
 
     public Competition(Genre genre, Format format, LocalDateTime date_debut, LocalDateTime date_fin) {
         this.genre = genre;
