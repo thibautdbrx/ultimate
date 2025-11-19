@@ -1,5 +1,5 @@
 <script setup>
-import Form_inscription from '../components/form_inscription.vue'
+import Form_inscription from '../components/Form_inscription.vue'
 </script>
 
 <template>
