@@ -1,22 +1,22 @@
 <script setup>
-import Form_connexion from '../components/form_connexion.vue'
+import Form_inscription from '../components/form_inscription.vue'
 </script>
 
 <template>
-  <div class="login_page">
-    <div class="login-container">
-      <h3>Connexion Administrateur</h3>
+  <div class="signup_page">
+    <div class="signup-container">
+      <h3>Inscription Administrateur</h3>
       <p id="text_info">
-        Connectez-vous pour gérer les équipes, compétitions et matchs
+        Créez un compte pour gérer les équipes, compétitions et matchs
       </p>
 
-      <Form_connexion />
+      <Form_inscription />
     </div>
   </div>
 </template>
 
 <style scoped>
-.login_page {
+.signup_page {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,7 +25,7 @@ import Form_connexion from '../components/form_connexion.vue'
   background-color: #f5f7fb;
 }
 
-.login-container {
+.signup-container {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -40,7 +40,7 @@ h3 {
   color: #222;
 }
 
-.text_info {
+#text_info {
   color: #666;
   font-size: 0.9rem;
   margin-bottom: 1.5rem;

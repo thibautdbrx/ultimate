@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_coupe.jpg"
@@ -6,10 +6,9 @@ import ImageFond from "../assets/img/img_coupe.jpg"
 const router = useRouter()
 
 // Liste des compétitions récupérées depuis ton API
-const competitions = ref<{ id: number; name: string; teams: number; image: string }[]>([])
-
+const competitions = ref([]) // JS pur, tableau vide initial
 const loading = ref(true)
-const error = ref<string | null>(null)
+const error = ref(null)
 
 // Récupération des compétitions
 onMounted(() => {
@@ -29,6 +28,7 @@ onMounted(() => {
       })
 })
 
+// Valeurs par défaut pour tests
 competitions.value = [
   {id: 1, name: 'Championnat National', teams: 12, image: ImageFond},
   {id: 2, name: 'Coupe Régionale', teams: 8, image: ImageFond},
@@ -44,15 +44,15 @@ competitions.value = [
   {id: 12, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
   {id: 13, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
   {id: 14, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-
 ]
 loading.value = false
 
 // Redirection vers la page d'une compétition
-function goToCompetition(id: number) {
+function goToCompetition(id) { // JS pur, plus de :number
   router.push({ name: 'Competition-details', params: { id } })
 }
 </script>
+
 
 <template>
   <main class="competitions">

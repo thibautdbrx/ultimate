@@ -1,16 +1,16 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue";
 import CardMatch from "@/components/card_match.vue";
 
 const route = useRoute()
-const competitionId = route.params.id as string
+const competitionId = route.params.id // JS pur, plus de 'as string'
 
-const competition = ref<{ name: string } | null>()
-const matches = ref<{ id: number; team1: string; team2: string; score1: number; score2: number; date: string }[]>([])
+const competition = ref(null) // JS pur, infère null ou objet
+const matches = ref([])       // JS pur, tableau vide initial
 const loading = ref(true)
-const error = ref<string | null>(null)
+const error = ref(null)       // JS pur
 
 onMounted(() => {
   fetch(`https://api.exemple.com/competitions/${competitionId}`)
@@ -30,19 +30,19 @@ onMounted(() => {
       })
 })
 
-
+// Valeurs par défaut pour tests
 matches.value = [
   { id: 1, team1: 'Polytech', team2: 'Mines', score1: 3, score2: 1, date: '2025-11-05' },
   { id: 2, team1: 'Centrale', team2: 'INSA', score1: 2, score2: 2, date: '2025-11-07' },
   { id: 3, team1: 'ESIEA', team2: 'Polytech', score1: null, score2: null, date: '2025-11-15' },
   { id: 4, team1: 'CACA', team2: 'Polytech', score1: 20, score2: 3, date: '2025-10-15' },
 ]
-competition.value = {name:"Nom de la compet"}
+competition.value = { name: "Nom de la compet" }
 loading.value = false
 
-const now = new Date() // la date et l'heure actuelles
-
+const now = new Date()
 </script>
+
 
 <template>
   <main class="competition-details">
