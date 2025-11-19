@@ -2,7 +2,8 @@
 defineProps({
   nom: String,
   age: String,
-  sexe: String
+  sexe: String,
+  background:String,
 })
 </script>
 

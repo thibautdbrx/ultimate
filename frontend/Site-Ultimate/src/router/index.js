@@ -6,6 +6,7 @@ import Equipe from '../views/Equipe.vue'
 import CompetitionDetail from '../views/CompetitionDetail.vue'
 import EquipeDetail from '../views/EquipeDetail.vue'
 import Inscription from "@/views/Inscription.vue";
+import Match from "@/views/match.vue";
 
 
 
@@ -17,6 +18,7 @@ const routes = [
     { path: '/Competition', component: Competition },
     { path: '/Competitions/:id', name: 'Competition-details', component:CompetitionDetail } ,
     { path: '/Equipe/:id/:nom',name:'Equipe-details', component: EquipeDetail } ,
+    { path: '/match/:id', component: Match },
 ]
 
 const router = createRouter({
