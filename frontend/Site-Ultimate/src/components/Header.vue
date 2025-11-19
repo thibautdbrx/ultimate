@@ -3,8 +3,9 @@ import Button from './Bouton.vue'
 import { RouterLink } from 'vue-router'
 
 const clickhome = () => {
-    router.push("/")
+  router.push("/")
 }
+
 </script>
 
 <template>

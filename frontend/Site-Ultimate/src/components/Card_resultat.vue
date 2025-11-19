@@ -33,7 +33,7 @@ const couleurPointsNom2 = computed(() => {
         </div>
 
         <div class="equipe">
-          <p :class="['nom_equipe', couleurPointsNom1]">{{ nom2 }}</p>
+          <p :class="['nom_equipe', couleurPointsNom2]">{{ nom2 }}</p>
           <p class="points">{{ points2 }}</p>
         </div>
 

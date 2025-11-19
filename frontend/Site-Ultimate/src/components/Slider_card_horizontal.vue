@@ -1,136 +1,143 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue'
+import { ref, onMounted, onBeforeUnmount, defineProps } from "vue";
 
 const props = defineProps({
-  autoScroll: { type: Boolean, default: false },
-  autoScrollDelay: { type: Number, default: 1000 }
-})
+  speed: { type: Number, default: 0.5 },
+  pauseDelay: { type: Number, default: 500 },
+  bounceOvershoot: { type: Number, default: 20 }
+});
 
-const slider = ref(null)
+const slider = ref(null);
 
-let isDown = false
-let startX = 0
-let scrollLeft = 0
-let autoScrollSpeed = 0.5
-let animationFrameId
-let autoScrollTimeout
-const paused = ref(false)
+let direction = 1;
+let virtualPos = 0;
+let paused = false;
+let frame;
+let resumeTimeout;
 
-// --- Drag ---
-const handleMouseDown = (e) => {
-  isDown = true
-  if (!slider.value) return
-  slider.value.classList.add('active-drag')
-  startX = e.pageX - slider.value.offsetLeft
-  scrollLeft = slider.value.scrollLeft
-
-  paused.value = true
-  if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
+// -------- PAUSE --------
+function pause() {
+  paused = true;
+  if (resumeTimeout) clearTimeout(resumeTimeout);
 }
 
-const handleMouseUp = () => {
-  isDown = false
-  if (slider.value) slider.value.classList.remove('active-drag')
+// -------- REPRISE --------
+function resumeAfterDelay() {
+  if (resumeTimeout) clearTimeout(resumeTimeout);
 
-  if (props.autoScroll) {
-    if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-    autoScrollTimeout = setTimeout(() => {
-      paused.value = false
-    }, props.autoScrollDelay)
-  }
+  resumeTimeout = setTimeout(() => {
+    //  resynchroniser avant de reprendre
+    if (slider.value) {
+      virtualPos = slider.value.scrollLeft;
+    }
+    paused = false;
+  }, props.pauseDelay);
 }
 
-const handleMouseMove = (e) => {
-  if (!isDown || !slider.value) return
-  e.preventDefault()
-  const x = e.pageX - slider.value.offsetLeft
-  const walk = (x - startX) * 1.5
-  slider.value.scrollLeft = scrollLeft - walk
-  checkInfiniteScroll()
+// -------- AUTO-SCROLL --------
+function loop() {
+  const el = slider.value;
+  if (!el) return frame = requestAnimationFrame(loop);
+
+  const maxScroll = el.scrollWidth - el.clientWidth;
+
+  if (!paused) {
+    virtualPos += direction * props.speed;
+
+    // rebond droit
+    if (virtualPos > maxScroll) {
+      virtualPos = Math.min(virtualPos, maxScroll + props.bounceOvershoot);
+      direction = -1;
+    }
+
+    // rebond gauche
+    if (virtualPos < 0) {
+      virtualPos = Math.max(virtualPos, -props.bounceOvershoot);
+      direction = 1;
+    }
+
+    el.scrollLeft = virtualPos;
+  }
+
+  frame = requestAnimationFrame(loop);
 }
 
-// --- Boucle infinie ---
-const checkInfiniteScroll = () => {
-  if (!slider.value) return
-  const totalWidth = slider.value.scrollWidth
-  if (slider.value.scrollLeft >= totalWidth / 2) {
-    slider.value.scrollLeft -= totalWidth / 2
-  } else if (slider.value.scrollLeft <= 0) {
-    slider.value.scrollLeft += totalWidth / 2
-  }
+// -------- INTERACTIONS UTILISATEUR --------
+function syncAndPause() {
+  if (!slider.value) return;
+
+  pause();
+
+  // synchroniser virtualPos dès que l’utilisateur touche au scroll
+  virtualPos = slider.value.scrollLeft;
+
+  resumeAfterDelay();
 }
 
-// --- Auto-scroll continu ---
-const autoScrollLoop = () => {
-  if (!props.autoScroll) {
-    animationFrameId = requestAnimationFrame(autoScrollLoop)
-    return
-  }
+function onPointerEnter() {
+  pause();
+  // sync pour éviter les décalages
+  if (slider.value) virtualPos = slider.value.scrollLeft;
+}
 
-  if (!paused.value && !isDown && slider.value) {
-    slider.value.scrollLeft += autoScrollSpeed
-    checkInfiniteScroll()
-  }
-
-  animationFrameId = requestAnimationFrame(autoScrollLoop)
+function onPointerLeave() {
+  resumeAfterDelay();
 }
 
 onMounted(() => {
-  if (slider.value && props.autoScroll) {
-    const len = slider.value.children.length
-    for (let i = 0; i < len; i++) {
-      slider.value.appendChild(slider.value.children[i].cloneNode(true))
-    }
-  }
+  if (slider.value) virtualPos = slider.value.scrollLeft;
 
-  document.addEventListener('mouseup', handleMouseUp)
+  frame = requestAnimationFrame(loop);
 
-  if (props.autoScroll) {
-    paused.value = false
-    requestAnimationFrame(autoScrollLoop)
-  }
-})
+  const el = slider.value;
+  if (!el) return;
+
+  el.addEventListener("pointerenter", onPointerEnter, { passive: true });
+  el.addEventListener("pointerleave", onPointerLeave, { passive: true });
+
+  // utilisateur déplace : sync + pause
+  el.addEventListener("wheel", syncAndPause, { passive: true });
+  el.addEventListener("mousedown", syncAndPause, { passive: true });
+  el.addEventListener("touchstart", syncAndPause, { passive: true });
+  el.addEventListener("touchmove", syncAndPause, { passive: true });
+});
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(animationFrameId)
-  document.removeEventListener('mouseup', handleMouseUp)
-  if (autoScrollTimeout) clearTimeout(autoScrollTimeout)
-})
+  cancelAnimationFrame(frame);
+  clearTimeout(resumeTimeout);
+
+  if (!slider.value) return;
+  const el = slider.value;
+
+  el.removeEventListener("pointerenter", onPointerEnter);
+  el.removeEventListener("pointerleave", onPointerLeave);
+  el.removeEventListener("wheel", syncAndPause);
+  el.removeEventListener("mousedown", syncAndPause);
+  el.removeEventListener("touchstart", syncAndPause);
+  el.removeEventListener("touchmove", syncAndPause);
+});
 </script>
 
 <template>
-  <section
-      ref="slider"
-      class="slider"
-      @mousedown="handleMouseDown"
-      @mouseup="handleMouseUp"
-      @mousemove="handleMouseMove"
-      @mouseleave="handleMouseUp"
-  >
+  <section class="slider" ref="slider">
     <slot />
   </section>
 </template>
 
 <style scoped>
 .slider {
+  width: 100%;
+  overflow-x: auto;
   display: flex;
-  flex-direction: row;
   gap: 1.5rem;
-  padding: 2rem;
-  overflow-x: scroll;
+  padding: 1rem;
+  flex-direction: row;
+
   scrollbar-width: none;
-  -ms-overflow-style: none;
-  cursor: grab;
-  flex-wrap: nowrap;
-  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .slider::-webkit-scrollbar {
   display: none;
-}
-
-.slider.active-drag {
-  cursor: grabbing;
-  user-select: none;
 }
 </style>

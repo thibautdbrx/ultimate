@@ -4,6 +4,7 @@ defineProps({
   age: String,
   sexe: String,
   background:String,
+
 })
 </script>
 

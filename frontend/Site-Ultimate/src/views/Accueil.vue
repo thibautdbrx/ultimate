@@ -108,6 +108,7 @@ onMounted(async () => {
   text-align: center;
 }
 
+
 .accueil_section{
   display: flex;
   flex-direction: column;
