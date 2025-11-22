@@ -1,91 +1,101 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import CardJoueur from "@/components/Card_joueur.vue"
 
-import Card_joueur from "@/components/card_joueur.vue";
-import SliderVertical from "@/components/slider_card_vertical.vue";
+const route = useRoute()
+const equipeId = route.params.id
 
-// --- Récupération des paramètres ---
-const route = useRoute();
-const teamId = Number(route.params.id);
-const teamName = String(route.params.nom);
-console.log(teamName);
+const loading = ref(true)
+const error = ref(null)
 
-// --- State ---
-const loading = ref(true);
-const joueurs = ref([]);
-const error = ref(null);
+const equipe = ref(null)
+const joueurs = ref([])
 
 onMounted(async () => {
-  loading.value = true;
-
   try {
-    const res = await fetch(`/api/joueur/equipe/${teamId}`);
-    if (!res.ok) throw new Error("Erreur API : " + res.status);
+    //Récupérer l'équipe
+    const resEquipe = await fetch(`/api/equipe/${equipeId}`)
+    if (!resEquipe.ok) throw new Error("Erreur API équipe")
 
-    joueurs.value = await res.json();
+    equipe.value = await resEquipe.json()
+
+    //Récupérer les joueurs de l'équipe
+    const resJoueurs = await fetch(`/api/joueur/equipe/${equipeId}`)
+    if (!resJoueurs.ok) throw new Error("Erreur API joueurs")
+
+    joueurs.value = await resJoueurs.json()
+
+    loading.value = false
 
   } catch (err) {
-    console.error(err);
-    error.value = "Impossible de charger les joueurs.";
+    console.error(err)
+    error.value = "Impossible de charger les informations de l'équipe."
+    loading.value = false
   }
-
-  loading.value = false;
-});
+})
 </script>
 
 <template>
-  <main>
-    <h2 class="title">{{ teamName }}</h2>
+  <main class="equipe-page">
 
-    <div class="layout">
+    <!-- États -->
+    <div v-if="loading" class="state-msg">Chargement...</div>
+    <div v-else-if="error" class="state-msg error">{{ error }}</div>
 
-      <!-- Colonne gauche -->
-      <div class="left">
-        <p v-if="loading">Chargement…</p>
-        <p v-if="error">{{ error }}</p>
+    <div v-else>
+      <!-- Titre -->
+      <h2 class="titre">{{ equipe.nomEquipe }}</h2>
 
-        <SliderVertical v-if="!loading && joueurs.length">
-          <Card_joueur
-              v-for="j in joueurs"
-              :nom="(j.nomJoueur+' '+j.prenomJoueur)"
-              :genre="j.genre"
-          />
-        </SliderVertical>
+      <!-- Description -->
+      <p class="description">
+        {{ equipe.descriptionEquipe || "Aucune description disponible." }}
+      </p>
 
-        <p v-if="!loading && joueurs.length === 0">
-          Aucun joueur dans cette équipe.
-        </p>
+      <!-- Grille des joueurs -->
+      <div class="joueurs-grid">
+        <CardJoueur
+            v-for="j in joueurs"
+
+            :nom="j.nomJoueur"
+            :prenom="j.prenomJoueur"
+            :genre="j.genre"
+        />
       </div>
-
-      <div class="right">
-        <h3>Informations de l'équipe</h3>
-        <p>blabla</p>
-      </div>
-
     </div>
   </main>
 </template>
 
 <style scoped>
-.title {
+.equipe-page {
+  padding: 2rem;
   text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1.8rem;
 }
 
-.layout {
+.titre {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+  color: #666;
+}
+
+/* Grille responsive */
+.joueurs-grid {
   display: flex;
-  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
-.left {
-  width: 25%;
-  min-width: 220px;
+.state-msg {
+  color: #666;
 }
-
-.right {
-  flex: 1;
-  padding-right: 2rem;
+.state-msg.error {
+  color: #c0392b;
 }
 </style>

@@ -32,9 +32,7 @@ defineProps({
   transition: transform 0.2s ease;
 }
 
-.card_info:hover {
-  transform: translateY(4px);
-}
+
 
 .card-content {
   display: flex;
