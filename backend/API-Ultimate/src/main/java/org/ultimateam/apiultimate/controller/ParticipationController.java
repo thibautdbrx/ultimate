@@ -23,22 +23,22 @@ public class ParticipationController {
         return participationService.getAll();
     }
 
-    @GetMapping("{tournoisid}")
-    public List<Participation> getParticipationByTournoisId(@PathVariable Long tournoisid) {
-        return participationService.getParticipationByTournoisId(tournoisid);
+    @GetMapping("/competition/{idCompetition}")
+    public List<Participation> getParticipationByCompetitionId(@PathVariable Long idCompetition) {
+        return participationService.getParticipationByCompetitionId(idCompetition);
     }
 
-    @GetMapping("{equipeid}")
-    public List<Participation> getParticipationByEquipeId(@PathVariable Long equipeid) {
-        return participationService.getParticipationByEquipeId(equipeid);
+    @GetMapping("/equipe/{idEquipe}")
+    public List<Participation> getParticipationByEquipeId(@PathVariable Long idEquipe) {
+        return participationService.getParticipationByEquipeId(idEquipe);
     }
 
-    @PostMapping
-    public Participation createParticipation(@RequestBody Participation participation) {
-        return participationService.save(participation);
+    @PostMapping("/equipe/{idEquipe}/competition/{idCompetition}")
+    public Participation createParticipation(@PathVariable Long idEquipe, @PathVariable Long idCompetition) {
+        return participationService.addParticipation(idEquipe, idCompetition);
     }
 
-    @PostMapping("{id}")
+    @DeleteMapping("/{id}")
     public void deleteParticipation(@PathVariable Long id) {participationService.deleteById(id);}
 
 

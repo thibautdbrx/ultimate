@@ -15,4 +15,9 @@ public class Participation {
     @EmbeddedId
     private ParticipationId id;
 
+
+    public Participation(Equipe equipe, Competition competition) {
+        this.id = new ParticipationId(equipe.getIdEquipe(), competition.getIdCompetition());
+    }
+
 }

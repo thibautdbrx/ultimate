@@ -23,7 +23,7 @@ public class EquipeController {
     public EquipeController(EquipeService equipeService) { this.equipeService = equipeService; }
 
     @GetMapping
-    public List<Equipe> findAll() { return (List<Equipe>) equipeService.findAll(); }
+    public List<Equipe> findAll() { return equipeService.findAll(); }
 
     @GetMapping("/{idEquipe}")
     public Equipe getById(@PathVariable long idEquipe) { return equipeService.getById(idEquipe); }
@@ -38,6 +38,11 @@ public class EquipeController {
 
     @PatchMapping("/{idEquipe}/name")
     public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) { return equipeService.editName(equipedto, idEquipe); }
+
+    @PatchMapping("/updategenre")
+    public void updateGenre(){
+        equipeService.updateAllGenre(equipeService.findAll());
+    }
 
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }

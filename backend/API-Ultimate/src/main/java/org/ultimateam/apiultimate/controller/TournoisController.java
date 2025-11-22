@@ -28,6 +28,9 @@ public class TournoisController {
     public Tournois findById(@PathVariable Long id) { return tournoisService.getTournoisById(id); }
 
     @PostMapping
+    public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+
+    @PostMapping("/tournoi")
     public Tournois createTournois(@RequestBody Tournois Tournois) { return tournoisService.saveTournois(Tournois); }
 
     @DeleteMapping("/{id}")
