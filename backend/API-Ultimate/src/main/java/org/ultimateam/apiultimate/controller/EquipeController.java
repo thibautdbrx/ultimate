@@ -25,7 +25,7 @@ public class EquipeController {
     @GetMapping
     public List<Equipe> findAll() { return (List<Equipe>) equipeService.findAll(); }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{idEquipe}")
     public Equipe getById(@PathVariable long idEquipe) { return equipeService.getById(idEquipe); }
 
     @GetMapping("/{idEquipe}/indisponibilite")

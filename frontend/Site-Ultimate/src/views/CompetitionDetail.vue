@@ -13,7 +13,7 @@ const loading = ref(true)
 const error = ref(null)       // JS pur
 
 onMounted(() => {
-  fetch(`https://api.exemple.com/competitions/${competitionId}`)
+  fetch(`api/competitions/${competitionId}`)
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
         return res.json()
