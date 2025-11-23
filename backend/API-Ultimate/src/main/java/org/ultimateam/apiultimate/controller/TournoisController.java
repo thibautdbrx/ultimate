@@ -30,6 +30,9 @@ public class TournoisController {
     @GetMapping("/{id}")
     public Tournois findById(@PathVariable Long id) { return tournoisService.getTournoisById(id); }
 
+    @GetMapping("{idTournoi}/matchs")
+    public List<Match> findMatches(@PathVariable Long idTournoi) { return tournoisService.getMatchesByTournois(idTournoi);}
+
     @PostMapping
     public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
 

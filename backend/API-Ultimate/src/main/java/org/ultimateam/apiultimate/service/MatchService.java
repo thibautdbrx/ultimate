@@ -7,6 +7,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.model.Match;
 import java.time.Duration;
@@ -27,10 +28,12 @@ public class MatchService {
     private final EquipeService equipeService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
     private final Map<Long, ScheduledFuture<?>> matchSchedulers = new HashMap<>();
+    private final TournoisService tournoisService;
 
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService) {
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
+        this.tournoisService = tournoisService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -175,4 +178,19 @@ public class MatchService {
         }
         finirMatchSafe(match);
     }
+
+    /**
+    public Match testMatch(){
+        Match match = new Match();
+        Equipe equipe1 = equipeService.getById((long)3);
+        Equipe equipe2 = equipeService.getById((long)4);
+        match.setEquipe1(equipe1);
+        match.setEquipe2(equipe2);
+        match.setDateMatch(LocalDateTime.now());
+        Tournois tournois = tournoisService.getTournoisById((long)1);
+        match.setIdCompetition(tournois);
+        matchRepository.save(match);
+        return match;
+    }
+     */
 }

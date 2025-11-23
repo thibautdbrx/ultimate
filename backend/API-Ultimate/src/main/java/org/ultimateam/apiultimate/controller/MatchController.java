@@ -39,6 +39,10 @@ public class MatchController {
         return matchService.creerMatch(matchDTO);
     }
 
+    /**
+    @PostMapping("/test")
+    public Match testMatch(){ return matchService.testMatch();}
+    */
 
     @PutMapping("/{id}/start")
     public Match startMatch(@PathVariable Long id) {
