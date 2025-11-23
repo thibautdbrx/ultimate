@@ -33,6 +33,9 @@ public class EquipeController {
         return equipeService.getIndisponibilites(idEquipe);
     }
 
+    @GetMapping("/{idEquipe}/nbjoueurs")
+    public int getNbJoueurs(@PathVariable long idEquipe) { return equipeService.getNbJoueurs(idEquipe); }
+
     @PostMapping
     public Equipe createEquipe(@RequestBody Equipe equipe) { return equipeService.save(equipe); }
 

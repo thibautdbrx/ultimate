@@ -8,6 +8,7 @@ import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
+import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,14 +17,16 @@ import java.util.List;
 public class EquipeService {
 
     private final EquipeRepository equipeRepository;
+    private final JoueurRepository joueurRepository;
 
     /**
      * Constructeur pour l'injection de la dépendance EquipeRepository.
      *
      * @param equipeRepository Le repository pour l'accès aux données des équipes.
      */
-    public EquipeService(EquipeRepository equipeRepository) {
+    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository) {
         this.equipeRepository = equipeRepository;
+        this.joueurRepository = joueurRepository;
     }
 
     /**
@@ -114,5 +117,9 @@ public class EquipeService {
         }
 
         return equipeRepository.save(equipe);
+    }
+
+    public int getNbJoueurs(Long equipeId) {
+        return joueurRepository.countByEquipe_IdEquipe(equipeId);
     }
 }
