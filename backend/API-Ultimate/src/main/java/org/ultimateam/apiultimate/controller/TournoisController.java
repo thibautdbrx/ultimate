@@ -3,7 +3,10 @@ package org.ultimateam.apiultimate.controller;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Match;
 import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.service.TournoisService;
 
@@ -27,7 +30,16 @@ public class TournoisController {
     @GetMapping("/{id}")
     public Tournois findById(@PathVariable Long id) { return tournoisService.getTournoisById(id); }
 
+    @GetMapping("{idTournoi}/matchs")
+    public List<Match> findMatches(@PathVariable Long idTournoi) { return tournoisService.getMatchesByTournois(idTournoi);}
+
     @PostMapping
+    public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+
+    @PutMapping("/{idTournoi}/create")
+    public List<Equipe> genererMatchs(@PathVariable Long idTournoi) { return tournoisService.genererRoundRobin(idTournoi);}
+
+    @PostMapping("/tournoi")
     public Tournois createTournois(@RequestBody Tournois Tournois) { return tournoisService.saveTournois(Tournois); }
 
     @DeleteMapping("/{id}")

@@ -33,15 +33,16 @@ public class Match {
     @JoinColumn(name = "id_winner")
     private Equipe winner;
 
-    /**
+
     @ManyToOne
     @JoinColumn(name = "id_competition")
-    private Competition id_competition;*/
+    private Competition idCompetition;
 
     private long scoreEquipe1;
     private long scoreEquipe2;
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
+    private LocalDateTime dateMatch;
     @JsonIgnore
     private LocalDateTime datePause = null;
 

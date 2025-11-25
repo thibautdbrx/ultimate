@@ -31,6 +31,9 @@ public class Equipe {
     @JsonBackReference
     private List<Indisponibilite> indisponibilites = new ArrayList<>();
 
+    public enum Genre {MIXTE, FEMALE, MALE};
+    private Genre genre = null;
+
     public Equipe(String nomEquipe) {
         this.nomEquipe = nomEquipe;
     }
