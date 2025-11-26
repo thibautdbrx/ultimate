@@ -1,10 +1,14 @@
 package org.ultimateam.apiultimate.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
+import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,14 +17,16 @@ import java.util.List;
 public class EquipeService {
 
     private final EquipeRepository equipeRepository;
+    private final JoueurRepository joueurRepository;
 
     /**
      * Constructeur pour l'injection de la dépendance EquipeRepository.
      *
      * @param equipeRepository Le repository pour l'accès aux données des équipes.
      */
-    public EquipeService(EquipeRepository equipeRepository) {
+    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository) {
         this.equipeRepository = equipeRepository;
+        this.joueurRepository = joueurRepository;
     }
 
     /**
@@ -28,7 +34,7 @@ public class EquipeService {
      *
      * @return Un Itérable contenant toutes les entités Equipe.
      */
-    public Iterable<Equipe> findAll() { return equipeRepository.findAll(); }
+    public List<Equipe> findAll() { return equipeRepository.findAll(); }
 
     /**
      * Récupère une équipe spécifique en utilisant son identifiant (ID).
@@ -52,7 +58,21 @@ public class EquipeService {
      *
      * @param id L'identifiant de l'équipe à supprimer.
      */
-    public void deleteById(Long id) { equipeRepository.deleteById(id); }
+    public void deleteById(Long id) {
+        if (!equipeRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'equipe n'existe pas");
+        }
+        equipeRepository.deleteById(id);
+    }
+
+    public Equipe editName(EquipeNameDTO equipedto, long idEquipe) {
+        Equipe equipe = getById(idEquipe);
+        if (equipe == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'équipe n'existe pas");
+        }
+        equipe.setNomEquipe(equipedto.getNomEquipe());
+        return equipeRepository.save(equipe);
+    }
 
     public List<Indisponibilite> getIndisponibilites(Long equipeId) {
         Equipe equipe = getById(equipeId);
@@ -61,5 +81,45 @@ public class EquipeService {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public void updateAllGenre(List<Equipe> equipes) {
+        for (Equipe equipe : equipes) {
+            updateGenre(equipe);
+        }
+    }
+
+    public Equipe updateGenre(Equipe equipe) {
+        List<Joueur> joueurs = equipe.getJoueurs();
+
+        if (joueurs.isEmpty()) {
+            equipe.setGenre(null);
+            return equipe;
+        }
+
+        boolean allMale = true;
+        boolean allFemale = true;
+
+        for (Joueur joueur : joueurs) {
+            if (joueur.getGenre() == Joueur.Genre.MALE) {
+                allFemale = false;
+            } else if (joueur.getGenre() == Joueur.Genre.FEMALE) {
+                allMale = false;
+            }
+        }
+
+        if (allMale) {
+            equipe.setGenre(Equipe.Genre.MALE);
+        } else if (allFemale) {
+            equipe.setGenre(Equipe.Genre.FEMALE);
+        } else {
+            equipe.setGenre(Equipe.Genre.MIXTE);
+        }
+
+        return equipeRepository.save(equipe);
+    }
+
+    public int getNbJoueurs(Long equipeId) {
+        return joueurRepository.countByEquipe_IdEquipe(equipeId);
     }
 }

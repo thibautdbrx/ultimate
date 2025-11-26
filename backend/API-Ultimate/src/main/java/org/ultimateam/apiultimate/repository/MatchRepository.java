@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByDateDebutIsNull();
-    List<Match> findByDateDebutIsNotNullAndDateFinIsNull();}
+    List<Match> findByDateDebutIsNotNullAndDateFinIsNull();
+    List<Match> findByIdCompetition_IdCompetitionOrderByDateMatchAsc(long competitionId);
+}

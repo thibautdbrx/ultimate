@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.IndisponibiliteDTO;
 import org.ultimateam.apiultimate.model.Indisponibilite;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@Tag(name = "Indisponibilite", description = "Endpoints pour gérer les indisponibilités des équipes")
 @RequestMapping("/api/indisponibilite")
 public class IndisponibiliteController {
 
@@ -21,6 +23,7 @@ public class IndisponibiliteController {
     public List<IndisponibiliteDTO> getAllIndisponibilites() {
         return indisponibiliteService.getAllDTO();
     }
+
     @GetMapping("/{id}")
     public IndisponibiliteDTO getIndisponibiliteById(@PathVariable Long id) {
         return indisponibiliteService.getByIdDTO(id);
@@ -32,26 +35,19 @@ public class IndisponibiliteController {
     }
 
     @PostMapping
-    public Indisponibilite createIndisponibilite(@RequestBody IndisponibiliteDTO dto) {
+    public IndisponibiliteDTO createIndisponibilite(@RequestBody IndisponibiliteDTO dto) {
         return indisponibiliteService.addIndisponibilite(dto);
     }
 
-    @PutMapping("/{id}/{id_equipe}")
-    public IndisponibiliteDTO editEquipe(@PathVariable Long id, @PathVariable Long id_equipe) {
-        Indisponibilite updated = indisponibiliteService.editEquipe(id, id_equipe);
-        return indisponibiliteService.getByIdDTO(updated.getIdIndisponibilite());
-    }
-
     //Json = "dateDebut" : "yyyy-MM-dd HH:mm", "dateFin" : "yyyy-MM-dd HH:mm"
-    @PutMapping("/{id}")
-    public IndisponibiliteDTO updateIndisponibilite(@PathVariable Long id, @RequestBody IndisponibiliteDTO dto) {
-        Indisponibilite updated = indisponibiliteService.updateIndisponibilite(id, dto);
-        return indisponibiliteService.getByIdDTO(updated.getIdIndisponibilite());
+    @PutMapping("/{idIndisponibilite}")
+    public IndisponibiliteDTO updateIndisponibilite(@PathVariable Long idIndisponibilite, @RequestBody IndisponibiliteDTO dto) {
+        return indisponibiliteService.updateIndisponibilite(dto, idIndisponibilite);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteIndisponibilite(@PathVariable Long id) {
-        indisponibiliteService.deleteIndisponibilite(id);
+    @DeleteMapping("/{idIndisponibilite}")
+    public void deleteIndisponibilite(@PathVariable Long idIndisponibilite) {
+        indisponibiliteService.deleteIndisponibilite(idIndisponibilite);
     }
 
 

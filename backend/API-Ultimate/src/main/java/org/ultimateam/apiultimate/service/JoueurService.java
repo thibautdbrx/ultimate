@@ -1,6 +1,8 @@
 package org.ultimateam.apiultimate.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
@@ -59,6 +61,9 @@ public class JoueurService {
      * @param id L'identifiant du joueur à supprimer.
      */
     public void deleteJoueur(Long id) {
+        if (!joueurRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
+        }
         joueurRepository.deleteById(id);
     }
 
@@ -80,6 +85,7 @@ public class JoueurService {
         Equipe equipe =equipeService.getById(id_equipe);
         equipe.addJoueur(joueur);
         joueur.setEquipe(equipe);
+        equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
         return equipe;
@@ -99,6 +105,7 @@ public class JoueurService {
         Equipe equipe = equipeService.getById(id_equipe);
         equipe.removeJoueur(joueur);
         joueur.setEquipe(null);
+        equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
 

@@ -1,11 +1,22 @@
-<script setup></script>
+<script setup>
+import {ref} from 'vue'
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div id="app">
+    <Header />
+    <router-view /> <!-- C’est ici que la page actuelle s’affiche -->
+  <Footer />
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+#app{
+  background-color: #f8fafc;
+  height:100%;
+}
+
+
+</style>
