@@ -39,6 +39,11 @@ public class JoueurController {
         return joueurService.getJoueurByEquipe(idEquipe);
     }
 
+    @GetMapping("/solo")
+    public List<Joueur> getJoueurSolo() {
+        return joueurService.getJoueurSolo();
+    }
+
     @PostMapping
     public Joueur createJoueur(@RequestBody Joueur joueur) {
         return joueurService.addJoueur(joueur);
