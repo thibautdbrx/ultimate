@@ -5,13 +5,14 @@ import CardJoueur from "@/components/Card_joueur.vue"
 const props = defineProps({
   show: Boolean,
 })
+
 const emit = defineEmits(["close", "select", "nvj"])
 
 const search = ref("")
 const joueurs = ref([])
 
 onMounted(async () => {
-  const res = await fetch("/api/joueur")
+  const res = await fetch("/api/joueur/solo")
   joueurs.value = await res.json()
 })
 

@@ -6,7 +6,7 @@ const props = defineProps({
   type: String,
   placeholder: String,
   modelValue: String,
-  icon: String,
+  icon: [String,Object],
   clickable: {type: Boolean, default:true},
 })
 

@@ -104,7 +104,7 @@ const valider_ajout_equipe = async () => {
     ));
 
     alert("Équipe et joueurs mis à jour avec succès !");
-    router.push("/Equipes");
+    router.push("/Equipe");
 
   } catch (e) {
     console.error(e);
@@ -119,6 +119,7 @@ const valider_ajout_equipe = async () => {
   <main class="page-ajout">
 
     <h2>Ajouter une équipe</h2>
+    <p id="sous-titre">Creer une équipe avec minimum un joueur dedans, vous pourrais la modifier plus tard</p>
 
     <div class="form-block">
       <champs_input
@@ -216,10 +217,15 @@ const valider_ajout_equipe = async () => {
   padding: 1rem;
   border: none;
   border-radius: 8px;
-  background: #f8e72f;
+  background: #1e88e5;
   color: white;
   cursor: pointer;
   width: 80%;
 
+}
+
+#sous-titre{
+  font-size: 0.8rem;
+  color: gray;
 }
 </style>

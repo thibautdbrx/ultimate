@@ -13,7 +13,6 @@ const clickhome = () => {
     <router-link to="/" active-class="no-active-style">
       <h1 class="logo">UltiMATE</h1>
     </router-link>
-
     <nav>
       <RouterLink to="/AjouterEquipe" class="nav-link">Ajouter Equipe</RouterLink>
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
