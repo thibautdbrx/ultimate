@@ -36,6 +36,8 @@ onMounted(async () => {
     stats.value.competitions = compData.length
 
 
+    //ajouter les match fini uniquement.
+
     const matchsRes = await fetch(`/api/match`)
     const matchsData = await matchsRes.json()
     const matchs = matchsData.sort((a, b) => {

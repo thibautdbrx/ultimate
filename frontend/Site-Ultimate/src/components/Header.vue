@@ -15,6 +15,7 @@ const clickhome = () => {
     </router-link>
 
     <nav>
+      <RouterLink to="/AjouterEquipe" class="nav-link">Ajouter Equipe</RouterLink>
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
       <RouterLink to="/Equipe" class="nav-link">Equipe</RouterLink>
       <RouterLink to="/Competition" class="nav-link">Compétition</RouterLink>
