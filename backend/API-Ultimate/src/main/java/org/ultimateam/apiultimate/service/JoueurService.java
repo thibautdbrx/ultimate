@@ -91,6 +91,10 @@ public class JoueurService {
         return equipe;
     }
 
+    public List<Joueur> getJoueurSolo() {
+        return joueurRepository.findAllByEquipe_IdEquipeIsNull();
+    }
+
     /**
      * Retire un joueur d'une équipe.
      * Récupère le joueur et l'équipe, puis rompt l'association en mettant
