@@ -3,8 +3,11 @@ package org.ultimateam.apiultimate.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Match;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ultimateam.apiultimate.model.Participation;
+import org.ultimateam.apiultimate.repository.ParticipationRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,10 +35,17 @@ public class RoundRobinSchedulerServiceTest {
                 new Equipe("D")
         );
 
-        LocalDate start = LocalDate.of(2025, 1, 1);
-        LocalDate end = LocalDate.of(2025, 1, 10);
 
-        List<Match> matchs = scheduler.generateSchedule(equipes, start, end, false);
+        List<Indisponibilite> indispo = List.of(
+                new Indisponibilite(LocalDateTime.of(2025, 1, 1, 14, 30), LocalDateTime.of(2024, 1, 1, 15, 30), equipes.get(1))
+        );
+
+        LocalDate start = LocalDate.of(2025, 1, 1);
+        LocalDate end = LocalDate.of(2025, 1, 2);
+
+        TournoisService.ScheduleResult result = scheduler.generateSchedule(equipes, start, end, false, indispo);
+        List<Match> matchs = result.getMatchs();
+        List<Indisponibilite> indisponibilites = result.getIndisponibilites();
 
         // --- Vérif 1 : bon nombre de matchs ---
         assertEquals(6, matchs.size(), "Round Robin aller simple pour 4 équipes = 6 matchs");
@@ -72,6 +82,28 @@ public class RoundRobinSchedulerServiceTest {
             assertTrue(m.getTerrain() >= 1 && m.getTerrain() <= 5,
                     "Terrain invalide (doit être entre 1 et 5)");
         }
+
+        // --- Vérif 4 : tous les matchs ne sont pas pendant des indisponnibiltiés ---
+        for (Match m : matchs) {
+            LocalDateTime dt_debut = m.getDateDebut();
+            LocalDateTime dt_fin = m.getDateFin();
+
+            for (Indisponibilite indisponibilite : indisponibilites) {
+                LocalDateTime dt_d = indisponibilite.getDateDebutIndisponibilite();
+                LocalDateTime dt_f = indisponibilite.getDateFinIndisponibilite();
+
+
+                boolean test_fin_indispo = dt_f.isAfter(dt_debut) && dt_f.isBefore(dt_fin);
+                boolean test_debut_indispo = dt_d.isAfter(dt_debut) && dt_d.isBefore(dt_fin);
+
+                assertFalse(test_debut_indispo, "test_debut_indispo");
+                assertFalse(test_fin_indispo, "test_fin_indispo");
+
+            }
+
+
+
+        }
     }
 
     @Test
@@ -86,7 +118,12 @@ public class RoundRobinSchedulerServiceTest {
         LocalDate start = LocalDate.of(2025, 2, 1);
         LocalDate end = LocalDate.of(2025, 2, 15);
 
-        List<Match> matchs = scheduler.generateSchedule(equipes, start, end, true);
+        List<Indisponibilite> indispo = new ArrayList<>();
+
+        TournoisService.ScheduleResult result = scheduler.generateSchedule(equipes, start, end, true, indispo);
+        List<Match> matchs = result.getMatchs();
+        List<Indisponibilite> indisponibilites = result.getIndisponibilites();
+
 
         // 3 équipes -> 3 matchs aller + 3 retours = 6 matchs
         assertEquals(6, matchs.size());

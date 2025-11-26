@@ -4,10 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.model.*;
-import org.ultimateam.apiultimate.repository.EquipeRepository;
-import org.ultimateam.apiultimate.repository.MatchRepository;
-import org.ultimateam.apiultimate.repository.ParticipationRepository;
-import org.ultimateam.apiultimate.repository.TournoisRepository;
+import org.ultimateam.apiultimate.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,14 +18,16 @@ public class TournoisService {
     private final EquipeService equipeService;
     private final MatchRepository matchRepository;
     private final RoundRobinSchedulerService scheduler;
+    private final IndisponibiliteRepository indisponibiliteRepository;
 
     public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository, EquipeService equipeService,
-                           MatchRepository matchRepository, RoundRobinSchedulerService scheduler) {
+                           MatchRepository matchRepository, RoundRobinSchedulerService scheduler, IndisponibiliteRepository indisponibiliteRepository) {
         this.tournoisRepository = tournoisRepository;
         this.participationRepository = participationRepository;
         this.equipeService = equipeService;
         this.matchRepository = matchRepository;
         this.scheduler = scheduler;
+        this.indisponibiliteRepository = indisponibiliteRepository;
     }
 
     public List<Tournois> getAllTournois() {
@@ -56,8 +55,32 @@ public class TournoisService {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idTournois);
     }
 
+    public record ScheduleResult(
+            List<Match> matchs,
+            List<Indisponibilite> indisponibilites
+    ) {
+        public List<Match> getMatchs() {
+            return matchs;
+        }
+
+        public List<Indisponibilite> getIndisponibilites() {
+            return indisponibilites;
+        }
+
+        public void addMatch(Match match) {
+            matchs.add(match);
+        }
+
+        public void addIndisponibilite(Indisponibilite indisponibilite) {
+            indisponibilites.add(indisponibilite);
+        }
+    }
+
+
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.
     public List<Equipe> genererRoundRobin(Long idTournois) {
+
+
         Tournois tournoi = getTournoisById(idTournois);
         if (tournoi == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournois n'existe pas");
@@ -72,28 +95,15 @@ public class TournoisService {
 
         }
 
+        ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
+        List<Match> matchs = scheduleResult.getMatchs();
+        List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
 
-        List<Match> matches = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
-
-        matchRepository.saveAll(matches);
+        matchRepository.saveAll(matchs);
+        indisponibiliteRepository.saveAll(indisponibilites);
 
 
         return equipes;
-/**
-        Tournois tournois = getTournoisById(idTournois);
-        List<Equipe> liste_equipe = participationRepository.findById_TournoisId(idTournois).get(0);
-        int nb_equipe = participationRepository.findById_TournoisId(idTournois).size();
-
-        if (nb_equipe % 2 != 0) {
-            nb_equipe = nb_equipe + 1;
-        }
-
-
-        int nb_round = nb_equipe/2*(nb_equipe-1);
-
-        for (int x = 1; x <= nb_round/2+1; x++) {
-            Match match = new Match();
-        } */
     }
 
 }
