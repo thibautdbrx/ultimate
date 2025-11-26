@@ -44,12 +44,13 @@ public class AuthController {
         newUser.setEmail(request.email());
         newUser.setPassword(passwordEncoder.encode(request.password())); //cryote le mdp
 
+        User.Role defaultRole = User.Role.ROLE_VISITEUR;
         newUser.setRole(User.Role.ROLE_VISITEUR); // Permet de forcer le role par defaut pour pas q'un pirate s'inscrit en admin
 
         userRepository.save(newUser);
 
         String token = jwtUtils.generateToken(newUser.getEmail()); // crée le token pour l'utilisateur
-        return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // 200 ok avec le token
+        return ResponseEntity.ok(new AuthResponse(token, "Bearer", defaultRole.name())); // 200 ok avec le token
     }
 
     @PostMapping("/login")
@@ -59,9 +60,10 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(request.email(), request.password())
             ); // permet de verifier s'il existe sinon ca fait une authentication exception
 
+            User authenticatedUser = (User) authentication.getPrincipal();
             String token = jwtUtils.generateToken(request.email()); // génère le token
 
-            return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // renvoie le token de meme
+            return ResponseEntity.ok(new AuthResponse(token, "Bearer", authenticatedUser.getRole().name())); // renvoie le token de meme
 
         } catch (AuthenticationException e) {
             log.error("Échec de l'authentification pour l'email: {}", request.email(), e); //erreur dans la console
