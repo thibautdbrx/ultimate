@@ -43,7 +43,7 @@ public class Match {
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private LocalDateTime dateMatch;
-    private long terrain;
+    private long terrain = 0;
     @JsonIgnore
     private LocalDateTime datePause = null;
 

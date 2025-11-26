@@ -3,10 +3,7 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Participation;
-import org.ultimateam.apiultimate.model.Tournois;
+import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
@@ -23,13 +20,15 @@ public class TournoisService {
     private final ParticipationRepository participationRepository;
     private final EquipeService equipeService;
     private final MatchRepository matchRepository;
+    private final RoundRobinSchedulerService scheduler;
 
     public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository, EquipeService equipeService,
-                           MatchRepository matchRepository) {
+                           MatchRepository matchRepository, RoundRobinSchedulerService scheduler) {
         this.tournoisRepository = tournoisRepository;
         this.participationRepository = participationRepository;
         this.equipeService = equipeService;
         this.matchRepository = matchRepository;
+        this.scheduler = scheduler;
     }
 
     public List<Tournois> getAllTournois() {
@@ -65,25 +64,19 @@ public class TournoisService {
         }
         List<Participation> participations = participationRepository.findById_idCompetition(idTournois);
         List<Equipe> equipes = new ArrayList<>();
+        List<Indisponibilite> indispo = new ArrayList<>();
         for (Participation participation : participations) {
-            equipes.add(equipeService.getById(participation.getId().getIdEquipe()));
+            Equipe equipe = equipeService.getById(participation.getId().getIdEquipe());
+            equipes.add(equipe);
+            indispo.addAll(equipeService.getIndisponibilites(equipe.getIdEquipe()));
+
         }
-        int nbEquipes = equipes.size();
 
-        //Génération de match :
-        /**
-        Match match = new Match();
-        match.setIdCompetition(tournoi);
-        Equipe equipe1 = null;
-        match.setEquipe1(equipe1);
 
-        Equipe equipe2 = null;
-        match.setEquipe2(equipe2);
+        List<Match> matches = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
 
-        LocalDateTime datePrevison = LocalDateTime.now();
-        match.setDateMatch(datePrevison);
-        matchRepository.save(match);
-        */
+        matchRepository.saveAll(matches);
+
 
         return equipes;
 /**

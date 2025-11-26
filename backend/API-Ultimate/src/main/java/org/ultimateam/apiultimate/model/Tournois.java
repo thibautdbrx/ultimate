@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Tournois extends Competition{
 
-    public Tournois(Genre genre, Format format, LocalDateTime date_debut, LocalDateTime date_fin) {
+    public Tournois(Genre genre, Format format, LocalDate date_debut, LocalDate date_fin) {
         super(genre, format, date_debut, date_fin);
     }
 }
