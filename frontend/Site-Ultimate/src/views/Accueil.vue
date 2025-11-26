@@ -108,6 +108,8 @@ onMounted(async () => {
 
 .titre_acceuil {
   text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
 }
 
 
@@ -122,5 +124,9 @@ onMounted(async () => {
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 2rem;
+}
+
+.Acceuil{
+  padding: 2rem;
 }
 </style>

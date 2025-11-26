@@ -130,7 +130,6 @@ onBeforeUnmount(() => {
   overflow-x: auto;
   display: flex;
   gap: 1.5rem;
-  padding: 1rem;
   flex-direction: row;
 
   scrollbar-width: none;

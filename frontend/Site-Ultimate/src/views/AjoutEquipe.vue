@@ -227,5 +227,12 @@ const valider_ajout_equipe = async () => {
 #sous-titre{
   font-size: 0.8rem;
   color: gray;
+  text-align: center;
+}
+
+h2{
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 0rem;
 }
 </style>

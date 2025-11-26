@@ -53,6 +53,7 @@ const validerCreation = async () => {
 <template>
   <main class="page">
     <h2>Nouveau joueur</h2>
+    <p id="sous-titre">Ajouter un nouveau joueur afin de l'inscripte dans une équipe puis dans une compétitions</p>
 
     <!-- On réutilise ta carte dynamique -->
     <JoueurCardForm :joueur="joueur" />
@@ -81,6 +82,13 @@ const validerCreation = async () => {
 }
 
 h2{
-  margin : 0;
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+#sous-titre{
+  font-size: 0.8rem;
+  color: gray;
+  text-align: center;
 }
 </style>
