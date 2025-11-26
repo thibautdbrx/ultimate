@@ -5,7 +5,7 @@ import CardJoueur from "@/components/Card_joueur.vue"
 const props = defineProps({
   show: Boolean,
 })
-const emit = defineEmits(["close", "select"])
+const emit = defineEmits(["close", "select", "nvj"])
 
 const search = ref("")
 const joueurs = ref([])
@@ -30,7 +30,9 @@ const filtered = computed(() =>
     <div class="overlay">
       <div class="titre">
         <h3>Choisir un joueur</h3>
-        <button  id="close-btt-haut" @click="emit('close')">Fermer</button> </div>
+        <button id="close-btt-haut" @click="emit('close')">Fermer</button> </div>
+        <button id="close-btn-haut" @click="emit('nvj')">Nouveau joueur</button>
+
 
       <input
           type="text"
@@ -55,6 +57,7 @@ const filtered = computed(() =>
       </div>
 
       <button class="close-btn" @click="emit('close')">Fermer</button>
+
     </div>
   </div>
 </template>
