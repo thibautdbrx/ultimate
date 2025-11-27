@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,14 +27,14 @@ public abstract class Competition {
     @Enumerated(EnumType.STRING)
     private Format format;
 
-    private LocalDateTime dateDebut;
-    private LocalDateTime dateFin;
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
 
     /**
     @OneToMany(mappedBy = "idCompetition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Match> matchs = new ArrayList<>();*/
 
-    public Competition(Genre genre, Format format, LocalDateTime dateDebut, LocalDateTime dateFin) {
+    public Competition(Genre genre, Format format, LocalDate dateDebut, LocalDate dateFin) {
         this.genre = genre;
         this.format = format;
         this.dateDebut = dateDebut;
