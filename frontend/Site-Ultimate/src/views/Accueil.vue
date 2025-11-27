@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue'
 import LiveIcon from '@/assets/icons/live.svg'
 import TrophyIcon from '@/assets/icons/trophy.svg'
 import CalendarIcon from '@/assets/icons/calendar.svg'
+import { useAuthStore } from "@/stores/auth";
 
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
@@ -14,12 +15,14 @@ const stats = ref({
   upcoming: 0,
   competitions: 0
 })
+const auth = useAuthStore();
 
 const derniersMatchs = ref([])
 const errorMsg = ref('')
 
 onMounted(async () => {
   try {
+    //console.log(auth.role)
     // Matchs en direct
     const liveRes = await fetch(`/api/match/started`)
     const liveData = await liveRes.json()

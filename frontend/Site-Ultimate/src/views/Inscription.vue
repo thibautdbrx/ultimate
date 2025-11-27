@@ -1,5 +1,9 @@
 <script setup>
 import Form_inscription from '../components/Form_inscription.vue'
+import {onMounted} from "vue";
+
+
+
 </script>
 
 <template>

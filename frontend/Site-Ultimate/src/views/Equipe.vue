@@ -1,4 +1,4 @@
-<script setup>
+  <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
@@ -10,9 +10,21 @@ const equipes = ref([])
 
 const loading = ref(true)
 const error = ref(null)
+const isAdmin = ref(false)
+const isArbitre = ref(false)
 
 // Récupération des compétitions
 onMounted(() => {
+
+  const cookies = document.cookie.split('; ');
+  const roleCookie = cookies.find(row => row.startsWith('user_role='));
+
+  if (roleCookie && roleCookie.split('=')[1] === 'ADMIN') {
+    isAdmin.value = true;
+  } else if (roleCookie && roleCookie.split('=')[1] === 'ARBITRE'){
+    isArbitre.value = true;
+  }
+
   fetch('/api/equipe')
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
@@ -58,6 +70,8 @@ function goToEquipe(id,nom) {
         </div>
       </div>
     </div>
+    <p v-if="isAdmin">Admin</p>
+    <p v-if="isArbitre">Arbitre</p>
   </main>
 </template>
 
