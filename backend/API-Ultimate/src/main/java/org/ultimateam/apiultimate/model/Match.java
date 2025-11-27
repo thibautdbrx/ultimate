@@ -35,7 +35,7 @@ public class Match {
 
 
     @ManyToOne
-    @JoinColumn(name = "id_competition")
+    @JoinColumn(name = "idCompetition")
     private Competition idCompetition;
 
     private long scoreEquipe1;
