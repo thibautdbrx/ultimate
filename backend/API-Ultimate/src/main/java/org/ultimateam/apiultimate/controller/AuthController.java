@@ -9,10 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.configuration.JwtUtils;
 
 // 1. Importez vos nouveaux DTOs (records)
@@ -27,6 +24,7 @@ import org.ultimateam.apiultimate.repository.UserRepository;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -49,7 +47,7 @@ public class AuthController {
 
         userRepository.save(newUser);
 
-        String token = jwtUtils.generateToken(newUser.getEmail()); // crée le token pour l'utilisateur
+        String token = jwtUtils.generateToken(newUser.getEmail(), newUser.getRole()); // crée le token pour l'utilisateur
         return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // 200 ok avec le token
     }
 
@@ -61,7 +59,7 @@ public class AuthController {
             ); // permet de verifier s'il existe sinon ca fait une authentication exception
 
             User authenticatedUser = (User) authentication.getPrincipal();
-            String token = jwtUtils.generateToken(request.email()); // génère le token
+            String token = jwtUtils.generateToken(request.email(), authenticatedUser.getRole()); // génère le token
 
             return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // renvoie le token de meme
 
