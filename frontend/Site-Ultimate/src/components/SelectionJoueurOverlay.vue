@@ -11,9 +11,19 @@ const emit = defineEmits(["close", "select", "nvj"])
 const search = ref("")
 const joueurs = ref([])
 
-onMounted(async () => {
+async function loadJoueurs() {
   const res = await fetch("/api/joueur/solo")
   joueurs.value = await res.json()
+}
+
+onMounted(async () => {
+  loadJoueurs()
+})
+//pour rafraichir les jouerus quand on ouvre l'overlay
+watch(() => props.show, async (v) => {
+  if (v) {
+    await loadJoueurs()
+  }
 })
 
 const filtered = computed(() =>
