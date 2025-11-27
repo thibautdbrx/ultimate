@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface JoueurRepository extends JpaRepository<Joueur, Long> {
     List<Joueur> findAllByEquipe_IdEquipe(Long idEquipe);
+    int countByEquipe_IdEquipe(Long idEquipe);
+    List<Joueur> findAllByEquipe_IdEquipeIsNull();
 }

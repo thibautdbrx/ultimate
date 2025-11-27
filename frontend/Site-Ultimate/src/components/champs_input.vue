@@ -6,7 +6,8 @@ const props = defineProps({
   type: String,
   placeholder: String,
   modelValue: String,
-  icon: String
+  icon: [String,Object],
+  clickable: {type: Boolean, default:true},
 })
 
 const emit = defineEmits(['update:modelValue']) // sert dire au parent que la variable à changer dans son élément
@@ -26,10 +27,17 @@ const model = computed({ //dit de envoyer l'info au parents quand model est modi
         <component :is="icon" alt="icon" class="card-svg-icon"/>
 
       </span>
-      <input
+      <input v-if="clickable"
           :type="type"
           :placeholder="placeholder"
           v-model="model"
+      />
+
+      <input v-else
+             disabled
+             :type="type"
+             :placeholder="placeholder"
+             v-model="model"
       />
     </div>
   </div>

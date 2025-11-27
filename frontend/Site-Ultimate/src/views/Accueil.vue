@@ -34,10 +34,12 @@ onMounted(async () => {
     stats.value.upcoming = upcomingData.length
 
     // Compétitions
-    //const compRes = await fetch(`${API}/competition/all`)
-    //const compData = await compRes.json()
-    //stats.value.competitions = compData.length
-    stats.value.competitions = 5
+    const compRes = await fetch(`/api/tournois`)
+    const compData = await compRes.json()
+    stats.value.competitions = compData.length
+
+
+    //ajouter les match fini uniquement.
 
     const matchsRes = await fetch(`/api/match`)
     const matchsData = await matchsRes.json()
@@ -96,7 +98,7 @@ onMounted(async () => {
       <p v-if="errorMsg" class="error-text">{{ errorMsg }}</p>
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
         <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card">
-          <CardRes :title="String(match.idMatch)" :nom1="match.equipe1.nom_equipe" :nom2="match.equipe2.nom_equipe" :points1="match.score_equipe1" :points2="match.score_equipe2"
+          <CardRes :title="String(match.idMatch)" :nom1="match.equipe1.nomEquipe" :nom2="match.equipe2.nomEquipe" :points1="match.scoreEquipe1" :points2="match.scoreEquipe2"
           />
         </div>
 
@@ -109,7 +111,10 @@ onMounted(async () => {
 
 .titre_acceuil {
   text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
 }
+
 
 .accueil_section{
   display: flex;
@@ -122,5 +127,9 @@ onMounted(async () => {
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 2rem;
+}
+
+.Acceuil{
+  padding: 2rem;
 }
 </style>

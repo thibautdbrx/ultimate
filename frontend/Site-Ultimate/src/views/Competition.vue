@@ -12,7 +12,7 @@ const error = ref(null)
 
 // Récupération des compétitions
 onMounted(() => {
-  fetch('https://api.exemple.com/competitions')
+  fetch("/api/tournois")
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
         return res.json()
@@ -23,29 +23,10 @@ onMounted(() => {
       })
       .catch(err => {
         console.error(err)
-        //error.value = "Impossible de charger les compétitions."
-        //loading.value = false
+        error.value = "Impossible de charger les compétitions."
+        loading.value = false
       })
 })
-
-// Valeurs par défaut pour tests
-competitions.value = [
-  {id: 1, name: 'Championnat National', teams: 12, image: ImageFond},
-  {id: 2, name: 'Coupe Régionale', teams: 8, image: ImageFond},
-  {id: 3, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 4, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 5, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 6, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 7, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 8, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 9, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 10, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 11, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 12, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 13, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-  {id: 14, name: 'Tournoi Étudiant', teams: 10, image: ImageFond},
-]
-loading.value = false
 
 // Redirection vers la page d'une compétition
 function goToCompetition(id) { // JS pur, plus de :number
@@ -63,14 +44,14 @@ function goToCompetition(id) { // JS pur, plus de :number
     <div v-else class="competition-list">
       <div
           v-for="competition in competitions"
-          :key="competition.id"
+          :key="competition.id_competition"
           class="competition-card"
-          @click="goToCompetition(competition.id)"
+          @click="goToCompetition(competition.id_competition)"
       >
-        <img :src="competition.image" alt="Image compétition" class="competition-img" />
+        <img :src="ImageFond" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
-          <h3>{{ competition.name }}</h3>
-          <p>{{ competition.teams }} équipes</p>
+          <h3>{{ competition.id_competition }}</h3>
+          <p>{{ 12 }} équipes</p>
         </div>
       </div>
     </div>

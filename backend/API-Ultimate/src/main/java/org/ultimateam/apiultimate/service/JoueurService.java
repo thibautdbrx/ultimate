@@ -85,9 +85,14 @@ public class JoueurService {
         Equipe equipe =equipeService.getById(id_equipe);
         equipe.addJoueur(joueur);
         joueur.setEquipe(equipe);
+        equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
         return equipe;
+    }
+
+    public List<Joueur> getJoueurSolo() {
+        return joueurRepository.findAllByEquipe_IdEquipeIsNull();
     }
 
     /**
@@ -104,6 +109,7 @@ public class JoueurService {
         Equipe equipe = equipeService.getById(id_equipe);
         equipe.removeJoueur(joueur);
         joueur.setEquipe(null);
+        equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
 
