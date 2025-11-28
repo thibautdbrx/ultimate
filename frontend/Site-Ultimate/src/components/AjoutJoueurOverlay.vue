@@ -52,10 +52,12 @@ async function validerCreation() {
 
       <div class="header">
         <h3>Ajouter un joueur</h3>
-        <button class="close" @click="emit('close')">✕</button>
+        <button class="btn" @click="emit('close')">✕</button>
       </div>
 
-      <JoueurCardForm :joueur="joueur_ajout" />
+      <div class="form">
+        <JoueurCardForm :joueur="joueur_ajout" />
+      </div>
 
       <button class="btn" @click="validerCreation">Créer le joueur</button>
 
@@ -73,16 +75,17 @@ async function validerCreation() {
   align-items: center;
   z-index: 2000;
 }
-
 .overlay {
   background: white;
   width: 420px;
   padding: 1.5rem;
   border-radius: 12px;
+
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 
 .header {
   display: flex;
@@ -90,7 +93,7 @@ async function validerCreation() {
   align-items: center;
 }
 
-.close {
+.btn {
   background: #ddd;
   border: none;
   padding: 0.4rem 0.7rem;
@@ -125,4 +128,9 @@ async function validerCreation() {
   cursor: pointer;
   width: 100%;
 }
+.form{
+  display: flex;
+  justify-content: center;
+}
+
 </style>
