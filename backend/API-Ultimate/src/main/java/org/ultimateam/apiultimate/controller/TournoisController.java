@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Equipe;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tournois")
+@Tag(name = "Tournoi", description = "Endpoints pour gérer les tournois")
 public class TournoisController {
 
 
