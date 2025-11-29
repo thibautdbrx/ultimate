@@ -20,7 +20,7 @@ const submitForm = async () => {
   errorMessage.value = null // Réinitialise l'erreur au début du clic
 
   try {
-    const response = await axios.post('http://localhost:8080/api/auth/login',
+    const response = await axios.post('api/auth/login',
         {
           // CORRECTION : La clé est 'email' et la valeur vient de la variable email
           email: email.value,
