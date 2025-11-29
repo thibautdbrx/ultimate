@@ -10,18 +10,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class TournoisService {
+public class ChamionnatService {
 
-    private final TournoisRepository tournoisRepository;
+    private final ChampionnatRepository championnatRepository;
     private final ParticipationRepository participationRepository;
     private final EquipeService equipeService;
     private final MatchRepository matchRepository;
     private final RoundRobinSchedulerService scheduler;
     private final IndisponibiliteRepository indisponibiliteRepository;
 
-    public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository, EquipeService equipeService,
+    public ChamionnatService(ChampionnatRepository championnatRepository, ParticipationRepository participationRepository, EquipeService equipeService,
                            MatchRepository matchRepository, RoundRobinSchedulerService scheduler, IndisponibiliteRepository indisponibiliteRepository) {
-        this.tournoisRepository = tournoisRepository;
+        this.championnatRepository = championnatRepository;
         this.participationRepository = participationRepository;
         this.equipeService = equipeService;
         this.matchRepository = matchRepository;
@@ -29,29 +29,24 @@ public class TournoisService {
         this.indisponibiliteRepository = indisponibiliteRepository;
     }
 
-    public List<Tournois> getAllTournois() {
-        return tournoisRepository.findAll();
+    public List<Championnat> getAllChampionnat() {
+        return championnatRepository.findAll();
     }
 
-    public Tournois getTournoisById(Long id) {
-        return tournoisRepository.findById(id).orElse(null);
+    public Championnat getChampionnatById(Long id) {
+        return championnatRepository.findById(id).orElse(null);
     }
 
-    public Tournois saveTournois(Tournois tournois) {
-        return tournoisRepository.save(tournois);
+    public Championnat saveChampionnat(Championnat tournois) {
+        return championnatRepository.save(tournois);
     }
 
-    public void deleteTournoisById(Long id) {
-        tournoisRepository.deleteById(id);
+    public void deleteChampionnatById(Long id) {
+        championnatRepository.deleteById(id);
     }
 
-
-    public void genererTournois(Long idTournois) {
-        genererRoundRobin(idTournois);
-    }
-
-    public List<Match> getMatchesByTournois(Long idTournois) {
-        return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idTournois);
+    public List<Match> getMatchesByChampionnat(Long idChampionnat) {
+        return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idChampionnat);
     }
 
     public record ScheduleResult(
@@ -74,17 +69,17 @@ public class TournoisService {
             indisponibilites.add(indisponibilite);
         }
     }
-
+/**
 
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.
-    public List<Equipe> genererRoundRobin(Long idTournois) {
+    public List<Equipe> genererRoundRobin(Long idChampionnat) {
 
 
-        Tournois tournoi = getTournoisById(idTournois);
+        Championnat tournoi = getChampionnatById(idChampionnat);
         if (tournoi == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournois n'existe pas");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Championnat n'existe pas");
         }
-        List<Participation> participations = participationRepository.findById_idCompetition(idTournois);
+        List<Participation> participations = participationRepository.findById_idCompetition(idChampionnat);
         List<Equipe> equipes = new ArrayList<>();
         List<Indisponibilite> indispo = new ArrayList<>();
         for (Participation participation : participations) {
@@ -104,6 +99,7 @@ public class TournoisService {
 
         return equipes;
     }
+ **/
 
 }
 

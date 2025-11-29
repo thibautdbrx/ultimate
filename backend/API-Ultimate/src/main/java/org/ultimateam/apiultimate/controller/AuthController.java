@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import org.ultimateam.apiultimate.repository.UserRepository;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@Tag(name = "Authentification", description = "Endpoints pour l'authentification")
 public class AuthController {
 
     private final UserRepository userRepository;
