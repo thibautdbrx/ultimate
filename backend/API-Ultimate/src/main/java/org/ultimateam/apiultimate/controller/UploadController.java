@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.ultimateam.apiultimate.service.StorageService;
 import java.util.Map;
 
 @RestController
+@Tag(name = "Upload Controller", description = "Gestion des fichiers")
 @RequestMapping("/api/files")
 public class UploadController {
 
