@@ -15,8 +15,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Championnat extends Competition{
-
+    /**
     public Championnat(Genre genre, Format format, LocalDate date_debut, LocalDate date_fin) {
         super(genre, format, date_debut, date_fin);
-    }
+    }*/
 }
