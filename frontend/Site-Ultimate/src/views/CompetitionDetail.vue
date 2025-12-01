@@ -40,17 +40,12 @@ function getUpcomingMatches(matches) {
   )
 }
 
-/* ---------------------------------------
-        🧮 Computed
---------------------------------------- */
 const upcomingMatches = computed(() => getUpcomingMatches(matches.value))
 const finishedMatches = computed(() => getFinishedMatches(matches.value))
 const uniqueTeams = computed(() => getUniqueTeams(matches.value))
 const nbTeams = computed(() => uniqueTeams.value.length)
 
-/* ---------------------------------------
-        🌐 Fetch des données
---------------------------------------- */
+
 
 onMounted(async () => {
   try {
@@ -59,10 +54,8 @@ onMounted(async () => {
 
     const data = await res.json()
 
-    // Ton backend renvoie un TABLEAU DIRECTEMENT → matches = data
     matches.value = data
 
-    // Tu peux remplir competition si tu veux afficher un titre
     if (data.length > 0) {
       competition.value = data[0].idCompetition
     }
@@ -82,7 +75,7 @@ onMounted(async () => {
   <main class="competition-details">
 
     <h2 v-if="competition">
-      "NOM" - {{ competition.format }} - {{ competition.genre }} - {{nbTeams}} équipes inscrites
+      {{competition.nomCompetition}} - {{ competition.format }} - {{ competition.genre }} - {{nbTeams}} équipes inscrites
     </h2>
 
     <div v-if="loading" class="state-msg">Chargement...</div>

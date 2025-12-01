@@ -9,6 +9,7 @@ import Inscription from "@/views/Inscription.vue";
 import Match from "@/views/match.vue";
 import AjoutEquipe from "@/views/AjoutEquipe.vue";
 import NouveauJoueur from "../views/NouveauJoueur.vue";
+import AjoutCompetition from "@/views/AjoutCompetition.vue";
 
 
 
@@ -23,6 +24,8 @@ const routes = [
     { path: '/match/:id', component: Match },
     { path: '/AjouterEquipe', component: AjoutEquipe },
     { path: '/NouveauJoueur', component: NouveauJoueur },
+    { path: '/AjouterCompetition', component: AjoutCompetition },
+
 ]
 
 const router = createRouter({
