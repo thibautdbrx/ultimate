@@ -30,10 +30,7 @@ const submitForm = async () => {
     )
 
     if (response.status === 200) {
-      console.log("Réuissi")
-      //const role = response.data.role || 'VISITEUR';
       // Cookie valide 3h
-      //document.cookie = `user_role=${role}; path=/; max-age=10800; SameSite=Lax`;
       document.cookie = `token=${response.data.token}; path=/; max-age=10800; SameSite=Lax`;
       console.log(JSON.parse(atob(document.cookie.split('.')[1])).role) //.split('=')[1]
       //const roles = JSON.parse(atob(token.split('.')[1])).roles

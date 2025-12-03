@@ -12,6 +12,8 @@ const matches = ref([])       // JS pur, tableau vide initial
 const loading = ref(true)
 const error = ref(null)       // JS pur
 
+const auth = useAuthStore();
+
 onMounted(() => {
   fetch(`api/competitions/${competitionId}`)
       .then(res => {

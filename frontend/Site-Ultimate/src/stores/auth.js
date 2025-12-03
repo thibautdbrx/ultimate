@@ -14,6 +14,12 @@ export const useAuthStore = defineStore("auth", {
         email: null,
         role: null,
     }),
+    getters: {
+    // Ces variables seront calculées automatiquement
+        isAdmin: (state) => state.role === 'ROLE_ADMIN',
+        isArbitre: (state) => state.role === 'ROLE_ARBITRE',
+        isVisiteur: (state) => state.role === 'ROLE_VISITEUR'
+    },
 
     actions: {
         loadToken() {

@@ -10,6 +10,8 @@ const competitions = ref([]) // JS pur, tableau vide initial
 const loading = ref(true)
 const error = ref(null)
 
+const auth = useAuthStore();
+
 // Récupération des compétitions
 onMounted(() => {
   fetch("/api/tournois")
