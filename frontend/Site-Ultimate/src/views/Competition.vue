@@ -52,7 +52,7 @@ function goToCompetition(id) { // JS pur, plus de :number
       >
         <img :src="ImageFond" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
-          <h3>{{ competition.idCompetition }}</h3>
+          <h3>{{ competition.nomCompetition }}</h3>
           <p>{{ competition.format + " - " + competition.genre }}</p>
         </div>
       </div>
