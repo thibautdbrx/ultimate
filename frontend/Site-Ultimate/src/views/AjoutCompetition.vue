@@ -171,11 +171,19 @@ const valider_ajout_equipe = async () => {
 
       <label>Date debut :</label>
 
-
+      <input
+          type="date"
+          v-model="dateDebut"
+          class="select-format"
+      />
 
 
       <label>Date fin :</label>
-
+      <input
+          type="date"
+          v-model="dateFin"
+          class="select-format"
+      />
       <label>Nombre équipes engagées (modifiable plus tard):</label>
       <select v-model="nombreEquipe" class="select-nb">
         <option v-for="n in 20" :value="n">{{ n }}</option>
