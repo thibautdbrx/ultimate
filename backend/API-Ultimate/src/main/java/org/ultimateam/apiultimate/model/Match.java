@@ -18,7 +18,6 @@ public class Match {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long idMatch;
 
     @ManyToOne
