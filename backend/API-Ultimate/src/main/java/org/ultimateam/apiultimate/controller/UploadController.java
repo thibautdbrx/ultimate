@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.ultimateam.apiultimate.service.StorageService;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -33,9 +34,16 @@ public class UploadController {
     public ResponseEntity<Resource> serve(@PathVariable String filename) {
         Resource file = storageService.loadAsResource(filename);
 
+        String contentType = "application/octet-stream";
+        try {
+            contentType = file.getURL().openConnection().getContentType();
+        } catch (IOException e) {
+            // fallback
+        }
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + file.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .body(file);
     }
 }
