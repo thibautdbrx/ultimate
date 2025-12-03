@@ -2,6 +2,7 @@
 import { ref } from "vue"
 import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import { useRouter } from "vue-router"
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter()
 

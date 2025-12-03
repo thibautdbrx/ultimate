@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import CardJoueur from "@/components/card_joueur.vue"
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute()
 const equipeId = route.params.id
