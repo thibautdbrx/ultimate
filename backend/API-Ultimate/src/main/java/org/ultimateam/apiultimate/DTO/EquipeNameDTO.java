@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class EquipeNameDTO {
-   private String nomEquipe;
+   private String nom;
+   private String description;
 }

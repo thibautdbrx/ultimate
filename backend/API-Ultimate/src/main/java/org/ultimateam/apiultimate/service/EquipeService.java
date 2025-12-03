@@ -70,7 +70,13 @@ public class EquipeService {
         if (equipe == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'équipe n'existe pas");
         }
-        equipe.setNomEquipe(equipedto.getNomEquipe());
+        if (equipedto.getNom() != null) {
+            equipe.setNomEquipe(equipedto.getNom());
+        }
+        if (equipedto.getDescription() != null) {
+            equipe.setDescription(equipedto.getDescription());
+        }
+
         return equipeRepository.save(equipe);
     }
 
