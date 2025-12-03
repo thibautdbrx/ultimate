@@ -17,6 +17,7 @@ import Deconnexion from '@/views/Deconnexion.vue'
 const routes = [
     { path: '/', component: Accueil },
     { path: '/Connexion', component: Connexion },
+    { path: '/Deconnexion', component: Deconnexion },
     { path: '/Inscription', component: Inscription },
     { path: '/Equipe', component: Equipe },
     { path: '/Competition', component: Competition },

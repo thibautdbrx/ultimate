@@ -1,6 +1,5 @@
 package org.ultimateam.apiultimate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -10,9 +9,9 @@ import org.ultimateam.apiultimate.model.Participation;
 import org.ultimateam.apiultimate.repository.CompetitionRespository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
-import org.ultimateam.apiultimate.repository.TournoisRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ParticipationService {
@@ -29,7 +28,16 @@ public class ParticipationService {
 
     public List<Participation> getAll(){return participationRepository.findAll();}
 
-    public List<Participation> getParticipationByCompetitionId(Long idCompetition){return participationRepository.findById_idCompetition(idCompetition);}
+    public List<Equipe> getParticipationByCompetitionId(Long idCompetition){
+        List<Equipe> equipes = new java.util.ArrayList<>();
+        for(Participation p : participationRepository.findById_idCompetition(idCompetition) ){
+            equipes.add(
+                    equipeRepository.findById(p.getId().getIdEquipe())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe non trouvée"))
+            );
+        }
+        return equipes;
+    }
 
     public List<Participation> getParticipationByEquipeId(Long idEquipe){return participationRepository.findById_idEquipe(idEquipe);}
 

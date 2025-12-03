@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import CardJoueur from "@/components/Card_joueur.vue"
+import CardJoueur from "@/components/card_joueur.vue"
 
 const route = useRoute()
 const equipeId = route.params.id
@@ -11,6 +11,8 @@ const error = ref(null)
 
 const equipe = ref(null)
 const joueurs = ref([])
+
+const auth = useAuthStore();
 
 onMounted(async () => {
   try {

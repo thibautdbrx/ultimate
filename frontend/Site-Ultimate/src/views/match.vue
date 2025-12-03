@@ -19,6 +19,8 @@ const joueursEquipe2 = ref([]);
 
 const error = ref(null);
 
+const auth = useAuthStore();
+
 // ----------------------
 // 1) Charger infos du match
 // ----------------------
