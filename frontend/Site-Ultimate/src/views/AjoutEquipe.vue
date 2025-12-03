@@ -5,6 +5,7 @@ import champs_input from "@/components/champs_input.vue"
 import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
+import AjoutJoueurOverlay from "@/components/AjoutJoueurOverlay.vue";
 
 const nomEquipe = ref("")
 const descriptionEquipe = ref("")
@@ -26,11 +27,23 @@ const joueurs = ref(
 
 // Gestion du modal
 const modalIndex = ref(null) // quel joueur on a selectionner donc lequel modifier
-const modalShow = ref(false) //bool qui dit si c'est affiché ou non
+const modalShow_1 = ref(false) //bool qui dit si c'est affiché ou non
+const modalShow_2 = ref(false)
 
-const openModal = (i) => {
+const openModal_1 = (i) => {
   modalIndex.value = i
-  modalShow.value = true
+  modalShow_1.value = true
+  modalShow_2.value = false
+}
+
+const openModal_2 = () => {
+  modalShow_1.value = false
+  modalShow_2.value = true
+}
+
+const closemodalShow_2 = () => {
+  modalShow_2.value = false
+
 }
 
 const selectExisting = (joueur) => {
@@ -40,14 +53,14 @@ const selectExisting = (joueur) => {
   j.prenom = joueur.prenomJoueur
   j.genre = joueur.genre
   j.clickable = false
-  modalShow.value = false
+  modalShow_1.value = false
+  console.log(j)
+
 }
 
 const router = useRouter()
 
-const goToNouveauJoueur = () =>{
-  router.push('NouveauJoueur')
-}
+
 
 const valider_ajout_equipe = async () => {
 
@@ -74,6 +87,14 @@ const valider_ajout_equipe = async () => {
       alert(`Le joueur n°${i + 1} n'a pas été sélectionné.`);
       return;
     }
+
+    for (let k = 0; k < joueursSelectionnes.length; k++) {
+      if (k !== i && joueursSelectionnes[k].id === j.id) {
+        alert(`Le joueur n°${i + 1} a été sélectionné deux fois.`);
+        return;
+      }
+    }
+
   }
 
   try {
@@ -150,7 +171,7 @@ const valider_ajout_equipe = async () => {
           v-show="i < nombreJoueurs"
           class="joueur-wrapper"
       >
-        <button class="select-btn" @click="openModal(i)">
+        <button class="select-btn" @click="openModal_1(i)">
           Sélectionner un joueur
         </button>
 
@@ -159,10 +180,15 @@ const valider_ajout_equipe = async () => {
     </div>
     <!-- les @ c les variables qu'on recoit de l'overlay quand il "emit" une donnée, donc une des trois -->.
     <SelectJoueur
-        :show="modalShow"
-        @close="modalShow = false"
+        :show="modalShow_1"
+        @close="modalShow_1 = false"
         @select="selectExisting"
-        @nvj="goToNouveauJoueur"
+        @nvj="openModal_2"
+    />
+    <AjoutJoueurOverlay
+        v-if="modalShow_2"
+        @close="modalShow_2 = false"
+        @created="closemodalShow_2"
     />
     <div class="en_bas">
       <button class="valider_ajout" @click="valider_ajout_equipe">Ajouter l'équipe</button>

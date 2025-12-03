@@ -1,0 +1,259 @@
+package org.ultimateam.apiultimate.service;
+
+import org.antlr.v4.runtime.misc.Interval;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Indisponibilite;
+import org.ultimateam.apiultimate.model.Match;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+@Service
+public class RoundRobinSchedulerService {
+
+    /**
+     * Petite record interne représentant un bloc de temps (début et fin)
+     */
+    public record Interval(LocalDateTime start, LocalDateTime end) {}
+
+    // Constantes de configuration pour la génération du planning
+    private static final int START_HOUR = 9;   // Début des matchs
+    private static final int END_HOUR = 18;    // Fin des matchs
+
+    private static final int MATCH_DURATION_MIN = 90;  // Durée d'un match
+    private static final int BREAK_DURATION_MIN = 10;  // Pause entre deux matchs
+    private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_MIN;
+
+    private static final int MAX_FIELDS = 5; // Nombre maximum de terrains en parallèle
+
+    /**
+     * autoBlocks garde la liste des créneaux où chaque équipe est automatiquement bloquée
+     * (parce qu'un match lui a déjà été attribué).
+     */
+    Map<Equipe, List<Interval>> autoBlocks = new HashMap<>();
+
+
+    /**
+     * Méthode principale qui génère un calendrier Round Robin pour un tournoi.
+     */
+    public TournoisService.ScheduleResult generateSchedule(
+            List<Equipe> equipes,
+            LocalDate startDate,
+            LocalDate endDate,
+            boolean homeAndAway, // aller-retour ou non
+            List<Indisponibilite> indisponibilites
+    ) {
+
+        // Objet qui contiendra les matchs + indisponibilités renvoyés
+        TournoisService.ScheduleResult result =
+                new TournoisService.ScheduleResult(new ArrayList<>(), new ArrayList<>());
+
+        if (equipes.size() < 2) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut au moins 2 équipes.");
+        }
+
+        // Génère toutes les paires de matchs selon le round robin
+        List<Pair<Equipe, Equipe>> pairs = generateRoundRobinPairs(equipes, homeAndAway);
+
+        // Créneaux horaires dans la journée
+        List<LocalTime> timeSlots = generateTimeSlots();
+
+        // Calcul du nombre total de matchs et de créneaux disponibles
+        long totalMatches = pairs.size();
+        long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+        long slotsPerDay = (long) timeSlots.size() * MAX_FIELDS;
+        long totalPossibleSlots = slotsPerDay * totalDays;
+
+        // Vérification que la période est suffisante
+        if (totalMatches > totalPossibleSlots) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Période insuffisante : " + totalMatches +
+                            " matchs à jouer mais seulement " +
+                            totalPossibleSlots + " créneaux disponibles."
+            );
+        }
+
+        int matchIndex = 0;
+        LocalDate currentDay = startDate;
+
+        // Boucle principale qui tente de placer tous les matchs
+        while (matchIndex < totalMatches) {
+
+            for (LocalTime time : timeSlots) {
+                for (int field = 1; field <= MAX_FIELDS; field++) {
+
+                    if (matchIndex >= totalMatches) break;
+
+                    // On récupère la paire A vs B
+                    Pair<Equipe, Equipe> pair = pairs.get(matchIndex);
+                    Equipe A = pair.getLeft();
+                    Equipe B = pair.getRight();
+
+                    LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
+
+                    // Vérifie si A et B sont disponibles (indispos déclarées + autoBlocks)
+                    boolean Aok = isAvailable(A, dateMatch, autoBlocks, indisponibilites);
+                    boolean Bok = isAvailable(B, dateMatch, autoBlocks, indisponibilites);
+
+                    if (!Aok || !Bok) {
+                        continue; // on prend le prochain créneau
+                    }
+
+                    // Création du match
+                    Match match = new Match();
+                    match.setEquipe1(A);
+                    match.setEquipe2(B);
+                    match.setDateMatch(dateMatch);
+                    match.setTerrain(field);
+
+                    result.addMatch(match);
+
+                    // On bloque les équipes pendant ce créneau
+                    blockEquipe(A, dateMatch, autoBlocks, indisponibilites);
+                    blockEquipe(B, dateMatch, autoBlocks, indisponibilites);
+
+                    matchIndex++;
+                }
+            }
+
+            // Passage au jour suivant
+            currentDay = currentDay.plusDays(1);
+
+            if (currentDay.isAfter(endDate)) {
+                break;
+            }
+        }
+
+        // Ajoute les indisponibilités déclarées au résultat final
+        for (Indisponibilite indisponibilite : indisponibilites) {
+            result.addIndisponibilite(indisponibilite);
+        }
+
+        return result;
+    }
+
+    /**
+     * Génère les paires Round Robin :
+     * - Round robin algorithm classique avec rotation des équipes
+     * - Gère optionnellement les matchs aller-retour
+     */
+    private List<Pair<Equipe, Equipe>> generateRoundRobinPairs(List<Equipe> equipes, boolean homeAndAway) {
+        List<Pair<Equipe, Equipe>> matches = new ArrayList<>();
+        int n = equipes.size();
+
+        List<Equipe> rotated = new ArrayList<>(equipes);
+
+        // Nombre impair → ajoute une équipe fantôme
+        if (n % 2 == 1) {
+            rotated.add(null);
+        }
+
+        int rounds = rotated.size() - 1;
+
+        for (int round = 0; round < rounds; round++) {
+            for (int i = 0; i < rotated.size() / 2; i++) {
+                Equipe a = rotated.get(i);
+                Equipe b = rotated.get(rotated.size() - 1 - i);
+
+                if (a != null && b != null) {
+                    matches.add(Pair.of(a, b));
+                    if (homeAndAway) {
+                        matches.add(Pair.of(b, a));
+                    }
+                }
+            }
+
+            // Rotation des équipes (round robin algorithm)
+            Equipe last = rotated.remove(rotated.size() - 1);
+            rotated.add(1, last);
+        }
+
+        return matches;
+    }
+
+    /**
+     * Génère tous les créneaux horaires possibles entre 9h et 18h,
+     * espacés de la durée d'un match + pause.
+     */
+    private List<LocalTime> generateTimeSlots() {
+        List<LocalTime> slots = new ArrayList<>();
+
+        LocalTime current = LocalTime.of(START_HOUR, 0);
+        LocalTime end = LocalTime.of(END_HOUR, 0);
+
+        while (current.plusMinutes(SLOT_DURATION_MIN).isBefore(end.plusMinutes(1))) {
+            slots.add(current);
+            current = current.plusMinutes(SLOT_DURATION_MIN);
+        }
+
+        return slots;
+    }
+
+    /**
+     * Vérifie si une équipe est disponible pour un créneau donné.
+     * - Vérifie les indisponibilités déclarées
+     * - Vérifie les créneaux déjà bloqués automatiquement
+     */
+    private boolean isAvailable(
+            Equipe equipe,
+            LocalDateTime dateMatch,
+            Map<Equipe, List<Interval>> autoBlocks,
+            List<Indisponibilite> declaredBlocks
+    ) {
+        LocalDateTime start = dateMatch;
+        LocalDateTime end = dateMatch.plusMinutes(SLOT_DURATION_MIN);
+
+        // Vérification indisponibilités déclarées
+        for (Indisponibilite ind : declaredBlocks) {
+            if (ind.getEquipe().equals(equipe)) {
+                boolean noOverlap =
+                        end.isBefore(ind.getDateDebutIndisponibilite()) ||
+                                start.isAfter(ind.getDateFinIndisponibilite());
+
+                if (!noOverlap) return false;
+            }
+        }
+
+        // Vérification indispos générées par les matchs déjà placés
+        List<Interval> blocks = autoBlocks.getOrDefault(equipe, List.of());
+        for (Interval b : blocks) {
+            boolean noOverlap =
+                    end.isBefore(b.start()) ||
+                            start.isAfter(b.end());
+
+            if (!noOverlap) return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Bloque automatiquement une équipe pour un créneau (lorsqu'un match lui est attribué)
+     */
+    private void blockEquipe(
+            Equipe equipe,
+            LocalDateTime dateMatch,
+            Map<Equipe, List<Interval>> autoBlocks,
+            List<Indisponibilite> indisponibilites
+    ) {
+        autoBlocks.putIfAbsent(equipe, new ArrayList<>());
+        autoBlocks.get(equipe).add(
+                new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN))
+        );
+
+        //Ajoute l'indisponnibiltié dans la liste pour la renvoyer dans le résultat par la suite
+        indisponibilites.add(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe));
+
+
+
+    }
+}

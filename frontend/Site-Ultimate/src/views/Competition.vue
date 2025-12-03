@@ -46,14 +46,14 @@ function goToCompetition(id) { // JS pur, plus de :number
     <div v-else class="competition-list">
       <div
           v-for="competition in competitions"
-          :key="competition.id_competition"
+          :key="competition.idCompetition"
           class="competition-card"
-          @click="goToCompetition(competition.id_competition)"
+          @click="goToCompetition(competition.idCompetition)"
       >
         <img :src="ImageFond" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
-          <h3>{{ competition.id_competition }}</h3>
-          <p>{{ 12 }} équipes</p>
+          <h3>{{ competition.idCompetition }}</h3>
+          <p>{{ competition.format + " - " + competition.genre }}</p>
         </div>
       </div>
     </div>

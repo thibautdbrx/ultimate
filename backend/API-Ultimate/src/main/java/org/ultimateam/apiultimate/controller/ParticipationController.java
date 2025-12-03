@@ -1,6 +1,7 @@
 package org.ultimateam.apiultimate.controller;
 
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Participation;
 import org.ultimateam.apiultimate.service.ParticipationService;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/participation")
+@Tag(name = "Participation", description = "Endpoints pour gérer les participations")
 public class ParticipationController {
 
     private final ParticipationService participationService;

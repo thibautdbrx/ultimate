@@ -1,10 +1,12 @@
 package org.ultimateam.apiultimate.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,6 +21,7 @@ public abstract class Competition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long idCompetition;
 
     @Enumerated(EnumType.STRING)
@@ -26,18 +29,23 @@ public abstract class Competition {
     @Enumerated(EnumType.STRING)
     private Format format;
 
-    private LocalDateTime dateDebut;
-    private LocalDateTime dateFin;
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
+
+    private String nomCompetition;
+    private String descriptionCompetition;
 
     /**
     @OneToMany(mappedBy = "idCompetition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Match> matchs = new ArrayList<>();*/
 
-    public Competition(Genre genre, Format format, LocalDateTime dateDebut, LocalDateTime dateFin) {
+    public Competition(Genre genre, Format format, LocalDate dateDebut, LocalDate dateFin,String nomCompetition, String descriptionCompetition) {
         this.genre = genre;
         this.format = format;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
+        this.nomCompetition = nomCompetition;
+        this.descriptionCompetition = descriptionCompetition;
     }
 
 }

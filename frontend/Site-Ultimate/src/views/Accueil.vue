@@ -28,7 +28,7 @@ onMounted(async () => {
     // Matchs en direct
     const liveRes = await fetch(`/api/match/started`)
     const liveData = await liveRes.json()
-    stats.value.live = liveData.length    // ou liveData.count selon ton API
+    stats.value.live = liveData.length
 
     // Matchs à venir
     const upcomingRes = await fetch(`/api/match/notstarted`)
@@ -37,6 +37,7 @@ onMounted(async () => {
 
     // Compétitions
     const compRes = await fetch(`/api/tournois`)
+    console.log(compRes)
     const compData = await compRes.json()
     stats.value.competitions = compData.length
 
