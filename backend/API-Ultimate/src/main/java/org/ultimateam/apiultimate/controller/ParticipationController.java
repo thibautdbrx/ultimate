@@ -3,10 +3,12 @@ package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
 import org.ultimateam.apiultimate.service.ParticipationService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/participation")
@@ -26,7 +28,7 @@ public class ParticipationController {
     }
 
     @GetMapping("/competition/{idCompetition}")
-    public List<Participation> getParticipationByCompetitionId(@PathVariable Long idCompetition) {
+    public List<Equipe> getParticipationByCompetitionId(@PathVariable Long idCompetition) {
         return participationService.getParticipationByCompetitionId(idCompetition);
     }
 
