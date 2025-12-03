@@ -23,6 +23,7 @@ public class Equipe {
     private Long idEquipe;
 
     private String nomEquipe;
+    private String description;
 
     @OneToMany(mappedBy = "equipe", fetch = FetchType.LAZY)
     @JsonIgnore

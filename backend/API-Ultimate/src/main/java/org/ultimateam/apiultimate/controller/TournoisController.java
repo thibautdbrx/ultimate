@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Match;
 import org.ultimateam.apiultimate.model.Tournois;
@@ -34,6 +35,9 @@ public class TournoisController {
 
     @PostMapping
     public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+
+    @PatchMapping("/{idTournoi}")
+    public Tournois editTournoi(@RequestBody EquipeNameDTO nameDTO, @PathVariable long idTournoi) { return tournoisService.editTournois(nameDTO, idTournoi);}
 
     @PutMapping("/{idTournoi}/create")
     public List<Equipe> genererMatchs(@PathVariable Long idTournoi) { return tournoisService.genererRoundRobin(idTournoi);}

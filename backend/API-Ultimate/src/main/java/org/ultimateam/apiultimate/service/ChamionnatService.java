@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.*;
 
@@ -37,8 +38,8 @@ public class ChamionnatService {
         return championnatRepository.findById(id).orElse(null);
     }
 
-    public Championnat saveChampionnat(Championnat tournois) {
-        return championnatRepository.save(tournois);
+    public Championnat saveChampionnat(Championnat championnat) {
+        return championnatRepository.save(championnat);
     }
 
     public void deleteChampionnatById(Long id) {
@@ -47,6 +48,17 @@ public class ChamionnatService {
 
     public List<Match> getMatchesByChampionnat(Long idChampionnat) {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idChampionnat);
+    }
+    public Championnat editChampionnat(EquipeNameDTO nameDTO, Long idChampionnat) {
+        Championnat tournoi = championnatRepository.findById(idChampionnat)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Championnat non trouvée"));
+        if (nameDTO.getNom() != null) {
+            tournoi.setNomCompetition(nameDTO.getNom());
+        }
+        if (nameDTO.getDescription() != null) {
+            tournoi.setDescriptionCompetition(nameDTO.getDescription());
+        }
+        return championnatRepository.save(tournoi);
     }
 
     public record ScheduleResult(

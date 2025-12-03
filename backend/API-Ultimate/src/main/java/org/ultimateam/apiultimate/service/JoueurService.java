@@ -3,9 +3,11 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.List;
@@ -123,6 +125,15 @@ public class JoueurService {
         }
         Joueur joueur = getById(idJoueur);
         joueur.setPhotoJoueur(imageDTO.getImage());
+        return joueurRepository.save(joueur);
+    }
+
+    public Joueur editName(EditJoueurDTO nameDTO, long idJoueur) {
+        Joueur joueur = joueurRepository.findById(idJoueur)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Joueur non trouvée"));
+        if (nameDTO.getNomJoueur() !=null) joueur.setNomJoueur(nameDTO.getNomJoueur());
+        if (nameDTO.getPrenomJoueur() !=null) joueur.setPrenomJoueur(nameDTO.getPrenomJoueur());
+        if (nameDTO.getGenre() !=null) joueur.setGenre(nameDTO.getGenre());
         return joueurRepository.save(joueur);
     }
 }

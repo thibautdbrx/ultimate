@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.*;
 
@@ -104,6 +105,18 @@ public class TournoisService {
 
 
         return equipes;
+    }
+
+    public Tournois editTournois(EquipeNameDTO nameDTO, Long idTournoi) {
+        Tournois tournoi = tournoisRepository.findById(idTournoi)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournoi non trouvée"));
+        if (nameDTO.getNom() != null) {
+            tournoi.setNomCompetition(nameDTO.getNom());
+        }
+        if (nameDTO.getDescription() != null) {
+            tournoi.setDescriptionCompetition(nameDTO.getDescription());
+        }
+        return tournoisRepository.save(tournoi);
     }
 
 }
