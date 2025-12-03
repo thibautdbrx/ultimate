@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
@@ -114,5 +115,14 @@ public class JoueurService {
         equipeService.save(equipe);
 
         return equipe;
+    }
+
+    public Joueur updateJoueur(long idJoueur, ImageDTO imageDTO) {
+        if (!joueurRepository.existsById(idJoueur)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
+        }
+        Joueur joueur = getById(idJoueur);
+        joueur.setPhotoJoueur(imageDTO.getImage());
+        return joueurRepository.save(joueur);
     }
 }
