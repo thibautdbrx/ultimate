@@ -53,7 +53,7 @@ public class RoundRobinSchedulerService {
 
         // Objet qui contiendra les matchs + indisponibilités renvoyés
         TournoisService.ScheduleResult result =
-                new TournoisService.ScheduleResult(new ArrayList<>(), new ArrayList<>());
+                new TournoisService.ScheduleResult(new ArrayList<Match>(), indisponibilites);
 
         if (equipes.size() < 2) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut au moins 2 équipes.");
@@ -100,6 +100,8 @@ public class RoundRobinSchedulerService {
 
                     LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
 
+                    //System.out.println(dateMatch);
+
                     // Vérifie si A et B sont disponibles (indispos déclarées + autoBlocks)
                     boolean Aok = isAvailable(A, dateMatch, autoBlocks, indisponibilites);
                     boolean Bok = isAvailable(B, dateMatch, autoBlocks, indisponibilites);
@@ -118,8 +120,8 @@ public class RoundRobinSchedulerService {
                     result.addMatch(match);
 
                     // On bloque les équipes pendant ce créneau
-                    blockEquipe(A, dateMatch, autoBlocks, indisponibilites);
-                    blockEquipe(B, dateMatch, autoBlocks, indisponibilites);
+                    blockEquipe(A, dateMatch, autoBlocks, result);
+                    blockEquipe(B, dateMatch, autoBlocks, result);
 
                     matchIndex++;
                 }
@@ -133,13 +135,25 @@ public class RoundRobinSchedulerService {
             }
         }
 
+        /* Plus besoin normalement
         // Ajoute les indisponibilités déclarées au résultat final
         for (Indisponibilite indisponibilite : indisponibilites) {
             result.addIndisponibilite(indisponibilite);
         }
+         */
+
+
+        //System.out.println(result);
+        //System.out.println("tet");
+        //System.out.println(result.getMatchs().get(0).getDateMatch());
 
         return result;
     }
+
+
+
+
+
 
     /**
      * Génère les paires Round Robin :
@@ -179,6 +193,10 @@ public class RoundRobinSchedulerService {
 
         return matches;
     }
+
+
+
+
 
     /**
      * Génère tous les créneaux horaires possibles entre 9h et 18h,
@@ -224,7 +242,7 @@ public class RoundRobinSchedulerService {
         }
 
         // Vérification indispos générées par les matchs déjà placés
-        List<Interval> blocks = autoBlocks.getOrDefault(equipe, List.of());
+        List<Interval> blocks = autoBlocks.getOrDefault(equipe, new ArrayList<>());
         for (Interval b : blocks) {
             boolean noOverlap =
                     end.isBefore(b.start()) ||
@@ -239,21 +257,15 @@ public class RoundRobinSchedulerService {
     /**
      * Bloque automatiquement une équipe pour un créneau (lorsqu'un match lui est attribué)
      */
-    private void blockEquipe(
-            Equipe equipe,
-            LocalDateTime dateMatch,
-            Map<Equipe, List<Interval>> autoBlocks,
-            List<Indisponibilite> indisponibilites
-    ) {
+    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, TournoisService.ScheduleResult result) {
         autoBlocks.putIfAbsent(equipe, new ArrayList<>());
-        autoBlocks.get(equipe).add(
-                new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN))
-        );
+        autoBlocks.get(equipe).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
 
-        //Ajoute l'indisponnibiltié dans la liste pour la renvoyer dans le résultat par la suite
-        indisponibilites.add(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe));
-
-
+        // Ajoute directement dans le résultat
+        //System.out.println(dateMatch);
+        result.addIndisponibilite(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe));
+        //System.out.println(result.getIndisponibilites().get(0).getDateDebutIndisponibilite());
 
     }
+
 }
