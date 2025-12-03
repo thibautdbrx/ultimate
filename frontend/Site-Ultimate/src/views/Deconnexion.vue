@@ -14,13 +14,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="deconnexion-message">
+  <div class="message-deconnexion">
     <p>Déconnexion en cours...</p>
     </div>
 </template>
 
 <style scoped>
-.deconnexion-message {
+.message-deconnexion {
   padding: 5rem;
   text-align: center;
   font-size: 1.5rem;

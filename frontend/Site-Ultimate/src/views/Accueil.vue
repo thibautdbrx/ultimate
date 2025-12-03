@@ -107,10 +107,6 @@ onMounted(async () => {
       </SliderCardHorizontal>
     </div>
   </main>
-
-  <p v-if="auth.isAdmin">Admin</p>
-  <p v-if="!auth.isAuthenticated || auth.isVisiteur">Visiteur</p>
-  <p v-if="auth.isArbitre">Arbitre</p>
 </template>
 
 <style scoped>

@@ -14,7 +14,6 @@ const router = useRouter()
 const auth = useAuthStore()
 
 // Variables réactives pour le formulaire
-// CORRECTION : On utilise bien 'email' ici
 const email = ref('')
 const password = ref('')
 const errorMessage = ref(null)

@@ -5,8 +5,6 @@ import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
 
-const connecte = auth.isAdmin || auth.isArbitre || auth.isVisiteur;
-
 const clickhome = () => {
   router.push("/")
 };
