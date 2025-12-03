@@ -10,6 +10,7 @@ import Match from "@/views/match.vue";
 import AjoutEquipe from "@/views/AjoutEquipe.vue";
 import NouveauJoueur from "../views/NouveauJoueur.vue";
 import AjoutCompetition from "@/views/AjoutCompetition.vue";
+import Deconnexion from '@/views/Deconnexion.vue'
 
 
 
