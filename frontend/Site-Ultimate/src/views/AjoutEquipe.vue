@@ -54,7 +54,6 @@ const selectExisting = (joueur) => {
   j.genre = joueur.genre
   j.clickable = false
   modalShow_1.value = false
-  console.log(j)
 
 }
 
