@@ -25,7 +25,6 @@ import org.ultimateam.apiultimate.repository.UserRepository;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @Tag(name = "Authentification", description = "Endpoints pour l'authentification")
 public class AuthController {
 
