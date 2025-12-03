@@ -7,8 +7,11 @@ import Champs_input from "@/components/champs_input.vue"
 import CadenaIcon from "@/assets/icons/cadena.svg"
 import EmailIcon from "@/assets/icons/email.svg"
 import InscriptionBoutton from "@/components/InscriptionBoutton.vue"
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter()
+
+const auth = useAuthStore()
 
 // Variables réactives pour le formulaire
 // CORRECTION : On utilise bien 'email' ici
@@ -33,8 +36,8 @@ const submitForm = async () => {
       // Cookie valide 3h
       document.cookie = `token=${response.data.token}; path=/; max-age=10800; SameSite=Lax`;
       console.log(JSON.parse(atob(document.cookie.split('.')[1])).role) //.split('=')[1]
-      //const roles = JSON.parse(atob(token.split('.')[1])).roles
-      // Redirection vers l'accueil (ou 'Equipes' selon ton router)
+
+      auth.loadToken();
       await router.push("/")
     }
 

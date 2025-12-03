@@ -1,14 +1,18 @@
-<template>
-  <RouterLink to="/Connexion" class="btn">{{ label }}</RouterLink>
-</template>
-
 <script setup>
 import {RouterLink} from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+
+const auth = useAuthStore();
 
 defineProps({
   label: String
 })
 </script>
+
+<template>
+  <RouterLink v-if="!auth.isAuthenticated" to="/Connexion" class="btn">{{ label }}</RouterLink>
+  <RouterLink v-else to="/Deconnexion" class="btn">{{ label }}</RouterLink>
+</template>
 
 <style scoped>
 .btn {

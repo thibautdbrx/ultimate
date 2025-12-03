@@ -9,12 +9,14 @@ import Inscription from "@/views/Inscription.vue";
 import Match from "@/views/match.vue";
 import AjoutEquipe from "@/views/AjoutEquipe.vue";
 import NouveauJoueur from "../views/NouveauJoueur.vue";
+import Deconnexion from '@/views/Deconnexion.vue'
 
 
 
 const routes = [
     { path: '/', component: Accueil },
     { path: '/Connexion', component: Connexion },
+    { path: '/Deconnexion', component: Deconnexion },
     { path: '/Inscription', component: Inscription },
     { path: '/Equipe', component: Equipe },
     { path: '/Competition', component: Competition },

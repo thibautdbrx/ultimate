@@ -15,10 +15,10 @@ export const useAuthStore = defineStore("auth", {
         role: null,
     }),
     getters: {
-    // Ces variables seront calculées automatiquement
         isAdmin: (state) => state.role === 'ROLE_ADMIN',
         isArbitre: (state) => state.role === 'ROLE_ARBITRE',
-        isVisiteur: (state) => state.role === 'ROLE_VISITEUR'
+        isVisiteur: (state) => state.role === 'ROLE_VISITEUR',
+        isAuthenticated: (state) => !!state.token
     },
 
     actions: {
@@ -48,7 +48,7 @@ export const useAuthStore = defineStore("auth", {
             this.role = null;
 
             // supprimer le cookie
-            document.cookie = "token=; Max-Age=0";
+            document.cookie = "token=; Max-Age=0; path=/; SameSite=Lax";
         }
     }
 });
