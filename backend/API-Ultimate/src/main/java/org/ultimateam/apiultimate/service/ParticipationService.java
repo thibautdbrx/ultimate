@@ -1,8 +1,10 @@
 package org.ultimateam.apiultimate.service;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ListEquipeDTO;
 import org.ultimateam.apiultimate.model.Competition;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
@@ -10,6 +12,7 @@ import org.ultimateam.apiultimate.repository.CompetitionRespository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,5 +64,15 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pas le même genre");
         }
 
+    }
+
+    public List<Participation> addListParticipation(long idCompetition, ListEquipeDTO listEquipeDTO){
+        List<Long> idEquipes = listEquipeDTO.getIdEquipes();
+        List<Participation> participations = new ArrayList<>();
+        for (Long idEquipe : idEquipes) {
+            participations.add(addParticipation(idEquipe, idCompetition));
+
+        }
+        return participations;
     }
 }
