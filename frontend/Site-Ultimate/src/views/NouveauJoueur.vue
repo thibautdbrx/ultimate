@@ -2,6 +2,7 @@
 import { ref } from "vue"
 import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import { useRouter } from "vue-router"
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter()
 
@@ -32,7 +33,19 @@ const validerCreation = async () => {
   //if (joueur.value.photo){
   //   joueurPayload.photo = joueur.value.photo;
   //}
-
+  /**
+   * Faire la requête POST sur http://localhost:8080/api/files/upload
+   * avec en paramètre file=@/chemin/vers/imeage/pc.jpg
+   *
+   * requete fetch = http://localhost:8080/api/files/upload?file=@/chemin/vers/imeage/pc.jpg
+   *
+   * Récupérer cette réponse dans une variable
+   * Créer un nouveau joueur avec dans photoJoueur = data.url
+   *
+   * Puis lors de l'affichage d'un joueur, dans la balise img, mettre http://localhost:8080/api/files/+joueur.photoJoueur
+   *
+   * Possibilité de mettre une photo de base et si joueur/photoJoueur est null, afficher l'image de base
+   */
 
   const res = await fetch("/api/joueur", {
     method: "POST",

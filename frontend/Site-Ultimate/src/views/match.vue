@@ -5,6 +5,8 @@ import { useRoute } from "vue-router";
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
 
+import { useAuthStore } from "@/stores/auth";
+
 // --- Récupération de l'id du match ---
 const route = useRoute();
 const matchId = Number(route.params.id);

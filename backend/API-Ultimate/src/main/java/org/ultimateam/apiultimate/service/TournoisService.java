@@ -96,6 +96,7 @@ public class TournoisService {
 
         ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
         List<Match> matchs = scheduleResult.getMatchs();
+        System.out.println(matchs.get(0).getIdMatch());
         List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
 
         matchRepository.saveAll(matchs);

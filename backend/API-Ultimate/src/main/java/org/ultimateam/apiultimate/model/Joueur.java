@@ -34,6 +34,8 @@ public class Joueur {
     private Equipe equipe;
 
 
+    private String photoJoueur;
+
     /**
      * Constructeur par défaut pour créer une instance de Joueur vide.
      */

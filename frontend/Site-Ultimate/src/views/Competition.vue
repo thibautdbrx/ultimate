@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_coupe.jpg"
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter()
 

@@ -6,6 +6,7 @@ import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import AjoutJoueurOverlay from "@/components/AjoutJoueurOverlay.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const nomEquipe = ref("")
 const descriptionEquipe = ref("")

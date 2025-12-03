@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from "@/stores/auth";
 import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
 import CardMatch from "@/components/card_match.vue"
 import CarteEquipe from "@/components/card_equipe.vue"

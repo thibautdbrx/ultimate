@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, computed} from "vue"
-import CardEquipe from "@/components/Card_equipe.vue"
+import CardEquipe from "@/components/card_equipe.vue"
 
 const props = defineProps({
   show: Boolean,

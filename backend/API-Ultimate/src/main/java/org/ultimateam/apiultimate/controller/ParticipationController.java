@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.DTO.ListEquipeDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
 import org.ultimateam.apiultimate.service.ParticipationService;
@@ -40,6 +41,11 @@ public class ParticipationController {
     @PostMapping("/equipe/{idEquipe}/competition/{idCompetition}")
     public Participation createParticipation(@PathVariable Long idEquipe, @PathVariable Long idCompetition) {
         return participationService.addParticipation(idEquipe, idCompetition);
+    }
+
+    @PostMapping("/competition/{idCompetition}")
+    public List<Participation> createParticipation(@PathVariable Long idCompetition , @RequestBody ListEquipeDTO listEquipeDTO) {
+        return participationService.addListParticipation(idCompetition, listEquipeDTO);
     }
 
     @DeleteMapping("/{id}")
