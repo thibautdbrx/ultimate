@@ -1,10 +1,13 @@
 <script setup>
-import Button from './Bouton.vue'
-import { RouterLink } from 'vue-router'
+import Button from './Bouton.vue';
+import { RouterLink } from 'vue-router';
+import { useAuthStore } from "@/stores/auth";
+
+const auth = useAuthStore();
 
 const clickhome = () => {
   router.push("/")
-}
+};
 
 </script>
 
@@ -18,7 +21,11 @@ const clickhome = () => {
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
       <RouterLink to="/Equipe" class="nav-link">Equipe</RouterLink>
       <RouterLink to="/Competition" class="nav-link">Compétition</RouterLink>
-      <Button active-class="no-active-style" label="Connexion" />
+      <Button v-if="!auth.isAuthenticated" active-class="no-active-style" label="Connexion" />
+      <Button v-else active-class="no-active-style" label="Deconnexion" />
+
+      
+      
     </nav>
   </header>
 </template>

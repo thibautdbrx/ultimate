@@ -10,11 +10,13 @@ import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
 import CardRes from '../components/Card_resultat.vue'
 
+
 const stats = ref({
   live: 0,
   upcoming: 0,
   competitions: 0
 })
+
 const auth = useAuthStore();
 
 const derniersMatchs = ref([])

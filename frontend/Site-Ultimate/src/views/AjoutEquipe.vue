@@ -11,6 +11,8 @@ const nomEquipe = ref("")
 const descriptionEquipe = ref("")
 const nombreJoueurs = ref(0)
 
+const auth = useAuthStore();
+
 // 20 joueurs
 const joueurs = ref(
     Array.from({ length: 20 }, () => ({

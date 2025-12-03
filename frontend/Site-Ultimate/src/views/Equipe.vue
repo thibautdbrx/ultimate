@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
+import {useAuthStore} from "@/stores/auth.js";
 
 const router = useRouter()
 
@@ -10,8 +11,9 @@ const equipes = ref([])
 
 const loading = ref(true)
 const error = ref(null)
-const isAdmin = ref(false)
-const isArbitre = ref(false)
+
+
+const auth = useAuthStore();
 
 // Récupération des compétitions
 onMounted(() => {
@@ -70,8 +72,6 @@ function goToEquipe(id,nom) {
         </div>
       </div>
     </div>
-    <p v-if="isAdmin">Admin</p>
-    <p v-if="isArbitre">Arbitre</p>
   </main>
 </template>
 

@@ -5,6 +5,8 @@ import { useRouter } from "vue-router"
 
 const router = useRouter()
 
+const auth = useAuthStore();
+
 // Le joueur à créer, utile pour creer la vue joueurcardform de facon clicable
 const joueur = ref({
   id: null,

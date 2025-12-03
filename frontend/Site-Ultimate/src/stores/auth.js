@@ -14,6 +14,12 @@ export const useAuthStore = defineStore("auth", {
         email: null,
         role: null,
     }),
+    getters: {
+        isAdmin: (state) => state.role === 'ROLE_ADMIN',
+        isArbitre: (state) => state.role === 'ROLE_ARBITRE',
+        isVisiteur: (state) => state.role === 'ROLE_VISITEUR',
+        isAuthenticated: (state) => !!state.token
+    },
 
     actions: {
         loadToken() {
@@ -42,7 +48,7 @@ export const useAuthStore = defineStore("auth", {
             this.role = null;
 
             // supprimer le cookie
-            document.cookie = "token=; Max-Age=0";
+            document.cookie = "token=; Max-Age=0; path=/; SameSite=Lax";
         }
     }
 });

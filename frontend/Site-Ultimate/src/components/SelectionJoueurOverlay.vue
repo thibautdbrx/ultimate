@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, computed} from "vue"
-import CardJoueur from "@/components/Card_joueur.vue"
+import CardJoueur from "@/components/card_joueur.vue"
 
 const props = defineProps({
   show: Boolean,

@@ -13,66 +13,24 @@ const matches = ref([])
 const loading = ref(true)
 const error = ref(null)
 
+const auth = useAuthStore();
 
-function getUniqueTeams(matches) {
-  if (!matches) return []
-  const set = new Map()
-  matches.forEach(m => {
-    set.set(m.equipe1.idEquipe)
-    set.set(m.equipe2.idEquipe)
-  })
-  return Array.from(set, (id) => ({ idEquipe: id }))
-}
-
-function getFinishedMatches(matches) {
-  if (!matches) return []
-  const now = new Date()
-  return matches.filter(m =>
-      m.status === "FINISHED" || new Date(m.dateFin) <= now
-  )
-}
-
-function getUpcomingMatches(matches) {
-  if (!matches) return []
-  const now = new Date()
-  return matches.filter(m =>
-      m.status !== "FINISHED" && new Date(m.dateFin) > now
-  )
-}
-
-/* ---------------------------------------
-        🧮 Computed
---------------------------------------- */
-const upcomingMatches = computed(() => getUpcomingMatches(matches.value))
-const finishedMatches = computed(() => getFinishedMatches(matches.value))
-const uniqueTeams = computed(() => getUniqueTeams(matches.value))
-const nbTeams = computed(() => uniqueTeams.value.length)
-
-/* ---------------------------------------
-        🌐 Fetch des données
---------------------------------------- */
-
-onMounted(async () => {
-  try {
-    const res = await fetch(`/api/tournois/${competitionId}/matchs`)
-    if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
-
-    const data = await res.json()
-
-    // Ton backend renvoie un TABLEAU DIRECTEMENT → matches = data
-    matches.value = data
-
-    // Tu peux remplir competition si tu veux afficher un titre
-    if (data.length > 0) {
-      competition.value = data[0].idCompetition
-    }
-
-    loading.value = false
-  } catch (err) {
-    console.error(err)
-    error.value = "Impossible de charger les matchs de cette compétition."
-    loading.value = false
-  }
+onMounted(() => {
+  fetch(`api/competitions/${competitionId}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
+        return res.json()
+      })
+      .then(data => {
+        competition.value = data.competition
+        matches.value = data.matches
+        loading.value = false
+      })
+      .catch(err => {
+        console.error(err)
+        //error.value = "Impossible de charger les matchs de cette compétition."
+        //loading.value = false
+      })
 })
 
 </script>
