@@ -11,101 +11,127 @@ const competitionId = route.params.id
 
 const competition = ref(null)
 const matches = ref([])
+const teams = ref([])
+
 const loading = ref(true)
 const error = ref(null)
-const teams = ref([]) // toutes les équipes à afficher
 
-// Computed
-const hasMatches = computed(() => matches.value && matches.value.length > 0)
-const upcomingMatches = computed(() => matches.value.filter(m => m.status !== 'FINISHED' && new Date(m.dateFin) > new Date()))
-const finishedMatches = computed(() => matches.value.filter(m => m.status === 'FINISHED' || new Date(m.dateFin) <= new Date()))
-const nbTeams = computed(() => teams.value.length)
+// Matchs ?
+const hasMatches = computed(() => matches.value.length > 0)
 
-// Récupérer les équipes uniques depuis les matchs
-function getTeamsFromMatches(matches) {
-  const map = new Map()
-  matches.forEach(m => {
-    map.set(m.equipe1.idEquipe, m.equipe1)
-    map.set(m.equipe2.idEquipe, m.equipe2)
-  })
-  return Array.from(map.values())
+// Filtres dates
+function getFinishedMatches(m) {
+  const now = new Date()
+  return m.filter(x => x.status === "FINISHED" || new Date(x.dateFin) <= now)
 }
 
-// Récupérer les équipes via la participation si aucun match
-async function fetchTeamsFromParticipation() {
+function getUpcomingMatches(m) {
+  const now = new Date()
+  return m.filter(x => x.status !== "FINISHED" && new Date(x.dateFin) > now)
+}
+
+const finishedMatches = computed(() => getFinishedMatches(matches.value))
+const upcomingMatches = computed(() => getUpcomingMatches(matches.value))
+
+// Nombre d’équipes
+const nbTeams = computed(() => teams.value.length)
+
+// Récupération des équipes via participation
+async function fetchTeams() {
   try {
     const res = await fetch(`/api/participation/competition/${competitionId}`)
-    if (!res.ok) throw new Error("Erreur HTTP participation")
-    const data = await res.json() // [{id: {idEquipe, idCompetition}}, ...]
+    if (!res.ok) throw new Error("Erreur HTTP équipes")
 
-    // Pour chaque idEquipe, fetch les infos complètes
-    const teamPromises = data.map(async p => {
-      const r = await fetch(`/api/equipe/${p.id.idEquipe}`)
-      if (!r.ok) throw new Error("Erreur HTTP équipe")
-      return r.json()
-    })
-    teams.value = await Promise.all(teamPromises)
+    teams.value = await res.json()
   } catch (err) {
     console.error(err)
-    teams.value = []
+    error.value = "Impossible de charger les équipes."
   }
 }
 
+// Page logic
 onMounted(async () => {
   try {
-    // 1️⃣ fetch des matchs
-    const res = await fetch(`/api/tournois/${competitionId}/matchs`)
-    if (!res.ok) throw new Error(`Erreur HTTP matchs: ${res.status}`)
-    const data = await res.json()
-    matches.value = data
+    // 1) Récup matchs
+    const resM = await fetch(`/api/tournois/${competitionId}/matchs`)
+    if (!resM.ok) throw new Error("Erreur HTTP matchs")
 
-    if (data.length > 0) {
-      // On récupère la compétition depuis le premier match
-      competition.value = data[0].idCompetition
-      // Et les équipes depuis les matchs
-      teams.value = getTeamsFromMatches(data)
+    const dataM = await resM.json()
+    matches.value = dataM
+
+    // 2) Si des matchs -> récupérer la compétition ET les équipes via les matchs
+    if (dataM.length > 0) {
+      competition.value = dataM[0].idCompetition
+
+      // Récup teams via les matchs
+      const map = new Map()
+      dataM.forEach(m => {
+        map.set(m.equipe1.idEquipe, m.equipe1)
+        map.set(m.equipe2.idEquipe, m.equipe2)
+      })
+      teams.value = Array.from(map.values())
     } else {
-      // Si aucun match, récupérer les équipes inscrites
-      await fetchTeamsFromParticipation()
+      // 3) Sinon -> récupérer les équipes via participation
+      await fetchTeams()
+
+      // Et récupérer la compétition séparément si nécessaire
+      const resC = await fetch(`/api/competition/${competitionId}`)
+      if (resC.ok) competition.value = await resC.json()
     }
 
     loading.value = false
   } catch (err) {
     console.error(err)
-    error.value = "Impossible de charger la compétition"
+    error.value = "Erreur de chargement."
     loading.value = false
   }
 })
 
-// Fonctions boutons
-function goToEdit() { console.log("Modifier la compétition") }
-function genererMatchs() { console.log("Générer les matchs") }
+function goToEdit() {
+  console.log("Modifier compétition")
+}
+
+function genererMatchs() {
+  console.log("Générer les poules")
+}
 </script>
+
 
 <template>
   <div class="competition-details">
+
     <div v-if="loading">Chargement...</div>
     <div v-if="error" class="state-msg error">{{ error }}</div>
 
-    <div v-if="competition || teams.length">
+    <!-- Aucun match -->
+    <div v-if="!hasMatches && !loading" class="no-matches">
+      <p>Aucun match n’a encore été généré pour cette compétition.</p>
+      <button class="btn-primary" @click="goToEdit">Modifier la compétition</button>
+      <button class="btn-secondary" @click="genererMatchs">Générer les poules et créer les matchs</button>
+    </div>
+
+    <!-- Affichage principal -->
+    <div v-if="competition">
+
       <h2>
-        {{ competition?.nomCompetition || 'Compétition inconnue' }} -
-        {{ competition?.format || '-' }} -
-        {{ competition?.genre || '-' }} -
+        {{ competition.nomCompetition }} —
+        {{ competition.format }} —
+        {{ competition.genre }} —
         {{ nbTeams }} équipes
       </h2>
 
-      <!-- Équipes engagées -->
+      <!-- ÉQUIPES -->
       <section class="equipes-section">
         <h3>Équipes engagées</h3>
+
         <div class="teams-grid">
           <div v-for="t in teams" :key="t.idEquipe" class="team-card-wrapper">
-            <CarteEquipe :equipe="t" :image="ImageFond" />
+            <CarteEquipe :equipe="t" :image="ImageFond" :licencie="false  "/>
           </div>
         </div>
       </section>
 
-      <!-- Matchs si disponibles -->
+      <!-- MATCHS -->
       <div v-if="hasMatches" class="prochain_matches">
         <button class="btn-primary" @click="goToEdit">Modifier la compétition</button>
 
@@ -137,16 +163,10 @@ function genererMatchs() { console.log("Générer les matchs") }
           </div>
         </SliderCardHorizontal>
       </div>
-
-      <!-- Aucun match -->
-      <div v-else class="no-matches">
-        <p>Aucun match n’a encore été généré pour cette compétition.</p>
-        <button class="btn-primary" @click="goToEdit">Modifier la compétition</button>
-        <button class="btn-secondary" @click="genererMatchs">Générer les poules et créer les matchs</button>
-      </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .competition-details {
@@ -159,10 +179,12 @@ function genererMatchs() { console.log("Générer les matchs") }
 h2 {
   margin-bottom: 1.5rem;
   text-align: center;
+  color: #000;
 }
 
-.state-msg { color: #555; }
-.state-msg.error { color: #e74c3c; }
+.state-msg.error {
+  color: #e74c3c;
+}
 
 .teams-grid {
   display: flex;
@@ -170,7 +192,6 @@ h2 {
   gap: 1.5rem;
   justify-content: center;
   width: 100%;
-  max-width: 1000px;
 }
 
 .team-card-wrapper {
@@ -180,8 +201,8 @@ h2 {
 .prochain_matches {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  width: 80%;
-  max-width: max-content;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
 }
 </style>

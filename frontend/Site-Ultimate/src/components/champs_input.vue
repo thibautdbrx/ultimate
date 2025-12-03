@@ -50,6 +50,8 @@ const model = computed({ //dit de envoyer l'info au parents quand model est modi
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+
+
 }
 
 label {

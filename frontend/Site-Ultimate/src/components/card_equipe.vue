@@ -9,6 +9,11 @@ defineProps({
   image: {
     type: String,
     default: Image_base
+  },
+  licencie:{
+    type: Boolean,
+    required: false,
+    default: true
   }
 })
 </script>
@@ -19,7 +24,7 @@ defineProps({
 
     <div class="competition-info">
       <h3>{{ equipe.nomEquipe }}</h3>
-      <p>{{ equipe.nbJoueur }} licencié(e)s</p>
+      <p v-if="licencie">{{ equipe.nbJoueur }} licencié(e)s</p>
     </div>
   </div>
 </template>

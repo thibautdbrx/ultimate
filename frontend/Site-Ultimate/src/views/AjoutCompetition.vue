@@ -54,6 +54,9 @@ const selectExisting = (equipe) => {
 
 const router = useRouter()
 
+function toSimpleDate(dateString) {
+  return dateString ?? null;
+}
 
 
 const valider_ajout_equipe = async () => {
@@ -96,8 +99,8 @@ const valider_ajout_equipe = async () => {
     const tournoisPayload = {
       genre: genre.value,
       format: format.value,
-      dateDebut:dateDebut.value,
-      dateFin :  dateFin.value,
+      dateDebut: toSimpleDate(dateDebut.value),
+      dateFin :  toSimpleDate(dateFin.value),
       nomCompetition: nomCompetition.value,
       descriptionCompetition: DescriptionCompetition.value
     };
@@ -165,7 +168,7 @@ const valider_ajout_equipe = async () => {
       <label>Genre :</label>
       <select v-model="genre" class="select-genre">
         <option value="HOMME">HOMME</option>
-        <option value="FEMME">FEMME</option>
+        <option value="FEMMME">FEMME</option>
         <option value="MIXTE">MIXTE</option>
       </select>
 
