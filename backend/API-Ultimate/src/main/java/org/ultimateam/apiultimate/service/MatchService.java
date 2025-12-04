@@ -29,11 +29,13 @@ public class MatchService {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
     private final Map<Long, ScheduledFuture<?>> matchSchedulers = new HashMap<>();
     private final TournoisService tournoisService;
+    private final ClassementService classementService;
 
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService) {
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
         this.tournoisService = tournoisService;
+        this.classementService = classementService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -153,6 +155,7 @@ public class MatchService {
         Match match = getById(id);
         if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
         finirMatchSafe(match);
+        classementService.mettreAJourClassement(match);
         return match;
     }
 

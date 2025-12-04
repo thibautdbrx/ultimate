@@ -1,138 +1,78 @@
 package org.ultimateam.apiultimate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.ultimateam.apiultimate.model.Classement;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Tournois;
-import org.ultimateam.apiultimate.repository.MatchRepository;
+import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.model.*;
+import org.ultimateam.apiultimate.repository.ClassementRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-
 public class ClassementService {
-    private Map<Equipe, Integer> scores;
-    private Tournois tournois;
-    private String type;
 
-    private final MatchRepository matchRepo;
+    private final ClassementRepository classementRepository;
 
-    public void Classement(Tournois tournois, String type) {
-        this.tournois = tournois;
-        this.type = type;
-        this.scores = new HashMap<>();
+    public ClassementService(ClassementRepository classementRepository ) {
+        this.classementRepository = classementRepository;
     }
 
-    public int calculerDifferencePoints(Classement classement) {
-        int idEquipe = classement.getIdEquipe();
-        int pointsMarques = 0;
-        int pointsEncaissees = 0;
+    public Iterable<Classement> getAll() {return classementRepository.findAll();}
+    public Classement save(Classement classement) { return classementRepository.save(classement); }
+    public void deleteById(ParticipationId id) {
+        if (!classementRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le classement n'existe pas.");
+        }
+        classementRepository.deleteById(id);
+    }
 
-        // Récupérer tous les matchs
-        List<Match> matchs = matchRepo.findAll();
-
-        for (Match match : matchs) {
-            if (match.getStatus() == Match.Status.FINISHED) {
-                if (match.getEquipe1().getIdEquipe() == idEquipe) {
-                    pointsMarques += match.getScoreEquipe1();
-                    pointsEncaissees += match.getScoreEquipe2();
-                } else if (match.getEquipe2().getIdEquipe() == idEquipe) {
-                    pointsMarques += match.getScoreEquipe2();
-                    pointsEncaissees += match.getScoreEquipe1();
-                }
-            }
+    public void mettreAJourClassement(Match match) {
+        if (match.getStatus() != Match.Status.FINISHED) {
+            return;
         }
 
-        int differencePoints = pointsMarques - pointsEncaissees;
-        classement.setDifference_points(differencePoints);
+        Competition competition = match.getIdCompetition();
+        Equipe equipe1 = match.getEquipe1();
+        Equipe equipe2 = match.getEquipe2();
 
-        return differencePoints;
+        Classement classement1 = classementRepository.findByCompetitionAndEquipe(competition,equipe1);
+        Classement classement2 = classementRepository.findByCompetitionAndEquipe(competition,equipe2);
+
+        long score1 = match.getScoreEquipe1();
+        long score2 = match.getScoreEquipe2();
+
+        updateStats(classement1, score1, score2);
+        updateStats(classement2, score2, score1);
+        save(classement1);
+        save(classement2);
+
     }
 
+    private void updateStats(Classement classement, long score1, long score2) {
+        classement.setPoint_marque(classement.getPoint_marque() + score1);
+        classement.setPoint_encaisse(classement.getPoint_encaisse() + score2);
+        classement.setDifference_points(classement.getPoint_marque() - classement.getPoint_encaisse());
 
-    public void mettreAJourScore(Equipe equipe) {
-        int points = 0;
-        List<Match> matchsTermines = matchRepo.findAll().stream()
-                .filter(match -> match.getStatus() == Match.Status.FINISHED)
-                .toList();
-
-        for (Match match : matchsTermines) {
-            if (match.getEquipe1().equals(equipe)) {
-                if (match.getScoreEquipe1() > match.getScoreEquipe2()) {
-                    points += 3; // Victoire
-                } else if (match.getScoreEquipe1() == match.getScoreEquipe2()) {
-                    points += 1; // Match nul
-                }
-            } else if (match.getEquipe2().equals(equipe)) {
-                if (match.getScoreEquipe2() > match.getScoreEquipe1()) {
-                    points += 3; // Victoire
-                } else if (match.getScoreEquipe1() == match.getScoreEquipe2()) {
-                    points += 1; // Match nul
-                }
-            }
+        if (score1 > score2) {
+            classement.setScore(classement.getScore() + 3 );
+            classement.setVictoires(classement.getVictoires() +1);
         }
-        scores.put(equipe, points);
-    }
-
-
-    public List<Equipe> getClassementTrie() {
-        // Récupérer toutes les équipes et leurs scores
-        List<Map.Entry<Equipe, Integer>> entries = new ArrayList<>(scores.entrySet());
-        entries.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue())); // Trier par score décroissant
-        List<Equipe> classement = new ArrayList<>();
-        for (Map.Entry<Equipe, Integer> entry : entries) {
-            classement.add(entry.getKey());
-        }
-
-        return classement;
-    }
-
-    public void calculerPointsClassement() {
-        List<Match> matchsTermines = matchRepo.findAll().stream()
-                .filter(match -> match.getStatus() == Match.Status.FINISHED)
-                .toList();
-
-        for (Match match : matchsTermines) {
-            Equipe equipe1 = match.getEquipe1();
-            Equipe equipe2 = match.getEquipe2();
-
-            // Initialiser les scores si nécessaire
-            scores.putIfAbsent(equipe1, 0);
-            scores.putIfAbsent(equipe2, 0);
-
-            if (match.getScoreEquipe1() > match.getScoreEquipe2()) {
-                scores.put(equipe1, scores.get(equipe1) + 3); // Victoire équipe 1
-            } else if (match.getScoreEquipe1() < match.getScoreEquipe2()) {
-                scores.put(equipe2, scores.get(equipe2) + 3); // Victoire équipe 2
-            } else {
-                scores.put(equipe1, scores.get(equipe1) + 1); // Match nul
-                scores.put(equipe2, scores.get(equipe2) + 1);
-            }
+        else if (score2 == score1) {
+            classement.setScore(classement.getScore() +1 );
+            classement.setEgalites(classement.getEgalites() + 1);
+        } else {
+            classement.setDefaites(classement.getDefaites() + 1);
         }
     }
 
 
-    public void enregistrerResultatMatch(Match match) {
-        mettreAJourScore(match.getEquipe1());
-        mettreAJourScore(match.getEquipe2());
-    }
-
-    public void afficherClassement() {
-        System.out.println("Classement " + type + " pour le tournoi d'ID n°" + tournois.getIdCompetition());
-        List<Equipe> classement = getClassementTrie();
-
-        for (int i = 0; i < classement.size(); i++) {
-            Equipe equipe = classement.get(i);
-            int score = scores.get(equipe);
-            System.out.println((i + 1) + ". " + equipe.getNomEquipe() + " - " + score + " points.");
+    public List<Classement> triClassement(Long idCompetition) {
+        List<Classement> classements = classementRepository.findAllByCompetitionIdOrderByRank(idCompetition);
+        for(int i=0; i<classements.size(); i++) {
+            classements.get(i).setRang(i+1);
         }
+        return classements;
     }
+
 
 }

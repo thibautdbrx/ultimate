@@ -3,14 +3,8 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Participation;
-import org.ultimateam.apiultimate.model.Tournois;
-import org.ultimateam.apiultimate.repository.EquipeRepository;
-import org.ultimateam.apiultimate.repository.MatchRepository;
-import org.ultimateam.apiultimate.repository.ParticipationRepository;
-import org.ultimateam.apiultimate.repository.TournoisRepository;
+import org.ultimateam.apiultimate.model.*;
+import org.ultimateam.apiultimate.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,13 +17,15 @@ public class TournoisService {
     private final ParticipationRepository participationRepository;
     private final EquipeService equipeService;
     private final MatchRepository matchRepository;
+    private final ClassementRepository classementRepository;
 
     public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository, EquipeService equipeService,
-                           MatchRepository matchRepository) {
+                           MatchRepository matchRepository, ClassementRepository classementRepository) {
         this.tournoisRepository = tournoisRepository;
         this.participationRepository = participationRepository;
         this.equipeService = equipeService;
         this.matchRepository = matchRepository;
+        this.classementRepository = classementRepository;
     }
 
     public List<Tournois> getAllTournois() {
@@ -59,6 +55,8 @@ public class TournoisService {
 
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.
     public List<Equipe> genererRoundRobin(Long idTournois) {
+
+
         Tournois tournoi = getTournoisById(idTournois);
         if (tournoi == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournois n'existe pas");
@@ -66,6 +64,7 @@ public class TournoisService {
         List<Participation> participations = participationRepository.findById_idCompetition(idTournois);
         List<Equipe> equipes = new ArrayList<>();
         for (Participation participation : participations) {
+            classementRepository.save(new Classement(participation.getId()));
             equipes.add(equipeService.getById(participation.getId().getIdEquipe()));
         }
         int nbEquipes = equipes.size();
