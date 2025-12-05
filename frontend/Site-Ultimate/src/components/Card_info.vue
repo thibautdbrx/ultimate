@@ -1,15 +1,25 @@
 <script setup >
-defineProps({
+import { useRouter } from 'vue-router'
+const props = defineProps({
   title: String,
   value: Number,
   icon: Object,
   color1: String,
-  color2:String
+  color2:String,
+  tp: { type:String, default: null}
 })
+
+const router = useRouter()
+
+function click() {
+  if (props.tp) {
+    router.push(props.tp)
+  }
+}
 </script>
 
 <template>
-  <div class="card_info">
+  <div @click="tp ? click() : null" class="card_info">
     <div class="card-content">
       <h3>{{ title }}</h3>
       <div class="info">

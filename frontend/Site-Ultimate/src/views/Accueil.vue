@@ -78,6 +78,8 @@ onMounted(async () => {
             :icon="LiveIcon"
             color1="#FFD6D6"
             color2="#d31a42"
+
+
         />
         <CardInfo
             title="Matchs à venir"
@@ -85,6 +87,7 @@ onMounted(async () => {
             :icon="CalendarIcon"
             color1="#dbeafe"
             color2="#155dfc"
+
         />
         <CardInfo
             title="Compétitions"
@@ -92,6 +95,7 @@ onMounted(async () => {
             :icon="TrophyIcon"
             color1="#f3e8ff"
             color2="#9810fa"
+            tp="Competition"
         />
       </section>
 
@@ -133,6 +137,6 @@ onMounted(async () => {
 }
 
 .Acceuil{
-  padding: 2rem;
+  padding: 2rem 0rem;
 }
 </style>

@@ -191,7 +191,7 @@ const selectExisting = async (joueur) => {
           @close="modalShow_1 = false"
           @select="selectExisting"
       />
-        <button v-if="editMode" class="btn" @click="openModal_1()">
+        <button v-if="editMode" class="btn" id="ajouter_j" @click="openModal_1()">
           Ajouter un joueur
         </button>
       </div>
@@ -223,6 +223,7 @@ const selectExisting = async (joueur) => {
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: 2rem;
+  align-items: center;
 }
 
 .joueur-wrapper {
@@ -272,5 +273,10 @@ const selectExisting = async (joueur) => {
 }
 .input {
   width: 30%;
+}
+
+#ajouter_j{
+  width: 10rem;
+  height: 3rem;
 }
 </style>
