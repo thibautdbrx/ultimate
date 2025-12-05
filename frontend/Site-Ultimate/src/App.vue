@@ -14,10 +14,6 @@ import Footer from './components/Footer.vue'
 </template>
 
 <style scoped>
-#app{
-  background-color: #f8fafc;
-  height:100%;
-}
 
 
 </style>
