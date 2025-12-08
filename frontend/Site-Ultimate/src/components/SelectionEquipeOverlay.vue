@@ -4,6 +4,11 @@ import CardEquipe from "@/components/card_equipe.vue"
 
 const props = defineProps({
   show: Boolean,
+  all:{
+    type: Boolean,
+    required: false,
+    default: true,
+  }
 })
 
 const emit = defineEmits(["close", "select", "nvj"])
@@ -15,6 +20,8 @@ async function loadEquipes() {
   const res = await fetch("/api/equipe")
   equipes.value = await res.json()
 }
+
+
 
 onMounted(async () => {
   loadEquipes()
@@ -40,9 +47,9 @@ const filtered = computed(() =>
 
     <div class="overlay">
       <div class="titre">
-        <h3>Choisir un joueur</h3>
+        <h3>Choisir une équipe</h3>
         <button id="close-btt-haut" @click="emit('close')">Fermer</button>
-        <button id="close-btt-haut" @click="emit('nvj')">Nouvelle équipe</button>
+        <button v-if="all" id="close-btt-haut" @click="emit('nvj')">Nouvelle équipe</button>
       </div>
 
       <input

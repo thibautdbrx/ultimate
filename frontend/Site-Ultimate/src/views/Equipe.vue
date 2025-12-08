@@ -45,7 +45,6 @@ function goToEquipe(id, nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
 }
 
-console.log(equipes)
 </script>
 
 

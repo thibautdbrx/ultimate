@@ -19,6 +19,7 @@ const modalShow_1 = ref(false)
 const modalIndex = ref()
 
 const nomEquipe = ref("")
+const descriptionEquipe = ref("")
 
 onMounted(async () => {
   try {
@@ -52,16 +53,24 @@ const supprimerJoueur = async (index) => {
 
 const valider_titre = async () => {
   if (confirm(`changer le nom de l'équipe ?`)) {
-    const modif_nom = await fetch(`/api/equipe/${equipeId}/name`,{
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        nomEquipe: nomEquipe.value
-      })
+    console.log( nomEquipe.value)
+    try {
+      const modif_nom = await fetch(`/api/equipe/${equipeId}/name`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nomEquipe: nomEquipe.value
+        })
 
-    });
+      });
+      if (!modif_nom.ok) {
+        throw new Error("Erreur lors de la modification du nom de l'équipe")
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 const valider_desc = async () => {
