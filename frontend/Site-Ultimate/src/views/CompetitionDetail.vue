@@ -6,6 +6,7 @@ import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
 import CardMatch from "@/components/card_match.vue"
 import CarteEquipe from "@/components/card_equipe.vue"
 import ImageFond from "@/assets/img/img_equipe.jpg"
+import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -19,13 +20,13 @@ const teams = ref([])
 const loading = ref(true)
 const error = ref(null)
 
+const modalShow_1 =ref(false)
 const editMode = ref(false)
 
 async function fetchTeams() {
   const res = await fetch(`/api/participation/competition/${competitionId}`)
   if (!res.ok) throw new Error("Erreur HTTP équipes")
   teams.value = await res.json()
-  console.log(teams.value)
 }
 
 async function fetchCompetitionInfo() {
@@ -55,6 +56,35 @@ onMounted(async () => {
   }
 })
 
+
+const selectExisting = async (equipe) => {
+  try {
+    // 1. Appeler l’API pour assicier equipe au tournois
+      const res = await fetch(`/api/participation/equipe/${equipe.idEquipe}/competition/${competitionId}`, {
+      method: "POST",
+    })
+
+    if (!res.ok) {
+      throw new Error("Erreur lors de l'ajout de l'équie à la competition")
+    }
+
+    // 2. Ajouter le joueur dans la liste locale
+    teams.value.push({
+      idEquipe: equipe.idEquipe,
+      nomEquipe: equipe.nomEquipe,
+      description: equipe.descriptionEquipe,
+      genre: equipe.genre
+    })
+    alert("équipe bien ajouté dans la base de donnée")
+    // 3. Fermer la modale
+    modalShow_1.value = false
+
+  } catch (err) {
+    console.error(err)
+    alert("Impossible d’ajouter le joueur à l’équipe.")
+  }
+}
+
 // Logique affichage
 const allowEdit = computed(() => matches.value.length === 0)
 
@@ -76,7 +106,6 @@ const upcomingMatches = computed(() => {
 
 const nbTeams = computed(() => teams.value.length)
 
-// Actions
 function toggleEditMode() {
   editMode.value = !editMode.value
 }
@@ -87,6 +116,18 @@ function genererMatchs() {
 
 function goToEquipe(id, nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
+}
+
+const openModal_1 = () => {
+  modalShow_1.value = true
+}
+const supprimerEquipe = async (index) => {
+  if (confirm(`Supprimer ${teams.value[index].nomEquipe} ?`)) {
+    const suppJ = await fetch(`/api/participation//equipe/${equipeId}`, {
+      method: "DELETE",
+    });
+    joueurs.value.splice(index, 1)
+  }
 }
 </script>
 
@@ -111,7 +152,7 @@ function goToEquipe(id, nom) {
           <p>Aucun match n’a encore été généré pour cette compétition.</p>
 
           <button class="btn-primary" @click="toggleEditMode">
-            Modifier la compétition
+            {{ editMode ? "Quitter la modification" : "Modifier" }}
           </button>
 
           <button class="btn-primary" @click="genererMatchs">
@@ -125,13 +166,13 @@ function goToEquipe(id, nom) {
 
           <!-- Bouton d'ajout uniquement en mode edition -->
           <div v-if="allowEdit && editMode" class="edit-actions">
-            <button class="btn-secondary">Ajouter une équipe</button>
+            <button class="btn-primary" @click="openModal_1()">Ajouter une équipe</button>
           </div>
 
           <div class="teams-grid">
             <div v-for="t in teams" :key="t.idEquipe" class="team-card-wrapper">
 
-              <!-- Bouton supprimer affiché uniquement en mode édition -->
+              <!-- Bouton supprimer affiché uniquement en édition -->
               <button
                   v-if="allowEdit && editMode"
                   class="btn-delete"
@@ -147,6 +188,14 @@ function goToEquipe(id, nom) {
                   @click="goToEquipe(t.idEquipe, t.nomEquipe)"
               />
             </div>
+
+
+          <SelectEquipe
+              :show="modalShow_1"
+              :all="false"
+              @close="modalShow_1 = false"
+              @select="selectExisting"
+          />
           </div>
         </section>
 
@@ -206,6 +255,10 @@ h2 {
 
 .no-matches {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
@@ -215,17 +268,17 @@ h2 {
   gap: 1.5rem;
   justify-content: center;
   width: 100%;
+  margin: 2rem 0;
 }
 
 .team-card-wrapper {
-  position: relative;
   flex: 0 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .btn-delete {
-  position: absolute;
-  top: -10px;
-  right: -10px;
   background: #e74c3c;
   color: white;
   border: none;
