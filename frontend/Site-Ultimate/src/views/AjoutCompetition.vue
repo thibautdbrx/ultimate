@@ -72,8 +72,7 @@ const valider_ajout_equipe = async () => {
     return;
   }
 
-  // --- 2) VALIDATION DES JOUEURS ---
-  // On garde que les joueurs visibles (i < nombreJoueurs) le mx c'est 20
+  // On garde que les equipe visibles (i < equipe) le mx c'est 20
   const equipesSelectionnes = equipes.value.slice(0, nombreEquipe.value);
 
   for (let i = 0; i < equipesSelectionnes.length; i++) {

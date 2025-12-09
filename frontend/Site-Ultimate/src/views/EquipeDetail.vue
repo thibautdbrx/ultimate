@@ -51,8 +51,8 @@ const supprimerJoueur = async (index) => {
   }
 }
 
-const valider_titre = async () => {
-  if (confirm(`changer le nom de l'équipe ?`)) {
+const valider_titre_desc = async () => {
+  if (confirm(`changer le nom ou la desciption de l'équipe ?`)) {
     console.log( nomEquipe.value)
     try {
       const modif_nom = await fetch(`/api/equipe/${equipeId}/name`, {
@@ -61,21 +61,22 @@ const valider_titre = async () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          nomEquipe: nomEquipe.value
+          nom: nomEquipe.value,
+          description: descriptionEquipe.value
         })
-
       });
+      equipe.value.nomEquipe = nomEquipe.value;
+      equipe.value.descriptionEquipe = descriptionEquipe.value;
+
       if (!modif_nom.ok) {
-        throw new Error("Erreur lors de la modification du nom de l'équipe")
+        throw new Error("Erreur lors de la modification du nom ou de la description de l'équipe")
       }
     } catch (err) {
       console.error(err)
     }
   }
 }
-const valider_desc = async () => {
-  console.log("ca arrive")
-}
+
 
 const openModal_1 = () => {
   modalIndex.value = joueurs.length
@@ -147,7 +148,7 @@ const selectExisting = async (joueur) => {
         <button
             v-show="editMode"
             class="btn"
-            @click="valider_titre"
+            @click="valider_titre_desc"
         >
           Valider
         </button>
@@ -172,13 +173,15 @@ const selectExisting = async (joueur) => {
         <button
             v-show="editMode"
             class="btn"
-            @click="valider_desc"
+            @click="valider_titre_desc"
         >
           Valider
         </button>
 
       </div>
-
+      <button v-if="editMode" class="btn" id="ajouter_j" @click="openModal_1()">
+        Ajouter un joueur
+      </button>
       <div class="joueurs-grid">
         <div v-for="(j, i) in joueurs" :key="i" class="joueur-wrapper">
           <button
@@ -200,9 +203,7 @@ const selectExisting = async (joueur) => {
           @close="modalShow_1 = false"
           @select="selectExisting"
       />
-        <button v-if="editMode" class="btn" id="ajouter_j" @click="openModal_1()">
-          Ajouter un joueur
-        </button>
+
       </div>
     </div>
   </main>

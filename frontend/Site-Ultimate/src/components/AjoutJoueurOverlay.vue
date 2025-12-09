@@ -27,7 +27,6 @@ async function validerCreation() {
     nomJoueur: joueur_ajout.value.nom,
     prenomJoueur: joueur_ajout.value.prenom,
     genre: joueur_ajout.value.genre,
-    equipe: 0
   };
   //if (photo.value) form.append("photo", photo.value)
 
