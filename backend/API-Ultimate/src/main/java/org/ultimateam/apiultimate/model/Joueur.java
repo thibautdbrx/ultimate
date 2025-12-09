@@ -1,9 +1,6 @@
 package org.ultimateam.apiultimate.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,10 +24,7 @@ public class Joueur {
 
     @ManyToOne
     @JoinColumn(name = "idEquipe")
-    @JsonIdentityInfo(
-            generator = ObjectIdGenerators.PropertyGenerator.class,
-            property = "idEquipe")
-    @JsonIdentityReference(alwaysAsId = true)  // sérialise juste l'id
+    @JsonIgnoreProperties({"joueurs"})
     private Equipe equipe;
 
 

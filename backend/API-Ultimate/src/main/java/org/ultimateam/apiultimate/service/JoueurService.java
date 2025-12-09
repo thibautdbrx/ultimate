@@ -83,7 +83,7 @@ public class JoueurService {
      * @param id_equipe L'identifiant de l'équipe qui reçoit le joueur.
      * @return L'équipe mise à jour après l'assignation.
      */
-    public Equipe assignerEquipe(Long id_joueur, Long id_equipe) {
+    public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
         Equipe equipe =equipeService.getById(id_equipe);
         equipe.addJoueur(joueur);
@@ -91,7 +91,7 @@ public class JoueurService {
         equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
-        return equipe;
+        return joueur;
     }
 
     public List<Joueur> getJoueurSolo() {

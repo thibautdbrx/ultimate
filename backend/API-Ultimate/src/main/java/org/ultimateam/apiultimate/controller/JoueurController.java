@@ -52,7 +52,7 @@ public class JoueurController {
     }
 
     @PatchMapping("/{idJoueur}/equipe/{idEquipe}")
-    public Equipe assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
+    public Joueur assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
 
     @PatchMapping("/{idJoueur}")
     public Joueur editImage(@RequestBody ImageDTO imageDTO, @PathVariable long idJoueur) { return joueurService.updateJoueur(idJoueur, imageDTO);}
