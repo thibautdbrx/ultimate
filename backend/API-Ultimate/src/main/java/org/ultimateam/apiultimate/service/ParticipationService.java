@@ -20,9 +20,9 @@ import java.util.Optional;
 @Service
 public class ParticipationService {
 
-    private ParticipationRepository participationRepository;
-    private EquipeRepository equipeRepository;
-    private CompetitionRespository competitionRespository;
+    private final ParticipationRepository participationRepository;
+    private final EquipeRepository equipeRepository;
+    private final CompetitionRespository competitionRespository;
     public ParticipationService(ParticipationRepository participationRepository, EquipeRepository equipeRepository, CompetitionRespository competitionRespository) {
         this.participationRepository = participationRepository;
         this.equipeRepository = equipeRepository;
@@ -54,12 +54,12 @@ public class ParticipationService {
     }
 
 
-    public Participation addParticipation(Long idEquipe, Long idCompetition) {
+    public Participation addParticipation(ParticipationId participationId) {
 
-        Equipe equipe = equipeRepository.findById(idEquipe)
+        Equipe equipe = equipeRepository.findById(participationId.getIdEquipe())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe non trouvée"));
 
-        Competition competition = competitionRespository.findById(idCompetition)
+        Competition competition = competitionRespository.findById(participationId.getIdCompetition())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
 
         if (equipe.getGenre().name().equals(competition.getGenre().name())) {
@@ -75,9 +75,10 @@ public class ParticipationService {
         List<Long> idEquipes = listEquipeDTO.getIdEquipes();
         List<Participation> participations = new ArrayList<>();
         for (Long idEquipe : idEquipes) {
-            participations.add(addParticipation(idEquipe, idCompetition));
+            ParticipationId id = new ParticipationId(idEquipe, idCompetition);
+            participations.add(addParticipation(id));
 
         }
-        return participations;
+        return participationRepository.saveAll(participations);
     }
 }

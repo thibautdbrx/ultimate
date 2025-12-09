@@ -39,9 +39,9 @@ public class ParticipationController {
         return participationService.getParticipationByEquipeId(idEquipe);
     }
 
-    @PostMapping("/equipe/{idEquipe}/competition/{idCompetition}")
-    public Participation createParticipation(@PathVariable Long idEquipe, @PathVariable Long idCompetition) {
-        return participationService.addParticipation(idEquipe, idCompetition);
+    @PostMapping
+    public Participation createParticipation(@RequestBody ParticipationId participationId) {
+        return participationService.addParticipation(participationId);
     }
 
     @PostMapping("/competition/{idCompetition}")
