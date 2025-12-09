@@ -12,5 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ListEquipeDTO {
+    private long idCompetition;
     private List<Long> idEquipes;
 }

@@ -13,6 +13,7 @@ import org.ultimateam.apiultimate.repository.CompetitionRespository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +38,7 @@ public class ParticipationService {
         for(Participation p : participationRepository.findById_idCompetition(idCompetition) ){
             equipes.add(
                     equipeRepository.findById(p.getId().getIdEquipe())
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe non trouvée"))
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe non trouvée (peut-être supprimée)"))
             );
         }
         return equipes;
@@ -48,6 +49,12 @@ public class ParticipationService {
     public Participation save(Participation participation){return participationRepository.save(participation);}
 
     public List<Participation> deleteById(ParticipationId id){
+
+        Competition competition = competitionRespository.findById(id.getIdCompetition())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
+
+        if (competition.getDateDebut().isBefore(LocalDate.now()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter une équipe à une competition déjà commencée");
         List<Participation> participations = getAll();
         participations.removeIf(p -> p.getId().equals(id));
         return participationRepository.saveAll(participations);
@@ -62,6 +69,9 @@ public class ParticipationService {
         Competition competition = competitionRespository.findById(participationId.getIdCompetition())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
 
+        if (competition.getDateDebut().isBefore(LocalDate.now()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter une équipe à une competition déjà commencée");
+
         if (equipe.getGenre().name().equals(competition.getGenre().name())) {
             Participation participation = new Participation(equipe, competition);
             return participationRepository.save(participation);
@@ -71,11 +81,11 @@ public class ParticipationService {
 
     }
 
-    public List<Participation> addListParticipation(long idCompetition, ListEquipeDTO listEquipeDTO){
+    public List<Participation> addListParticipation(ListEquipeDTO listEquipeDTO){
         List<Long> idEquipes = listEquipeDTO.getIdEquipes();
         List<Participation> participations = new ArrayList<>();
         for (Long idEquipe : idEquipes) {
-            ParticipationId id = new ParticipationId(idEquipe, idCompetition);
+            ParticipationId id = new ParticipationId(idEquipe, listEquipeDTO.getIdCompetition());
             participations.add(addParticipation(id));
 
         }

@@ -45,8 +45,8 @@ public class ParticipationController {
     }
 
     @PostMapping("/competition/{idCompetition}")
-    public List<Participation> createParticipation(@PathVariable Long idCompetition , @RequestBody ListEquipeDTO listEquipeDTO) {
-        return participationService.addListParticipation(idCompetition, listEquipeDTO);
+    public List<Participation> createParticipation(@RequestBody ListEquipeDTO listEquipeDTO) {
+        return participationService.addListParticipation(listEquipeDTO);
     }
 
     @DeleteMapping
