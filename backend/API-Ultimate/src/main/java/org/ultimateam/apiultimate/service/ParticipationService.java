@@ -8,6 +8,7 @@ import org.ultimateam.apiultimate.DTO.ListEquipeDTO;
 import org.ultimateam.apiultimate.model.Competition;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
+import org.ultimateam.apiultimate.model.ParticipationId;
 import org.ultimateam.apiultimate.repository.CompetitionRespository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
@@ -46,7 +47,11 @@ public class ParticipationService {
 
     public Participation save(Participation participation){return participationRepository.save(participation);}
 
-    public void deleteById(Long id){ participationRepository.deleteById(id);}
+    public List<Participation> deleteById(ParticipationId id){
+        List<Participation> participations = getAll();
+        participations.removeIf(p -> p.getId().equals(id));
+        return participationRepository.saveAll(participations);
+    }
 
 
     public Participation addParticipation(Long idEquipe, Long idCompetition) {

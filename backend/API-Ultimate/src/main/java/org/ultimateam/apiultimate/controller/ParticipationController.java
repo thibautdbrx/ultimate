@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.ListEquipeDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
+import org.ultimateam.apiultimate.model.ParticipationId;
 import org.ultimateam.apiultimate.service.ParticipationService;
 
 import java.util.List;
@@ -48,8 +49,8 @@ public class ParticipationController {
         return participationService.addListParticipation(idCompetition, listEquipeDTO);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteParticipation(@PathVariable Long id) {participationService.deleteById(id);}
+    @DeleteMapping
+    public List<Participation> deleteParticipation(@RequestBody ParticipationId participationId) {return participationService.deleteById(participationId);}
 
 
 }
