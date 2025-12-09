@@ -128,4 +128,9 @@ public class EquipeService {
     public int getNbJoueurs(Long equipeId) {
         return joueurRepository.countByEquipe_IdEquipe(equipeId);
     }
+
+    public List<Equipe> getEquipeGenre(Equipe.Genre genre) {
+        updateAllGenre(findAll());
+        return equipeRepository.findAllByGenre(genre);
+    }
 }

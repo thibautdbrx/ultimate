@@ -39,8 +39,7 @@ public class EquipeController {
 
     @GetMapping("/genre")
     public List<Equipe> getEquipeGenre(Equipe.Genre genre) {
-        equipeService.updateAllGenre(equipeService.findAll());
-        return equipeRepository.findAllByGenre(genre);
+        return equipeService.getEquipeGenre(genre);
     }
 
     @GetMapping("/{idEquipe}/nbjoueurs")
