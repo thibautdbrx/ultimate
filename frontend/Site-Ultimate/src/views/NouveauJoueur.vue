@@ -86,6 +86,9 @@ const validerCreation = async () => {
     alert("Impossible de créer le joueur : " + error.message);
   }
 }
+
+
+
 </script>
 
 <template>
