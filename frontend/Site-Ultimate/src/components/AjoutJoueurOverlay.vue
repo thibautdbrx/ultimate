@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue"
 import JoueurCardForm from "@/components/JoueurCardForm.vue"
+import { useAuthStore } from "@/stores/auth";
 
 const emit = defineEmits(["close", "created"])
 
@@ -9,40 +10,85 @@ const prenom = ref("")
 const genre = ref("MALE")
 const photo = ref(null)
 
-const joueur_ajout = ref({
-  id: null,
-  nom: "",
-  prenom: "",
-  genre: "MALE",
-  photo: null,
+const auth = useAuthStore();
+
+const joueur = ref({
+  idJoueur: null,
+  nomJoueur: "",
+  prenomJoueur: "",
+  genre: "",
+  photoJoueur: null,
   clickable: true
 })
 
-function onFileChange(e) {
-  photo.value = e.target.files[0] || null
+
+const uploadFile = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const token = auth.token;
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const uploadRes = await fetch(`/api/files/upload`, {
+    method: "POST",
+    headers: headers,
+    body: formData
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("Erreur lors de l'upload de l'image.");
+  }
+
+  const uploadData = await uploadRes.json();
+  return uploadData.url;
 }
 
-async function validerCreation() {
-  const joueurPayload = {
-    nomJoueur: joueur_ajout.value.nom,
-    prenomJoueur: joueur_ajout.value.prenom,
-    genre: joueur_ajout.value.genre,
-  };
-  //if (photo.value) form.append("photo", photo.value)
+const validerCreation = async () => {
 
-  const res = await fetch("/api/joueur", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(joueurPayload),
-  })
-
-  if (!res.ok) {
-    alert("Erreur : impossible de créer le joueur.")
+  if (!joueur.value.nomJoueur.trim() || !joueur.value.prenomJoueur.trim()) {
+    alert("Le nom et prénom sont obligatoires.")
     return
   }
 
-  alert("Joueur créé avec succès !")
-  emit("created") // renvoie le joueur créé
+  let photoUrl = "/api/files/pnj.jpg";
+
+  try {
+    if (joueur.value.photoJoueur instanceof File) {
+      photoUrl = await uploadFile(joueur.value.photoJoueur);
+    }
+
+    const joueurPayload = {
+      nomJoueur: joueur.value.nomJoueur,
+      prenomJoueur: joueur.value.prenomJoueur,
+      genre: joueur.value.genre,
+      photoJoueur: photoUrl
+    };
+
+    const res = await fetch("/api/joueur", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(joueurPayload)
+    });
+
+    if (!res.ok) {
+      alert("Erreur : impossible de créer le joueur.")
+      return
+
+    }
+
+    alert("Joueur créé avec succès !");
+    emit("created") // renvoie le joueur créé
+
+
+  } catch (error) {
+    console.error(error);
+    alert("Impossible de créer le joueur : " + error.message);
+  }
 }
 </script>
 
@@ -56,7 +102,7 @@ async function validerCreation() {
       </div>
 
       <div class="form">
-        <JoueurCardForm :joueur="joueur_ajout" />
+        <JoueurCardForm :joueur="joueur" />
       </div>
 
       <button class="btn" @click="validerCreation">Créer le joueur</button>

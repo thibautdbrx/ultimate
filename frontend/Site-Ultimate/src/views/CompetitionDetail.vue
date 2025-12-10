@@ -223,7 +223,7 @@ const format_bien_aff = computed(() => {
 
           <SelectEquipe
               :show="modalShow_1"
-              :genre="genreApi"
+              :genre="competition.genre"
               :all="false"
               @close="modalShow_1 = false"
               @select="selectExisting"
