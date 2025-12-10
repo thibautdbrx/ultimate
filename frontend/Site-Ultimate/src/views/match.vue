@@ -32,6 +32,7 @@ const loadMatch = async () => {
     if (!res.ok) throw new Error("Erreur API match : " + res.status);
 
     match.value = await res.json();
+    console.log(match.value.equipe1);
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -110,15 +111,15 @@ onMounted(async () => {
 
       <div class="score-box">
         <div class="score">
-          <h2 :class="couleurEquipe1">{{ match.equipe1.nom_equipe }}</h2>
-          <p class="points">{{ match.score_equipe1 }}</p>
+          <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
+          <p class="points">{{ match.scoreEquipe1 }}</p>
         </div>
 
         <div class="vs">VS</div>
 
         <div class="score">
-          <h2 :class="couleurEquipe2">{{ match.equipe2.nom_equipe }}</h2>
-          <p class="points">{{ match.score_equipe2 }}</p>
+          <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
+          <p class="points">{{ match.scoreEquipe2 }}</p>
         </div>
       </div>
 
@@ -135,7 +136,7 @@ onMounted(async () => {
 
       <!-- COLONNE GAUCHE -->
       <div class="col">
-        <h3 class="subtitle">{{ match.equipe1.nom_equipe }}</h3>
+        <h3 class="subtitle">{{ match.equipe1.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
 
@@ -143,7 +144,7 @@ onMounted(async () => {
           <Card_joueur
               v-for="j in joueursEquipe1"
               :key="j.idJoueur"
-              :nom="j.nom_joueur + ' ' + j.prenom_joueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
               background="#ffdddd"
           />
@@ -159,7 +160,7 @@ onMounted(async () => {
 
       <!-- COLONNE DROITE -->
       <div class="col">
-        <h3 class="subtitle">{{ match.equipe2.nom_equipe }}</h3>
+        <h3 class="subtitle">{{ match.equipe2.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
 
@@ -167,7 +168,7 @@ onMounted(async () => {
           <Card_joueur
               v-for="j in joueursEquipe2"
               :key="j.idJoueur"
-              :nom="j.nom_joueur + ' ' + j.prenom_joueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
               background="#dde8ff"
           />
