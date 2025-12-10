@@ -19,6 +19,8 @@ const match = ref(null);
 const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
 
+let etatMatch = ref("WAITING")
+
 const error = ref(null);
 
 const auth = useAuthStore();
@@ -32,7 +34,9 @@ const loadMatch = async () => {
     if (!res.ok) throw new Error("Erreur API match : " + res.status);
 
     match.value = await res.json();
-    console.log(match.value.equipe1);
+    console.log(match.value);
+    etatMatch = match.value.status;
+
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -93,6 +97,54 @@ const couleurEquipe2 = computed(() => {
   return "or";
 });
 
+const AjoutPoint = async (numEquipe, combien) => {
+
+  let score;
+  const matchId = match.value.idMatch; 
+
+  if (numEquipe == 1) {
+    score = parseInt(match.value.scoreEquipe1) + combien;
+  } else if (numEquipe == 2) {
+    score = parseInt(match.value.scoreEquipe2) + combien;
+  } else {
+    console.error("Numéro d'équipe invalide :", numEquipe);
+    return;
+  }
+
+  console.log(score);
+
+  const point = {
+    point: score
+  }
+
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { // Correction de l'URL pour utiliser matchId
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(point)
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error("Erreur lors de l'ajout de point.");
+  }
+}
+
+const operationMatch = async (operation) => {
+  const res = await fetch(`/api/match/${matchId}/${operation}`, {
+    method: "PUT"
+  })
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error(`Erreur lors du ${operation} du match.`);
+  }
+} 
+
+
 // ----------------------
 onMounted(async () => {
   await loadMatch();
@@ -112,14 +164,26 @@ onMounted(async () => {
       <div class="score-box">
         <div class="score">
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
-          <p class="points">{{ match.scoreEquipe1 }}</p>
+
+          <div class="affichagePoint">
+            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
+            <p class="points">{{ match.scoreEquipe1 }}</p>
+            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
+          </div>
+          
         </div>
 
         <div class="vs">VS</div>
 
         <div class="score">
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
-          <p class="points">{{ match.scoreEquipe2 }}</p>
+
+          <div class="affichagePoint">
+            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
+            <p class="points">{{ match.scoreEquipe2 }}</p>
+            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
+          </div>
+          
         </div>
       </div>
 
@@ -155,7 +219,15 @@ onMounted(async () => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <h3>Informations du Match</h3>
-        <p>Ici tu pourras ajouter les stats, durée, arbitres, etc.</p>
+        <p v-if="auth.isAdmin || auth.isArbitre" >Ici tu pourras ajouter les stats, durée, arbitres, etc.</p>
+
+        <div id="actionsMatch">
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction">Commencer le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction">Terminer le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction">Pause le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction">Resume le match</button>
+        </div>
+    
       </div>
 
       <!-- COLONNE DROITE -->
@@ -254,4 +326,43 @@ onMounted(async () => {
   color: red;
   text-align: center;
 }
+
+.affichagePoint {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.boutonScore {
+  border-radius: 50%;
+  height: 4em;
+  width: 4em;
+
+  margin: 2em;
+
+  font-weight: bold;
+  font-size: 1em;
+
+  padding: 0;
+
+  transition: opacity 0.3s;
+}
+
+.boutonScore:hover {
+  opacity: 0.7;
+}
+
+.boutonPlus {
+  background-color: green;
+}
+
+.boutonMoins {
+  background : red;
+}
+
+#actionsMatch {
+  display: flex;
+  justify-content: space-evenly;
+}
+
 </style>
