@@ -37,12 +37,6 @@ async function loadEquipes() {
   }
 }
 
-watch(
-    () => props.genre,
-    (g) => {
-      console.log("GENRE REÇU DANS OVERLAY :", g)
-    }
-)
 
 
 

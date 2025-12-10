@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import { useRouter } from 'vue-router'
 import champs_input from "@/components/champs_input.vue"
 import SelectEqiupe from "@/components/SelectionEquipeOverlay.vue"
@@ -65,45 +65,42 @@ function toSimpleDate(dateString) {
 
 const valider_ajout_equipe = async () => {
 
-  // --- 1) VALIDATION DES CHAMPS SIMPLES ---
   if (!nomCompetition.value.trim()) {
-    alert("Le nom de l'équipe est obligatoire.");
+    alert("Le nom de la compétition est obligatoire.");
     return;
   }
 
-  if (nombreEquipe.value <= 0) {
-    alert("Vous devez sélectionner une équipe.");
-    return;
-  }
+  //  Si 0 équipe, on saute toute la partie équipe
+  let equipesSelectionnees = [];
 
-  // On garde que les equipe visibles (i < equipe) le mx c'est 20
-  const equipesSelectionnes = equipes.value.slice(0, nombreEquipe.value);
+  if (nombreEquipe.value > 0) {
+    equipesSelectionnees = equipes.value.slice(0, nombreEquipe.value);
 
-  for (let i = 0; i < equipesSelectionnes.length; i++) {
-    const e = equipesSelectionnes[i];
+    for (let i = 0; i < equipesSelectionnees.length; i++) {
+      const e = equipesSelectionnees[i];
 
-    // Il faut une equipe existante
-    if (!e.idEquipe) {
-      alert(`L'équipe n°${i + 1} n'a pas été sélectionné.`);
-      return;
-    }
-
-    for (let k = 0; k < equipesSelectionnes.length; k++) {
-      if (k !== i && equipesSelectionnes[k].idEquipe === e.idEquipe) {
-        alert(`L'équipe' n°${i + 1} a été sélectionné deux fois.`);
+      if (!e.idEquipe) {
+        alert(`L'équipe n°${i + 1} n'a pas été sélectionnée.`);
         return;
       }
-    }
 
+      // vérification doublons
+      for (let k = 0; k < equipesSelectionnees.length; k++) {
+        if (k !== i && equipesSelectionnees[k].idEquipe === e.idEquipe) {
+          alert(`L'équipe n°${i + 1} est sélectionnée deux fois.`);
+          return;
+        }
+      }
+    }
   }
 
+  // --- 3) CRÉATION DE LA COMPÉTITION ---
   try {
-    // 3) Création de la compétition
     const tournoisPayload = {
-      genre: genre.value,
+      genre: genreApi.value,
       format: format.value,
       dateDebut: toSimpleDate(dateDebut.value),
-      dateFin :  toSimpleDate(dateFin.value),
+      dateFin: toSimpleDate(dateFin.value),
       nomCompetition: nomCompetition.value,
       descriptionCompetition: DescriptionCompetition.value
     };
@@ -116,21 +113,26 @@ const valider_ajout_equipe = async () => {
 
     if (!resTournois.ok) {
       const err = await resTournois.json();
-      alert("Erreur création équipe : " + err.message);
+      alert("Erreur création compétition : " + err.message);
       return;
     }
 
     const tournoisCree = await resTournois.json();
     const idCompetition = tournoisCree.idCompetition;
 
-    // 4) Affecter les équipe à la competitions
-    await Promise.all(equipesSelectionnes.map(e =>
-        fetch(`api/participation/equipe/${e.idEquipe}/competition/${idCompetition}`, {
-          method: "POST"
-        })
-    ));
+    // --- 4) AJOUT DES ÉQUIPES (uniquement si > 0) ---
+    if (equipesSelectionnees.length > 0) {
+      await Promise.all(
+          equipesSelectionnees.map(e =>
+              fetch(`/api/participation/equipe/${e.idEquipe}/competition/${idCompetition}`, {
+                method: "POST"
+              })
+          )
+      );
+    }
 
-    alert("Équipe et Competitions mis à jour avec succès !");
+    // --- 5) FIN ---
+    alert("Compétition créée avec succès !");
     router.push("/Competition");
 
   } catch (e) {
@@ -139,6 +141,18 @@ const valider_ajout_equipe = async () => {
   }
 };
 
+
+const GENRE_API_MAP = {
+  HOMME: "HOMME",
+  FEMMME: "FEMMME",
+  MIXTE: "MIXTE",
+  MALE: "HOMME",
+  FEMALE: "FEMMME"
+}
+
+const genreApi = computed(() => {
+  return GENRE_API_MAP[genre.value] ?? ""
+})
 
 </script>
 
@@ -190,7 +204,7 @@ const valider_ajout_equipe = async () => {
           v-model="dateFin"
           class="select-format"
       />
-      <label>Nombre équipes engagées (modifiable plus tard):</label>
+      <label>Nombre équipes engagées (NON OBLIGATOIRE):</label>
       <select v-model="nombreEquipe" class="select-nb">
         <option v-for="n in 20" :value="n">{{ n }}</option>
       </select>
@@ -227,7 +241,7 @@ const valider_ajout_equipe = async () => {
     />
 
     <div class="en_bas">
-      <button class="valider_ajout" @click="valider_ajout_equipe">Ajouter l'équipe</button>
+      <button class="valider_ajout" @click="valider_ajout_equipe">Ajouter la compétition</button>
 
     </div>
 
