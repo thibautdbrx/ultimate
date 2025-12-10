@@ -11,6 +11,7 @@ import AjoutEquipe from "@/views/AjoutEquipe.vue";
 import NouveauJoueur from "../views/NouveauJoueur.vue";
 import AjoutCompetition from "@/views/AjoutCompetition.vue";
 import Deconnexion from '@/views/Deconnexion.vue'
+import Matchs from '@/views/Matchs.vue'
 
 
 
@@ -27,6 +28,8 @@ const routes = [
     { path: '/AjouterEquipe', component: AjoutEquipe },
     { path: '/NouveauJoueur', component: NouveauJoueur },
     { path: '/AjouterCompetition', component: AjoutCompetition },
+    { path: '/Matchs', component: Matchs },
+
 
 ]
 
