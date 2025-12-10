@@ -28,7 +28,6 @@ const uploadFile = async (file) => {
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    // Requête Multipart (pas de Content-Type manuel ici)
     const uploadRes = await fetch(`${apiBaseUrl}/api/files/upload`, {
         method: "POST",
         headers: headers, 
