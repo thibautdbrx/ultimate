@@ -7,8 +7,8 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Tournois;
-import org.ultimateam.apiultimate.service.TournoisService;
+import org.ultimateam.apiultimate.model.Competition;
+import org.ultimateam.apiultimate.service.CompetitionService;
 
 import java.util.List;
 
@@ -16,12 +16,39 @@ import java.util.List;
 @RequestMapping("/api/competition")
 public class CompetitionController {
 
-    private final CompetitionController competitionController;
+    private final CompetitionService competitionService;
 
     @Autowired
-    public CompetitionController(CompetitionController competitionController) {
-        this.competitionController = competitionController;
+    public CompetitionController(CompetitionService competitionService) {
+        this.competitionService = competitionService;
     }
+
+    @GetMapping
+    public List<Competition> findAll() { return (List<Competition>) competitionService.getAllCompetition(); }
+
+    @GetMapping("/{id}")
+    public Competition findById(@PathVariable Long id) { return competitionService.getCompetitionById(id); }
+
+    @GetMapping("{idCompetition}/matchs")
+    public List<Match> findMatches(@PathVariable Long idCompetition) { return competitionService.getMatchesByCompetition(idCompetition);}
+
+    @PostMapping
+    public Competition creerCompetition(@RequestBody Competition competition) {return competitionService.saveCompetition(competition); }
+
+    @PutMapping("/{idCompetition}/create")
+    public List<Equipe> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
+
+    @PostMapping("/tournoi")
+    public Competition createCompetition(@RequestBody Competition competition) { return competitionService.saveCompetition(competition); }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable Long id) { competitionService.deleteCompetitionById(id); }
+
+    /**
+     @PostMapping("/Creation_Competition")
+     public void genererCompetition(Long idCompetition){ CompetitionService.genererCompetition(idCompetition);}
+
+     */
 
 
 }

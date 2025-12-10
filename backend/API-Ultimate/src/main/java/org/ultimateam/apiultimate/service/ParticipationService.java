@@ -1,16 +1,14 @@
 package org.ultimateam.apiultimate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.model.Competition;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
-import org.ultimateam.apiultimate.repository.CompetitionRespository;
+import org.ultimateam.apiultimate.repository.CompetitionRepository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
-import org.ultimateam.apiultimate.repository.TournoisRepository;
 
 import java.util.List;
 
@@ -19,11 +17,11 @@ public class ParticipationService {
 
     private ParticipationRepository participationRepository;
     private EquipeRepository equipeRepository;
-    private CompetitionRespository competitionRespository;
-    public ParticipationService(ParticipationRepository participationRepository, EquipeRepository equipeRepository, CompetitionRespository competitionRespository) {
+    private CompetitionRepository competitionRepository;
+    public ParticipationService(ParticipationRepository participationRepository, EquipeRepository equipeRepository, CompetitionRepository competitionRepository) {
         this.participationRepository = participationRepository;
         this.equipeRepository = equipeRepository;
-        this.competitionRespository = competitionRespository;
+        this.competitionRepository = competitionRepository;
 
     }
 
@@ -43,7 +41,7 @@ public class ParticipationService {
         Equipe equipe = equipeRepository.findById(idEquipe)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe non trouvée"));
 
-        Competition competition = competitionRespository.findById(idCompetition)
+        Competition competition = competitionRepository.findById(idCompetition)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
 
         if (equipe.getGenre().name().equals(competition.getGenre().name())) {
