@@ -14,7 +14,6 @@ import java.util.Map;
 @RestController
 @Tag(name = "Upload Controller", description = "Gestion des fichiers")
 @RequestMapping("/api/files")
-@CrossOrigin(origins = "http://localhost:5173")
 public class UploadController {
 
     private final StorageService storageService;
