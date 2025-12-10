@@ -143,7 +143,7 @@ const valider_ajout_equipe = async () => {
 </script>
 
 <template>
-  <main class="page-ajout">
+  <main v-if="auth.isAdmin" class="page-ajout">
 
     <h2>Ajouter une compétitions</h2>
     <p id="sous-titre">Creer une compétitions, vous pourrais la modifier plus tard</p>
