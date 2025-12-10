@@ -117,7 +117,7 @@ const AjoutPoint = async (numEquipe, combien) => {
     point: score
   }
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { // Correction de l'URL pour utiliser matchId
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
@@ -169,9 +169,9 @@ onMounted(async () => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
             <p class="points">{{ match.scoreEquipe1 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
           </div>
           
         </div>
@@ -182,9 +182,9 @@ onMounted(async () => {
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
             <p class="points">{{ match.scoreEquipe2 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
           </div>
           
         </div>
@@ -340,7 +340,8 @@ onMounted(async () => {
 }
 
 .boutonScore {
-  border-radius: 50%;
+  border-radius: 20px;
+  border: none;
   height: 4em;
   width: 4em;
 
@@ -359,11 +360,11 @@ onMounted(async () => {
 }
 
 .boutonPlus {
-  background-color: green;
+  background-color: rgb(65, 133, 65);
 }
 
 .boutonMoins {
-  background : red;
+  background : rgb(194, 80, 80);
 }
 
 #actionsMatch {
