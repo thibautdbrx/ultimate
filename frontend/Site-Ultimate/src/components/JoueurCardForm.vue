@@ -58,13 +58,13 @@ const supprimerPhoto = () => {
     <label class="photo-label">
       Genre :
       <select v-if="joueur.clickable" class="genre-select" v-model="joueur.genre">
-        <option value="MALE">MALE</option>
-        <option value="FEMALE">FEMALE</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
       </select>
 
       <select v-else class="genre-select" v-model="joueur.genre" disabled>
-        <option value="MALE">MALE</option>
-        <option value="FEMALE">FEMALE</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
       </select>
     </label>
 
