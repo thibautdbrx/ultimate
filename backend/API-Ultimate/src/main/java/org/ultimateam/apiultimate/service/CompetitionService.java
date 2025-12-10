@@ -1,13 +1,10 @@
 package org.ultimateam.apiultimate.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.CompetitionRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,7 +15,7 @@ public class CompetitionService {
     private final ChampionnatService championnatService;
     private final MatchRepository matchRepository;
 
-    public CompetitionService(TournoisService tournoisService, ChampionnatService championnatService, CompetitionRepository competitionRepository,  MatchRepository matchRepository) {
+    public CompetitionService(TournoisService tournoisService, ChampionnatService championnatService, CompetitionRepository competitionRepository, MatchRepository matchRepository) {
         this.tournoisService = tournoisService;
         this.championnatService = championnatService;
         this.competitionRepository = competitionRepository;

@@ -1,10 +1,12 @@
 package org.ultimateam.apiultimate.service;
 
+import org.springframework.stereotype.Service;
 import org.ultimateam.apiultimate.repository.ChampionnatRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
 import org.ultimateam.apiultimate.repository.TournoisRepository;
 
+@Service
 public class ChampionnatService {
 
     private final ChampionnatRepository championnatRepository;

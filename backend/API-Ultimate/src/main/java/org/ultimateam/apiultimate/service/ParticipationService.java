@@ -1,7 +1,6 @@
 package org.ultimateam.apiultimate.service;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.ListEquipeDTO;
@@ -9,22 +8,21 @@ import org.ultimateam.apiultimate.model.Competition;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Participation;
 import org.ultimateam.apiultimate.model.ParticipationId;
-import org.ultimateam.apiultimate.repository.CompetitionRespository;
+import org.ultimateam.apiultimate.repository.CompetitionRepository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ParticipationService {
 
     private final ParticipationRepository participationRepository;
     private final EquipeRepository equipeRepository;
-    private final CompetitionRespository competitionRespository;
-    public ParticipationService(ParticipationRepository participationRepository, EquipeRepository equipeRepository, CompetitionRespository competitionRespository) {
+    private final CompetitionRepository competitionRepository;
+    public ParticipationService(ParticipationRepository participationRepository, EquipeRepository equipeRepository, CompetitionRepository competitionRepository) {
         this.participationRepository = participationRepository;
         this.equipeRepository = equipeRepository;
         this.competitionRepository = competitionRepository;
@@ -50,7 +48,7 @@ public class ParticipationService {
 
     public List<Participation> deleteById(ParticipationId id){
 
-        Competition competition = competitionRespository.findById(id.getIdCompetition())
+        Competition competition = competitionRepository.findById(id.getIdCompetition())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
 
         if (competition.getDateDebut().isBefore(LocalDate.now()))
@@ -66,7 +64,7 @@ public class ParticipationService {
         Equipe equipe = equipeRepository.findById(participationId.getIdEquipe())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe non trouvée"));
 
-        Competition competition = competitionRespository.findById(participationId.getIdCompetition())
+        Competition competition = competitionRepository.findById(participationId.getIdCompetition())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
 
         if (competition.getDateDebut().isBefore(LocalDate.now()))
