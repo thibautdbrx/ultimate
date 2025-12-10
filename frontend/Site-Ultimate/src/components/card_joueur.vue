@@ -19,7 +19,9 @@ import Photo_pnj from "@/assets/img_joueur/pnj.jpg";
 
 <style scoped>
 .carte {
-  background: #f7f7f7;
+  width: 10rem;
+  height: 14rem;
+  background: #ececec;
   border-radius: 12px;
   padding: 1rem;
   text-align: center;

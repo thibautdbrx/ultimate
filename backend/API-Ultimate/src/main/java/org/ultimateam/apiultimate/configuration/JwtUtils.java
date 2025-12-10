@@ -26,15 +26,16 @@ public class JwtUtils {
     @Value("${app.expiration-time}")
     private long expirationTime;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, User.Role role) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(claims, username, role);
     }
 
-    private String createToken(Map<String, Object> claims, String username) {
+    private String createToken(Map<String, Object> claims, String username, User.Role role) {
         return Jwts.builder() //construit le token
                 .setClaims(claims)
                 .setSubject(username) //email de user dans le token
+                .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis())) // date de création
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime)) // d'expiration
                 .signWith(getSignKey(), SignatureAlgorithm.HS256) //signe avec la cle
@@ -58,6 +59,8 @@ public class JwtUtils {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+
+    public User.Role extractRole(String token) { return extractClaim(token, claims -> User.Role.valueOf(claims.get("roles").toString()));}
 
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);

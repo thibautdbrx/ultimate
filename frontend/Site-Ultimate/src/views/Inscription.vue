@@ -1,5 +1,10 @@
 <script setup>
 import Form_inscription from '../components/Form_inscription.vue'
+import {onMounted} from "vue";
+import { useAuthStore } from "@/stores/auth";
+
+const auth = useAuthStore();
+
 </script>
 
 <template>

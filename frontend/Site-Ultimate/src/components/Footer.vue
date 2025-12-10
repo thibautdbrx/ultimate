@@ -7,7 +7,7 @@ import Button from "@/components/Bouton.vue";
   <footer class="footer">
   <div class="footer_top">
   <h3>Ultimate Match Manager</h3>
-  <Button label="Connexion" />
+
   </div>
   <p id="signature_footer">©VAFLOURENTIB</p>
   </footer>

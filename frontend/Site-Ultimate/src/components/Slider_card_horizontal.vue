@@ -130,14 +130,15 @@ onBeforeUnmount(() => {
   overflow-x: auto;
   display: flex;
   gap: 1.5rem;
-  padding: 1rem;
   flex-direction: row;
-
+  padding-bottom: 2rem;
+  padding-top: 2rem;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 }
 
 .slider::-webkit-scrollbar {
   display: none;
 }
+
+
 </style>

@@ -4,10 +4,12 @@ import { ref, onMounted } from 'vue'
 import LiveIcon from '@/assets/icons/live.svg'
 import TrophyIcon from '@/assets/icons/trophy.svg'
 import CalendarIcon from '@/assets/icons/calendar.svg'
+import { useAuthStore } from "@/stores/auth";
 
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
 import CardRes from '../components/Card_resultat.vue'
+
 
 const stats = ref({
   live: 0,
@@ -15,15 +17,18 @@ const stats = ref({
   competitions: 0
 })
 
+const auth = useAuthStore();
+
 const derniersMatchs = ref([])
 const errorMsg = ref('')
 
 onMounted(async () => {
   try {
+    //console.log(auth.role)
     // Matchs en direct
     const liveRes = await fetch(`/api/match/started`)
     const liveData = await liveRes.json()
-    stats.value.live = liveData.length    // ou liveData.count selon ton API
+    stats.value.live = liveData.length
 
     // Matchs à venir
     const upcomingRes = await fetch(`/api/match/notstarted`)
@@ -32,9 +37,12 @@ onMounted(async () => {
 
     // Compétitions
     const compRes = await fetch(`/api/tournois`)
+    console.log(compRes)
     const compData = await compRes.json()
     stats.value.competitions = compData.length
 
+
+    //ajouter les match fini uniquement.
 
     const matchsRes = await fetch(`/api/match`)
     const matchsData = await matchsRes.json()
@@ -70,6 +78,8 @@ onMounted(async () => {
             :icon="LiveIcon"
             color1="#FFD6D6"
             color2="#d31a42"
+
+
         />
         <CardInfo
             title="Matchs à venir"
@@ -77,6 +87,7 @@ onMounted(async () => {
             :icon="CalendarIcon"
             color1="#dbeafe"
             color2="#155dfc"
+
         />
         <CardInfo
             title="Compétitions"
@@ -84,6 +95,7 @@ onMounted(async () => {
             :icon="TrophyIcon"
             color1="#f3e8ff"
             color2="#9810fa"
+            tp="Competition"
         />
       </section>
 
@@ -106,6 +118,8 @@ onMounted(async () => {
 
 .titre_acceuil {
   text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
 }
 
 
@@ -120,5 +134,9 @@ onMounted(async () => {
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 2rem;
+}
+
+.Acceuil{
+  padding: 2rem 0rem;
 }
 </style>

@@ -5,7 +5,7 @@ import Form_connexion from '../components/form_connexion.vue'
 <template>
   <div class="login_page">
     <div class="login-container">
-      <h3>Connexion Administrateur</h3>
+      <h3>Connexion</h3>
       <p id="text_info">
         Connectez-vous pour gérer les équipes, compétitions et matchs
       </p>
