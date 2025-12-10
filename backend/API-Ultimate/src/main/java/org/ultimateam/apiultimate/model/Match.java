@@ -5,9 +5,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import java.util.List;
+import java.util.ArrayList;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -20,6 +24,9 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idMatch;
 
+    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ActionMatch> actions = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "id_equipe1")
     private Equipe equipe1;
@@ -31,7 +38,6 @@ public class Match {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_winner")
     private Equipe winner;
-
 
     @ManyToOne
     @JoinColumn(name = "idCompetition")

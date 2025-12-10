@@ -15,6 +15,7 @@ public class Joueur {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long idJoueur;
+    private int Point;
 
     private String nomJoueur;
     private String prenomJoueur;

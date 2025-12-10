@@ -68,9 +68,14 @@ public class MatchController {
     }
 
 
-    @PatchMapping("/{idMatch}/equipe/{idEquipe}/point")
-    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe,@RequestBody MatchPointDTO matchPointDTO) {
-        return matchService.ajouterPoint(idMatch, idEquipe, matchPointDTO);
+    @PatchMapping("{idMatch}/equipe/{idEquipe}/joueur/{idJoueur}/point")
+    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe, @PathVariable Long idJoueur, @RequestBody MatchPointDTO matchPointDTO) {
+        return matchService.ajouterPoint(idMatch, idEquipe, idJoueur, matchPointDTO);
+    }
+
+    @PatchMapping("{idMatch}/equipe/{idEquipe}/joueur/{idJoueur}/point")
+    public Match addFaute(@PathVariable Long idMatch,@PathVariable Long idJoueur, @PathVariable Long idEquipe) {
+        return matchService.ajouterFaute(idMatch, idJoueur, idEquipe);
     }
 
 

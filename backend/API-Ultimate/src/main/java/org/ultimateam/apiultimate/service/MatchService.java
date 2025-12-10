@@ -6,10 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Tournois;
+import org.ultimateam.apiultimate.model.*;
+import org.ultimateam.apiultimate.repository.JoueurRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
-import org.ultimateam.apiultimate.model.Match;
+import org.ultimateam.apiultimate.model.ActionMatch;
+
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -30,12 +32,16 @@ public class MatchService {
     private final Map<Long, ScheduledFuture<?>> matchSchedulers = new HashMap<>();
     private final TournoisService tournoisService;
     private final ClassementService classementService;
+    private final JoueurRepository joueurRepository;
+    private final JoueurService joueurService;
 
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService) {
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
         this.tournoisService = tournoisService;
         this.classementService = classementService;
+        this.joueurRepository = joueurRepository;
+        this.joueurService = joueurService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -109,22 +115,86 @@ public class MatchService {
         return save(match);
     }
 
-    public Match ajouterPoint(long id_match, long id_equipe, MatchPointDTO dto) {
+    public Match ajouterPoint(long id_match, long id_equipe, long id_joueur, MatchPointDTO dto) {
         Match match = getById(id_match);
         Equipe equipe = equipeService.getById(id_equipe);
-        if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
-        if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
-        if (dto.getPoint() == 0) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
-
+        Joueur joueur = joueurService.getById(id_joueur);
+        if (match == null || equipe == null || joueur == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe/joueur n'existe pas");
+        }
+        if (match.getStatus() != Match.Status.ONGOING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
+        }
+        if (dto.getPoint() <= 0) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
+        }
+        verifyJoueurInMatch(match, id_joueur);
+        if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) &&
+                !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
+        }
+        ActionMatch action = getOrCreateActionMatch(match, joueur, id_joueur);
+        action.setPoints(action.getPoints() + dto.getPoint());
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
             match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
-        } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+        } else {
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
-
+        }
         checkVictory(match);
         return save(match);
     }
+
+
+    public Match ajouterFaute(long id_match, long id_equipe, long id_joueur) {
+        Match match = getById(id_match);
+        Equipe equipe = equipeService.getById(id_equipe);
+        Joueur joueur = joueurService.getById(id_joueur);
+        if (match == null || equipe == null || joueur == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match, l'équipe ou le joueur n'existe pas");
+        }
+        if (match.getStatus() != Match.Status.ONGOING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le match n'est pas en cours");
+        }
+        verifyJoueurInMatch(match, id_joueur);
+        if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) &&
+                !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
+        }
+        ActionMatch action = getOrCreateActionMatch(match, joueur, id_joueur);
+        action.setFautes(action.getFautes() + 1);
+        checkVictory(match);
+        return save(match);
+    }
+
+
+    private ActionMatch getOrCreateActionMatch(Match match, Joueur joueur, long id_joueur) {
+        return match.getActions().stream()
+                .filter(a -> Objects.equals(a.getJoueur().getIdJoueur(), id_joueur))
+                .findFirst()
+                .orElseGet(() -> {
+                    ActionMatch newAction = new ActionMatch();
+                    newAction.setJoueur(joueur);
+                    newAction.setMatch(match);
+                    newAction.setPoints(0);
+                    newAction.setFautes(0);
+                    match.getActions().add(newAction);
+                    return newAction;
+                });
+    }
+
+    private void verifyJoueurInMatch(Match match, long id_joueur) {
+        boolean joueurEstDansEquipe1 = match.getEquipe1().getJoueurs().stream()
+                .anyMatch(j -> Objects.equals(j.getIdJoueur(), id_joueur));
+
+        boolean joueurEstDansEquipe2 = match.getEquipe2().getJoueurs().stream()
+                .anyMatch(j -> Objects.equals(j.getIdJoueur(), id_joueur));
+
+        if (!joueurEstDansEquipe1 && !joueurEstDansEquipe2) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le joueur ne fait partie d'aucune des deux équipes de ce match");
+        }
+    }
+
+
 
     // --------------------- CHECK VICTORY ---------------------
     public void checkVictory(Match match) {
