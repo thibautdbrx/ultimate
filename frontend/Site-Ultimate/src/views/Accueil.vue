@@ -22,6 +22,16 @@ const auth = useAuthStore();
 const derniersMatchs = ref([])
 const errorMsg = ref('')
 
+const formatDate = (isoString) => {
+  if (!isoString) return "";
+
+  return new Date(isoString).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+};
+
 onMounted(async () => {
   try {
     //console.log(auth.role)
@@ -105,7 +115,7 @@ onMounted(async () => {
       <p v-if="errorMsg" class="error-text">{{ errorMsg }}</p>
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
         <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card">
-          <CardRes :title="String(match.idMatch)" :nom1="match.equipe1.nomEquipe" :nom2="match.equipe2.nomEquipe" :points1="match.scoreEquipe1" :points2="match.scoreEquipe2"
+          <CardRes :title="formatDate(match.dateMatch)" :nom1="match.equipe1.nomEquipe" :nom2="match.equipe2.nomEquipe" :points1="match.scoreEquipe1" :points2="match.scoreEquipe2"
           />
         </div>
 
