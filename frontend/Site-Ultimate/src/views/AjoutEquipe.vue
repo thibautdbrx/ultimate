@@ -138,9 +138,9 @@ const valider_ajout_equipe = async () => {
 </script>
 
 <template>
-  <main class="page-ajout">
+  <main class="page-ajout"  v-if="auth.isAdmin">
 
-    <h2>Ajouter une équipe</h2>
+    <h2 >Ajouter une équipe</h2>
     <p id="sous-titre">Creer une équipe avec minimum un joueur dedans, vous pourrais la modifier plus tard</p>
 
     <div class="form-block">
