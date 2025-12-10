@@ -34,8 +34,12 @@ public class JoueurService {
      *
      * @return Un Itérable contenant tous les joueurs.
      */
-    public Iterable<Joueur> getAll() {
-        return joueurRepository.findAll();
+    public List<Joueur> getAll(Joueur.Genre genre) {
+        if(genre==null){
+            return joueurRepository.findAll();
+        }
+        return joueurRepository.findAllByGenre(genre);
+
     }
 
     /**
@@ -94,8 +98,11 @@ public class JoueurService {
         return joueur;
     }
 
-    public List<Joueur> getJoueurSolo() {
-        return joueurRepository.findAllByEquipe_IdEquipeIsNull();
+    public List<Joueur> getJoueurSolo(Joueur.Genre genre) {
+        if(genre == null){
+            return joueurRepository.findAllByEquipe_IdEquipeIsNull();
+        }
+        return joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(genre);
     }
 
     /**
@@ -136,4 +143,7 @@ public class JoueurService {
         if (nameDTO.getGenre() !=null) joueur.setGenre(nameDTO.getGenre());
         return joueurRepository.save(joueur);
     }
+
+    public List<Joueur> getGenre(Joueur.Genre genre) { return joueurRepository.findAllByGenre(genre);}
+
 }

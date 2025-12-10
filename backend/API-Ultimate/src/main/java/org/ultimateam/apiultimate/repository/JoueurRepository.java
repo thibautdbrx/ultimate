@@ -11,4 +11,6 @@ public interface JoueurRepository extends JpaRepository<Joueur, Long> {
     List<Joueur> findAllByEquipe_IdEquipe(Long idEquipe);
     int countByEquipe_IdEquipe(Long idEquipe);
     List<Joueur> findAllByEquipe_IdEquipeIsNull();
+    List<Joueur> findAllByEquipe_IdEquipeIsNullAndGenre(Joueur.Genre genre);
+    List<Joueur> findAllByGenre(Joueur.Genre genre);
 }

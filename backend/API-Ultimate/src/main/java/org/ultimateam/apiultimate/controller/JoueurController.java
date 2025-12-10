@@ -27,8 +27,8 @@ public class JoueurController {
     }
 
     @GetMapping
-    public List<Joueur> getAllJoueurs() {
-        return (List<Joueur>) joueurService.getAll();
+    public List<Joueur> getAllJoueurs(@RequestParam(required = false) Joueur.Genre genre ) {
+        return joueurService.getAll(genre);
     }
 
     @GetMapping("/{id}")
@@ -42,8 +42,8 @@ public class JoueurController {
     }
 
     @GetMapping("/solo")
-    public List<Joueur> getJoueurSolo() {
-        return joueurService.getJoueurSolo();
+    public List<Joueur> getJoueurSolo(@RequestParam(required = false) Joueur.Genre genre) {
+        return joueurService.getJoueurSolo(genre);
     }
 
     @PostMapping
