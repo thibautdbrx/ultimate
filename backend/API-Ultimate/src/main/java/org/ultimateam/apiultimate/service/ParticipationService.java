@@ -27,7 +27,7 @@ public class ParticipationService {
     public ParticipationService(ParticipationRepository participationRepository, EquipeRepository equipeRepository, CompetitionRespository competitionRespository) {
         this.participationRepository = participationRepository;
         this.equipeRepository = equipeRepository;
-        this.competitionRespository = competitionRespository;
+        this.competitionRepository = competitionRepository;
 
     }
 

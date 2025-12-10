@@ -8,6 +8,6 @@ import org.ultimateam.apiultimate.model.Tournois;
 import java.util.List;
 
 @Repository
-public interface CompetitionRespository extends JpaRepository<Competition, Long> {
+public interface CompetitionRepository extends JpaRepository<Competition, Long> {
     List<Tournois> findAllByIdCompetition(long idCompetition);
 }
