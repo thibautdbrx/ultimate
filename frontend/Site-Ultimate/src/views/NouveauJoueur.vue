@@ -11,7 +11,7 @@ const joueur = ref({
   idJoueur: null,
   nomJoueur: "",
   prenomJoueur: "",
-  genre: "MALE",
+  genre: "HOMME",
   photoJoueur: null, 
   clickable: true
 })
