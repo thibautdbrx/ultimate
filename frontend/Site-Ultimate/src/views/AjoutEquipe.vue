@@ -12,6 +12,7 @@ const nomEquipe = ref("")
 const descriptionEquipe = ref("")
 const nombreJoueurs = ref(0)
 
+const auth = useAuthStore();
 
 // 20 joueurs
 const joueurs = ref(
@@ -138,7 +139,7 @@ const valider_ajout_equipe = async () => {
 </script>
 
 <template>
-  <main class="page-ajout">
+  <main v-if="auth.isAdmin" class="page-ajout">
 
     <h2>Ajouter une équipe</h2>
     <p id="sous-titre">Creer une équipe avec minimum un joueur dedans, vous pourrais la modifier plus tard</p>
