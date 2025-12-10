@@ -3,6 +3,8 @@ package org.ultimateam.apiultimate.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
+import org.ultimateam.apiultimate.DTO.Genre;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
@@ -27,7 +29,7 @@ public class JoueurController {
     }
 
     @GetMapping
-    public List<Joueur> getAllJoueurs(@RequestParam(required = false) Joueur.Genre genre ) {
+    public List<Joueur> getAllJoueurs(@RequestParam(required = false) GenreJoueur genre ) {
         return joueurService.getAll(genre);
     }
 
@@ -42,7 +44,7 @@ public class JoueurController {
     }
 
     @GetMapping("/solo")
-    public List<Joueur> getJoueurSolo(@RequestParam(required = false) Joueur.Genre genre) {
+    public List<Joueur> getJoueurSolo(@RequestParam(required = false) GenreJoueur genre) {
         return joueurService.getJoueurSolo(genre);
     }
 
