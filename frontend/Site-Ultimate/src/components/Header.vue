@@ -17,6 +17,7 @@ const clickhome = () => {
       <h1 class="logo">UltiMATE</h1>
     </router-link>
     <nav>
+      <RouterLink v-if="auth.isAdmin" to="/NouveauJoueur" class="nav-link">Ajouter Joueur</RouterLink>
       <RouterLink v-if="auth.isAdmin" to="/AjouterEquipe" class="nav-link">Ajouter Equipe</RouterLink>
       <RouterLink v-if="auth.isAdmin" to="/AjouterCompetition" class="nav-link">Ajouter Compétition</RouterLink>
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
