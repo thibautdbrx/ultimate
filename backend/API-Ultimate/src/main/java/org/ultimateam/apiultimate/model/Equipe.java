@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ultimateam.apiultimate.DTO.Genre;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,6 @@ public class Equipe {
     @JsonBackReference
     private List<Indisponibilite> indisponibilites = new ArrayList<>();
 
-    public enum Genre {MIXTE, FEMALE, MALE};
     private Genre genre = null;
 
     public Equipe(String nomEquipe) {

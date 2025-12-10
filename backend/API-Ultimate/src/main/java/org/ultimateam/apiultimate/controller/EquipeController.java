@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
+import org.ultimateam.apiultimate.DTO.Genre;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
@@ -19,11 +20,9 @@ import java.util.List;
 @RequestMapping("/api/equipe")
 public class EquipeController {
 
-    private final EquipeRepository equipeRepository;
-    private EquipeService equipeService;
+    private final EquipeService equipeService;
 
-    public EquipeController(EquipeService equipeService, EquipeRepository equipeRepository) { this.equipeService = equipeService;
-        this.equipeRepository = equipeRepository;
+    public EquipeController(EquipeService equipeService) { this.equipeService = equipeService;
     }
 
     @GetMapping
@@ -38,7 +37,7 @@ public class EquipeController {
     }
 
     @GetMapping("/genre")
-    public List<Equipe> getEquipeGenre(Equipe.Genre genre) {
+    public List<Equipe> getEquipeGenre(Genre genre) {
         return equipeService.getEquipeGenre(genre);
     }
 
