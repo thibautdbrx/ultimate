@@ -5,72 +5,96 @@ import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter()
-
 const auth = useAuthStore();
 
-// Le joueur à créer, utile pour creer la vue joueurcardform de facon clicable
 const joueur = ref({
-  id: null,
-  nom: "",
-  prenom: "",
-  genre: "MALE",
-  photo: null,
+  idJoueur: null,
+  nomJoueur: "",
+  prenomJoueur: "",
+  genre: "HOMME",
+  photoJoueur: null, 
   clickable: true
 })
 
+const apiBaseUrl = "http://localhost:8080";
+
+const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = auth.token;
+    const headers = {};
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const uploadRes = await fetch(`${apiBaseUrl}/api/files/upload`, {
+        method: "POST",
+        headers: headers, 
+        body: formData 
+    });
+
+    if (!uploadRes.ok) {
+        throw new Error("Erreur lors de l'upload de l'image.");
+    }
+    
+    const uploadData = await uploadRes.json();
+    return uploadData.url; 
+}
+
 const validerCreation = async () => {
-  if (!joueur.value.nom.trim() || !joueur.value.prenom.trim()) {
+
+  if (!joueur.value.nomJoueur.trim() || !joueur.value.prenomJoueur.trim()) {
     alert("Le nom et prénom sont obligatoires.")
     return
   }
 
-  const joueurPayload = {
-    nomJoueur: joueur.value.nom,
-    prenomJoueur: joueur.value.prenom,
-    genre: joueur.value.genre,
-  };
+  let photoUrl = "/api/files/pnj.jpg";
 
-  //if (joueur.value.photo){
-  //   joueurPayload.photo = joueur.value.photo;
-  //}
-  /**
-   * Faire la requête POST sur http://localhost:8080/api/files/upload
-   * avec en paramètre file=@/chemin/vers/imeage/pc.jpg
-   *
-   * requete fetch = http://localhost:8080/api/files/upload?file=@/chemin/vers/imeage/pc.jpg
-   *
-   * Récupérer cette réponse dans une variable
-   * Créer un nouveau joueur avec dans photoJoueur = data.url
-   *
-   * Puis lors de l'affichage d'un joueur, dans la balise img, mettre http://localhost:8080/api/files/+joueur.photoJoueur
-   *
-   * Possibilité de mettre une photo de base et si joueur/photoJoueur est null, afficher l'image de base
-   */
+  try {
+    if (joueur.value.photoJoueur instanceof File) {
+      photoUrl = await uploadFile(joueur.value.photoJoueur);
+    } 
 
-  const res = await fetch("/api/joueur", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(joueurPayload)
-  })
+    const joueurPayload = {
+      nomJoueur: joueur.value.nomJoueur,       
+      prenomJoueur: joueur.value.prenomJoueur, 
+      genre: joueur.value.genre,      
+      photoJoueur: photoUrl              
+    };
 
-  if (!res.ok) {
-    alert("Erreur : impossible de créer le joueur.")
-    return
+    const res = await fetch("/api/joueur", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(joueurPayload)
+    });
+
+    if (!res.ok) {
+      alert("Erreur : impossible de créer le joueur.")
+      return
+
+    }
+
+    alert("Joueur créé avec succès !");
+    router.push("/AjouterEquipe");
+
+  } catch (error) {
+    console.error(error);
+    alert("Impossible de créer le joueur : " + error.message);
   }
-
-  alert("Joueur créé avec succès !")
-  router.push("/AjouterEquipe")
 }
+
+
+
 </script>
 
 <template>
-  <main class="page">
+  <main v-if="auth.isAdmin" class="page">
     <h2>Nouveau joueur</h2>
-    <p id="sous-titre">Ajouter un nouveau joueur afin de l'inscripte dans une équipe puis dans une compétitions</p>
+    <p id="sous-titre">Ajouter un nouveau joueur afin de l'inscrire dans une équipe puis dans une compétition</p>
 
-    <!-- On réutilise ta carte dynamique -->
     <JoueurCardForm :joueur="joueur" />
 
     <button class="btn" @click="validerCreation">Créer le joueur</button>
@@ -94,16 +118,24 @@ const validerCreation = async () => {
   color: white;
   cursor: pointer;
   width: 20%;
+  min-width: 150px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #1565c0;
 }
 
 h2{
   text-align: center;
   font-size: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 #sous-titre{
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: gray;
   text-align: center;
+  margin-bottom: 1.5rem;
 }
-</style>
+</style>y

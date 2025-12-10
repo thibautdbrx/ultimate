@@ -5,6 +5,7 @@ import champs_input from "@/components/champs_input.vue"
 import SelectEqiupe from "@/components/SelectionEquipeOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import image from "@/assets/img/img_equipe.jpg"
+import { useAuthStore } from "@/stores/auth";
 
 
 const nomCompetition = ref("")
@@ -15,6 +16,8 @@ const DescriptionCompetition = ref("")
 const nombreEquipe = ref(0)
 const format = ref("")
 const genre = ref("")
+
+const auth = useAuthStore();
 
 // 20 joueurs
 const equipes = ref(
@@ -157,7 +160,7 @@ const genreApi = computed(() => {
 </script>
 
 <template>
-  <main class="page-ajout">
+  <main v-if="auth.isAdmin" class="page-ajout">
 
     <h2>Ajouter une compétitions</h2>
     <p id="sous-titre">Creer une compétitions, vous pourrais la modifier plus tard</p>
