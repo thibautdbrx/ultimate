@@ -5,6 +5,7 @@ import UserIcon from "@/assets/icons/avatar.svg"
 const props = defineProps({
   joueur: Object,
 })
+
 </script>
 
 <template>
@@ -13,7 +14,7 @@ const props = defineProps({
     <champs_input
         label="Nom"
         placeholder="Nom"
-        v-model="joueur.nom"
+        v-model="joueur.nomJoueur"
         :icon="UserIcon"
         :clickable = joueur.clickable
     />
@@ -21,7 +22,7 @@ const props = defineProps({
     <champs_input
         label="Prénom"
         placeholder="Prénom"
-        v-model="joueur.prenom"
+        v-model="joueur.prenomJoueur"
         :icon="UserIcon"
         :clickable = joueur.clickable
     />
@@ -41,13 +42,8 @@ const props = defineProps({
 
       <label v-if="joueur.clickable" class="photo-label">
         Photo du joueur :
-        <input class="photo_input" type="file" @change="e => joueur.photo = e.target.files[0]" />
+        <input class="photo_input" type="file" @change="e => joueur.photoJoueur = e.target.files[0]" />
       </label>
-
-
-
-
-
 
   </div>
 </template>
