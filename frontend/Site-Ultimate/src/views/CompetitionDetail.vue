@@ -153,6 +153,13 @@ const supprimerEquipe = async (index) => {
     joueurs.value.splice(index, 1)
   }
 }
+
+const format_bien_aff = computed(() => {
+  return (competition.value?.format || "").toUpperCase();
+});
+
+
+
 </script>
 
 <template>
@@ -166,7 +173,7 @@ const supprimerEquipe = async (index) => {
 
         <h2>
           {{ competition.nomCompetition }} —
-          {{ competition.format }} —
+          {{ format_bien_aff }} —
           {{ competition.genre }} —
           {{ nbTeams }} équipes
         </h2>
