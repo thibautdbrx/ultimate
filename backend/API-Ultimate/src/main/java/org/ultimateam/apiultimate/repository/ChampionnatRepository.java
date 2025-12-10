@@ -6,4 +6,4 @@ import org.ultimateam.apiultimate.model.Championnat;
 
 @Repository
 public interface ChampionnatRepository extends JpaRepository<Championnat, Long> {
-    }
+}

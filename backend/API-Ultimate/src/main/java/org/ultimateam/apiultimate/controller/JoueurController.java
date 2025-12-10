@@ -2,6 +2,10 @@ package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
+import org.ultimateam.apiultimate.DTO.Genre;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
+import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.service.JoueurService;
@@ -25,8 +29,8 @@ public class JoueurController {
     }
 
     @GetMapping
-    public List<Joueur> getAllJoueurs() {
-        return (List<Joueur>) joueurService.getAll();
+    public List<Joueur> getAllJoueurs(@RequestParam(required = false) GenreJoueur genre ) {
+        return joueurService.getAll(genre);
     }
 
     @GetMapping("/{id}")
@@ -39,13 +43,24 @@ public class JoueurController {
         return joueurService.getJoueurByEquipe(idEquipe);
     }
 
+    @GetMapping("/solo")
+    public List<Joueur> getJoueurSolo(@RequestParam(required = false) GenreJoueur genre) {
+        return joueurService.getJoueurSolo(genre);
+    }
+
     @PostMapping
     public Joueur createJoueur(@RequestBody Joueur joueur) {
         return joueurService.addJoueur(joueur);
     }
 
     @PatchMapping("/{idJoueur}/equipe/{idEquipe}")
-    public Equipe assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
+    public Joueur assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
+
+    @PatchMapping("/{idJoueur}")
+    public Joueur editImage(@RequestBody ImageDTO imageDTO, @PathVariable long idJoueur) { return joueurService.updateJoueur(idJoueur, imageDTO);}
+
+    @PatchMapping("/{idJoueur}/name")
+    public Joueur editNameJoueur(@RequestBody EditJoueurDTO nameDTO, @PathVariable long idJoueur) { return joueurService.editName(nameDTO, idJoueur);}
 
     @DeleteMapping("/{idJoueur}/equipe/{idEquipe}")
     public Equipe deleteEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.deleteEquipe(idJoueur, idEquipe); }

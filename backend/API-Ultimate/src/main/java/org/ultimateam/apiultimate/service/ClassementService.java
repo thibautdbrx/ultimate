@@ -1,37 +1,78 @@
 package org.ultimateam.apiultimate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.ultimateam.apiultimate.model.Classement;
-import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.repository.MatchRepository;
+import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.model.*;
+import org.ultimateam.apiultimate.repository.ClassementRepository;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ClassementService {
 
-    private final MatchRepository matchRepo;
+    private final ClassementRepository classementRepository;
 
-    public void calculerDifferencePoints(Classement classement) {
-        int idEquipe = classement.getIdEquipe();
-        int pointsMarques = 0;
-        int pointsPris = 0;
+    public ClassementService(ClassementRepository classementRepository ) {
+        this.classementRepository = classementRepository;
+    }
 
-        //List<Match> matchs = matchRepo.findById(idEquipe);
-        /**
-        for (Match match : matchs) {
-            if (match.getId_equipe1() == idEquipe) {
-                pointsMarques += match.getScore_equipe1();
-                pointsPris += match.getScore_equipe2();
-            } else {
-                pointsMarques += match.getScore_equipe2();
-                pointsPris += match.getScore_equipe1();
-            }
+    public Iterable<Classement> getAll() {return classementRepository.findAll();}
+    public Classement save(Classement classement) { return classementRepository.save(classement); }
+    public void deleteById(ParticipationId id) {
+        if (!classementRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le classement n'existe pas.");
+        }
+        classementRepository.deleteById(id);
+    }
+
+    public void mettreAJourClassement(Match match) {
+        if (match.getStatus() != Match.Status.FINISHED) {
+            return;
         }
 
-        classement.setDifference_points(pointsMarques - pointsPris);
-         **/
+        Competition competition = match.getIdCompetition();
+        Equipe equipe1 = match.getEquipe1();
+        Equipe equipe2 = match.getEquipe2();
+
+        Classement classement1 = classementRepository.findByCompetitionAndEquipe(competition,equipe1);
+        Classement classement2 = classementRepository.findByCompetitionAndEquipe(competition,equipe2);
+
+        long score1 = match.getScoreEquipe1();
+        long score2 = match.getScoreEquipe2();
+
+        updateStats(classement1, score1, score2);
+        updateStats(classement2, score2, score1);
+        save(classement1);
+        save(classement2);
+
     }
+
+    private void updateStats(Classement classement, long score1, long score2) {
+        classement.setPoint_marque(classement.getPoint_marque() + score1);
+        classement.setPoint_encaisse(classement.getPoint_encaisse() + score2);
+        classement.setDifference_points(classement.getPoint_marque() - classement.getPoint_encaisse());
+
+        if (score1 > score2) {
+            classement.setScore(classement.getScore() + 3 );
+            classement.setVictoires(classement.getVictoires() +1);
+        }
+        else if (score2 == score1) {
+            classement.setScore(classement.getScore() +1 );
+            classement.setEgalites(classement.getEgalites() + 1);
+        } else {
+            classement.setDefaites(classement.getDefaites() + 1);
+        }
+    }
+
+
+    public List<Classement> triClassement(Long idCompetition) {
+        List<Classement> classements = classementRepository.findAllByCompetitionIdOrderByRank(idCompetition);
+        for(int i=0; i<classements.size(); i++) {
+            classements.get(i).setRang(i+1);
+        }
+        return classements;
+    }
+
+
 }

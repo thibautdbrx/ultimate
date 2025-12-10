@@ -9,15 +9,15 @@ html, body {
     padding: 0;
     height: 100%;
     box-sizing: border-box;
-
 }
 
-#app{
+#app {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100%; /* prend toute la hauteur disponible */
+    background-color: #f8fafc;
 }
 
-main{
-    flex-grow: 1;
+main {
+    flex: 1; /* prend tout l'espace restant */
 }

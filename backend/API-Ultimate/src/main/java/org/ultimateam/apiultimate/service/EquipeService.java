@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
+import org.ultimateam.apiultimate.DTO.Genre;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
@@ -70,7 +72,13 @@ public class EquipeService {
         if (equipe == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'équipe n'existe pas");
         }
-        equipe.setNomEquipe(equipedto.getNomEquipe());
+        if (equipedto.getNom() != null) {
+            equipe.setNomEquipe(equipedto.getNom());
+        }
+        if (equipedto.getDescription() != null) {
+            equipe.setDescription(equipedto.getDescription());
+        }
+
         return equipeRepository.save(equipe);
     }
 
@@ -101,19 +109,19 @@ public class EquipeService {
         boolean allFemale = true;
 
         for (Joueur joueur : joueurs) {
-            if (joueur.getGenre() == Joueur.Genre.MALE) {
+            if (joueur.getGenre() == GenreJoueur.HOMME) {
                 allFemale = false;
-            } else if (joueur.getGenre() == Joueur.Genre.FEMALE) {
+            } else if (joueur.getGenre() == GenreJoueur.FEMME) {
                 allMale = false;
             }
         }
 
         if (allMale) {
-            equipe.setGenre(Equipe.Genre.MALE);
+            equipe.setGenre(Genre.HOMME);
         } else if (allFemale) {
-            equipe.setGenre(Equipe.Genre.FEMALE);
+            equipe.setGenre(Genre.FEMME);
         } else {
-            equipe.setGenre(Equipe.Genre.MIXTE);
+            equipe.setGenre(Genre.MIXTE);
         }
 
         return equipeRepository.save(equipe);
@@ -121,5 +129,10 @@ public class EquipeService {
 
     public int getNbJoueurs(Long equipeId) {
         return joueurRepository.countByEquipe_IdEquipe(equipeId);
+    }
+
+    public List<Equipe> getEquipeGenre(Genre genre) {
+        updateAllGenre(findAll());
+        return equipeRepository.findAllByGenre(genre);
     }
 }

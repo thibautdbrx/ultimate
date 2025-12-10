@@ -71,6 +71,7 @@ public class SecurityConfig {
                                         "/api/equipe/**",
                                         "/api/competition/**",
                                         "/api/joueur/**",
+                                        "/api/classement/**",
                                         "/documentation/**",
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",

@@ -2,10 +2,12 @@ package org.ultimateam.apiultimate.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ultimateam.apiultimate.DTO.Genre;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +20,11 @@ public class Equipe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long idEquipe;
 
     private String nomEquipe;
+    private String description;
 
     @OneToMany(mappedBy = "equipe", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -31,7 +35,6 @@ public class Equipe {
     @JsonBackReference
     private List<Indisponibilite> indisponibilites = new ArrayList<>();
 
-    public enum Genre {MIXTE, FEMALE, MALE};
     private Genre genre = null;
 
     public Equipe(String nomEquipe) {

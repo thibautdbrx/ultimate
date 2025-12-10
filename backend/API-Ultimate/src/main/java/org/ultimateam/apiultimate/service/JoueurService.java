@@ -3,8 +3,13 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
+import org.ultimateam.apiultimate.DTO.Genre;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
+import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.List;
@@ -31,8 +36,12 @@ public class JoueurService {
      *
      * @return Un Itérable contenant tous les joueurs.
      */
-    public Iterable<Joueur> getAll() {
-        return joueurRepository.findAll();
+    public List<Joueur> getAll(GenreJoueur genre) {
+        if(genre==null){
+            return joueurRepository.findAll();
+        }
+        return joueurRepository.findAllByGenre(genre);
+
     }
 
     /**
@@ -80,7 +89,7 @@ public class JoueurService {
      * @param id_equipe L'identifiant de l'équipe qui reçoit le joueur.
      * @return L'équipe mise à jour après l'assignation.
      */
-    public Equipe assignerEquipe(Long id_joueur, Long id_equipe) {
+    public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
         Equipe equipe =equipeService.getById(id_equipe);
         equipe.addJoueur(joueur);
@@ -88,7 +97,14 @@ public class JoueurService {
         equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
-        return equipe;
+        return joueur;
+    }
+
+    public List<Joueur> getJoueurSolo(GenreJoueur genre) {
+        if(genre == null){
+            return joueurRepository.findAllByEquipe_IdEquipeIsNull();
+        }
+        return joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(genre);
     }
 
     /**
@@ -111,4 +127,25 @@ public class JoueurService {
 
         return equipe;
     }
+
+    public Joueur updateJoueur(long idJoueur, ImageDTO imageDTO) {
+        if (!joueurRepository.existsById(idJoueur)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
+        }
+        Joueur joueur = getById(idJoueur);
+        joueur.setPhotoJoueur(imageDTO.getImage());
+        return joueurRepository.save(joueur);
+    }
+
+    public Joueur editName(EditJoueurDTO nameDTO, long idJoueur) {
+        Joueur joueur = joueurRepository.findById(idJoueur)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Joueur non trouvée"));
+        if (nameDTO.getNomJoueur() !=null) joueur.setNomJoueur(nameDTO.getNomJoueur());
+        if (nameDTO.getPrenomJoueur() !=null) joueur.setPrenomJoueur(nameDTO.getPrenomJoueur());
+        if (nameDTO.getGenre() !=null) joueur.setGenre(nameDTO.getGenre());
+        return joueurRepository.save(joueur);
+    }
+
+    public List<Joueur> getGenre(GenreJoueur genre) { return joueurRepository.findAllByGenre(genre);}
+
 }

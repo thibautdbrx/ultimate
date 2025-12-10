@@ -2,17 +2,29 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
+import CarteEquipe from "@/components/card_equipe.vue"
+import {useAuthStore} from "@/stores/auth.js";
+const auth = useAuthStore();
 
 const router = useRouter()
 
-// Liste des compétitions récupérées depuis ton API
 const equipes = ref([])
-
 const loading = ref(true)
 const error = ref(null)
 
-// Récupération des compétitions
+const isAdmin = ref(false)
+const isArbitre = ref(false)
+
 onMounted(() => {
+  const roleCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('user_role='))
+
+  const role = roleCookie?.split('=')[1]
+
+  isAdmin.value = role === 'ADMIN'
+  isArbitre.value = role === 'ARBITRE'
+
   fetch('/api/equipe')
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
@@ -24,17 +36,15 @@ onMounted(() => {
       })
       .catch(err => {
         console.error(err)
-        error.value = "Impossible de charger les compétitions."
+        error.value = "Impossible de charger les équipes."
         loading.value = false
       })
 })
 
-
-
-// Redirection vers la page d'une compétition
-function goToEquipe(id,nom) {
+function goToEquipe(id, nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
 }
+
 </script>
 
 
@@ -44,22 +54,22 @@ function goToEquipe(id,nom) {
 
     <div v-if="loading" class="state-msg">Chargement...</div>
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
+
     <div v-else class="competition-list">
       <div
           v-for="equipe in equipes"
           :key="equipe.idEquipe"
-          class="competition-card"
           @click="goToEquipe(equipe.idEquipe, equipe.nomEquipe)"
       >
-        <img :src="ImageFond" alt="Image compétition" class="competition-img" />
-        <div class="competition-info">
-          <h3>{{ equipe.nomEquipe }}</h3>
-          <p>{{ equipe.nbJoueur }} licencié(e)s</p>
-        </div>
+        <CarteEquipe :equipe="equipe" :image="ImageFond" />
       </div>
     </div>
+
+    <p v-if="isAdmin">Admin</p>
+    <p v-if="isArbitre">Arbitre</p>
   </main>
 </template>
+
 
 <style scoped>
 .equipes {
@@ -89,30 +99,5 @@ function goToEquipe(id,nom) {
   gap: 1.5rem;
   width: 100%;
   max-width: 1000px;
-}
-
-.competition-card {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden;
-}
-
-.competition-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
-}
-
-.competition-img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-}
-
-.competition-info {
-  padding: 1rem;
-  text-align: center;
 }
 </style>

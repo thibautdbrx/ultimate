@@ -18,7 +18,6 @@ public class Match {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long idMatch;
 
     @ManyToOne
@@ -35,7 +34,7 @@ public class Match {
 
 
     @ManyToOne
-    @JoinColumn(name = "id_competition")
+    @JoinColumn(name = "idCompetition")
     private Competition idCompetition;
 
     private long scoreEquipe1;
@@ -43,6 +42,7 @@ public class Match {
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private LocalDateTime dateMatch;
+    private long terrain = 0;
     @JsonIgnore
     private LocalDateTime datePause = null;
 
