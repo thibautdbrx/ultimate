@@ -30,6 +30,10 @@ const modalShow_1 = ref(false) //bool qui dit si c'est affiché ou non
 const modalShow_2 = ref(false)
 
 const openModal_1 = (i) => {
+  if (!genre.value) {
+    alert("Vous devez sélectionner un genre avant d'ajouter des équipes")
+    return
+  }
   modalIndex.value = i
   modalShow_1.value = true
   modalShow_2.value = false
@@ -166,8 +170,8 @@ const valider_ajout_equipe = async () => {
 
       <label>Genre :</label>
       <select v-model="genre" class="select-genre">
-        <option value="HOMME">HOMME</option>
-        <option value="FEMMME">FEMME</option>
+        <option value="MALE">HOMME</option>
+        <option value="FEMALE">FEMME</option>
         <option value="MIXTE">MIXTE</option>
       </select>
 
@@ -216,6 +220,7 @@ const valider_ajout_equipe = async () => {
     </div>
     <SelectEqiupe
         :show="modalShow_1"
+        :genre="genre"
         @close="modalShow_1 = false"
         @select="selectExisting"
         @nvj="openModal_2"

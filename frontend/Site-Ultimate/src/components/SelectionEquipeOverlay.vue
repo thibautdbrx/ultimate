@@ -1,9 +1,14 @@
 <script setup>
-import { ref, watch, onMounted, computed} from "vue"
+import { ref, watch, computed} from "vue"
 import CardEquipe from "@/components/card_equipe.vue"
 
 const props = defineProps({
   show: Boolean,
+  genre: {
+    type: String,
+    default: "-",
+    required: true,
+  },
   all:{
     type: Boolean,
     required: false,
@@ -13,33 +18,51 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "select", "nvj"])
 
+const loading = ref(false)
 const search = ref("")
 const equipes = ref([])
+let afficher = ref(true)
 
 async function loadEquipes() {
-  const res = await fetch("/api/equipe")
-  equipes.value = await res.json()
+  loading.value = true
+  equipes.value = []
+
+  try {
+    const res = await fetch(`/api/equipe/genre?genre=${props.genre}`)
+    equipes.value = await res.json()
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
 }
 
-
-
-onMounted(async () => {
-  loadEquipes()
-})
-//pour rafraichir les jouerus quand on ouvre l'overlay
-watch(() => props.show, async (v) => {
-  if (v) {
-    await loadEquipes()
-  }
-})
-
-const filtered = computed(() =>
-    equipes.value.filter(e =>
-        (e.nomEquipe)
-            .toLowerCase()
-            .includes(search.value.toLowerCase())
-    )
+watch(
+    () => props.genre,
+    (g) => {
+      console.log("GENRE REÇU DANS OVERLAY :", g)
+    }
 )
+
+
+
+//pour rafraichir les jouerus quand on ouvre l'overlay
+watch(
+    () => [props.show, props.genre],
+    async ([show, genre]) => {
+      if (!show) return
+      if (!genre) return
+
+      await loadEquipes()
+    },
+    { immediate: true }
+)
+
+const filtered = computed(() => equipes.value.filter(e => (e.nomEquipe) .toLowerCase() .includes(search.value.toLowerCase()) ) )
+
+
+
+
 </script>
 
 <template>
@@ -60,8 +83,12 @@ const filtered = computed(() =>
       />
 
       <div class="joueurs-grid">
-        <div
-            v-for="e in filtered"
+        <div v-if="loading" class="loading">
+          Chargement des équipes...
+        </div>
+
+        <div v-else
+             v-for="e in filtered"
             :key="e.idEquipe"
             @click="emit('select', e)"
             class="selectable"

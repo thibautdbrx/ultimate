@@ -31,7 +31,11 @@ async function fetchTeams() {
 
 async function fetchCompetitionInfo() {
   const res = await fetch(`/api/tournois/${competitionId}`)
-  if (res.ok) competition.value = await res.json()
+  if (res.ok) {
+    competition.value = await res.json()
+    GENRE_API_MAP[competition.genre] ?? ""
+  }
+
 }
 
 async function fetchMatches() {
@@ -39,6 +43,21 @@ async function fetchMatches() {
   if (!res.ok) throw new Error("Erreur HTTP matchs")
   matches.value = await res.json()
 }
+
+
+
+const GENRE_API_MAP = {
+  HOMME: "MALE",
+  FEMMME: "FEMALE",
+  MIXTE: "MIXTE",
+  MALE: "MALE",
+  FEMALE: "FEMALE"
+}
+
+const genreApi = computed(() => {
+  return GENRE_API_MAP[competition.value?.genre] ?? ""
+})
+
 
 onMounted(async () => {
   try {
@@ -60,8 +79,13 @@ onMounted(async () => {
 const selectExisting = async (equipe) => {
   try {
     // 1. Appeler l’API pour assicier equipe au tournois
-      const res = await fetch(`/api/participation/equipe/${equipe.idEquipe}/competition/${competitionId}`, {
+      const res = await fetch(`/api/participation`, {
       method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "idEquipe": equipe.idEquipe,
+          "idCompetition": competitionId
+        })
     })
 
     if (!res.ok) {
@@ -192,6 +216,7 @@ const supprimerEquipe = async (index) => {
 
           <SelectEquipe
               :show="modalShow_1"
+              :genre="genreApi"
               :all="false"
               @close="modalShow_1 = false"
               @select="selectExisting"
