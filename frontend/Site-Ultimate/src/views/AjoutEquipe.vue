@@ -13,6 +13,11 @@ const descriptionEquipe = ref("")
 const nombreJoueurs = ref(0)
 
 const auth = useAuthStore();
+const router = useRouter();
+
+if (!auth.isAdmin) {
+  router.push("/");
+}
 
 // 20 joueurs
 const joueurs = ref(
@@ -57,8 +62,6 @@ const selectExisting = (joueur) => {
   modalShow_1.value = false
 
 }
-
-const router = useRouter()
 
 
 

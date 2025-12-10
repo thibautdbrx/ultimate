@@ -18,6 +18,11 @@ const format = ref("")
 const genre = ref("")
 
 const auth = useAuthStore();
+const router = useRouter();
+
+if (!auth.isAdmin) {
+  router.push("/")
+}
 
 // 20 joueurs
 const equipes = ref(
@@ -59,7 +64,6 @@ const selectExisting = (equipe) => {
   modalShow_1.value = false
 }
 
-const router = useRouter()
 
 function toSimpleDate(dateString) {
   return dateString ?? null;

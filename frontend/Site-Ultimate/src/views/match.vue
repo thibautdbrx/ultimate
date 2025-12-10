@@ -77,8 +77,8 @@ const couleurEquipe1 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
 
-  const s1 = match.value.score_equipe1;
-  const s2 = match.value.score_equipe2;
+  const s1 = match.value.scoreEquipe1;
+  const s2 = match.value.scoreEquipe2;
 
   if (s1 > s2) return "vert";
   if (s1 < s2) return "rouge";
@@ -89,8 +89,8 @@ const couleurEquipe2 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
 
-  const s1 = match.value.score_equipe1;
-  const s2 = match.value.score_equipe2;
+  const s1 = match.value.scoreEquipe1;
+  const s2 = match.value.scoreEquipe2;
 
   if (s2 > s1) return "vert";
   if (s2 < s1) return "rouge";
@@ -157,6 +157,9 @@ onMounted(async () => {
 
     <!-- HEADER : Infos du match -->
     <section class="header" v-if="match">
+
+      <p v-if="!(etatMatch=='FINISHED' || etatMatch=='WAITING')" id="dureeMatch">00:00:00</p>
+
       <h1>
         Championnat régional
       </h1>
@@ -166,9 +169,9 @@ onMounted(async () => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
             <p class="points">{{ match.scoreEquipe1 }}</p>
-            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
           </div>
           
         </div>
@@ -179,17 +182,20 @@ onMounted(async () => {
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
             <p class="points">{{ match.scoreEquipe2 }}</p>
-            <button v-if="auth.isAdmin || auth.isArbitre" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && !(etatMatch == 'FINISHED')" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
           </div>
           
         </div>
       </div>
 
-      <p class="date">
-        Début : {{ new Date(match.dateDebut).toLocaleString() }}
-      </p>
+      <div class="date">
+        <p>Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
+      </div>
       <p class="status">Status : {{ match.status }}</p>
     </section>
 
