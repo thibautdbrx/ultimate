@@ -34,6 +34,9 @@ public class MatchController {
     @GetMapping("/notstarted")
     public List<Match> getMatchNotStarted() {return matchService.getNotStarted();}
 
+    @GetMapping("/finished")
+    public List<Match> getMatchFinished() {return matchService.getFinished();}
+
     @PostMapping
     public Match createMatch(@RequestBody MatchDTO matchDTO) {
         return matchService.creerMatch(matchDTO);

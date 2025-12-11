@@ -51,6 +51,7 @@ public class MatchService {
     public Iterable<Match> getAll() { return matchRepository.findAll(); }
     public List<Match> getStarted() { return matchRepository.findByDateDebutIsNotNullAndDateFinIsNull(); }
     public List<Match> getNotStarted() { return matchRepository.findByDateDebutIsNull(); }
+    public List<Match> getFinished() { return matchRepository.findByDateFinIsNotNull(); }
 
     // --------------------- MATCH CREATION ---------------------
     public Match creerMatch(MatchDTO matchDTO) {
