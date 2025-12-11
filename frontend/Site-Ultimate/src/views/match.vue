@@ -102,19 +102,26 @@ const AjoutPoint = async (numEquipe, combien) => {
   let score;
   const matchId = match.value.idMatch; 
 
+  
   if (numEquipe == 1) {
-    score = parseInt(match.value.scoreEquipe1) + combien;
+    score = match.value.scoreEquipe1 + combien;
   } else if (numEquipe == 2) {
-    score = parseInt(match.value.scoreEquipe2) + combien;
+    score = match.value.scoreEquipe2 + combien;
   } else {
     console.error("Numéro d'équipe invalide :", numEquipe);
     return;
   }
 
+  if (score < 0) {
+    console.error("Point négatif impossible");
+    return;
+  }
+  
+
   console.log(score);
 
   const point = {
-    point: score
+    point: combien
   }
 
   const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
@@ -191,7 +198,7 @@ onMounted(async () => {
       </div>
 
       <div class="date">
-        <p>Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
+        <p v-if="!(etatMatch == 'WAITING')">Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
         <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
         <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
         <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
