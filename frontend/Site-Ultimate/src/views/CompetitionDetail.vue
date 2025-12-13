@@ -158,7 +158,14 @@ const format_bien_aff = computed(() => {
   return (competition.value?.format || "").toUpperCase();
 });
 
-
+const formatDate = (isoString) => {
+  if (!isoString) return ''
+  return new Date(isoString).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
 
 </script>
 
@@ -238,12 +245,9 @@ const format_bien_aff = computed(() => {
           <SliderCardHorizontal>
             <div v-for="match in upcomingMatches" :key="match.idMatch">
               <CardMatch
-                  :title="match.dateMatch"
-                  :nom1="match.equipe1.nomEquipe"
-                  :nom2="match.equipe2.nomEquipe"
-                  :points1="match.scoreEquipe1"
-                  :points2="match.scoreEquipe2"
-                  :fini="false"
+                  :title="formatDate(match.dateMatch)"
+                  :match ="match"
+
               />
             </div>
           </SliderCardHorizontal>
