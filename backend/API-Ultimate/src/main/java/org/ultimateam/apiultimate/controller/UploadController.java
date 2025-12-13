@@ -1,5 +1,7 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +24,15 @@ public class UploadController {
         this.storageService = storageService;
     }
 
+    @Operation(
+            summary = "Uploader un fichier",
+            description = "Permet d'uploader un fichier et retourne le nom du fichier et son URL."
+    )
+    @Parameter(
+            name = "file",
+            description = "Fichier à uploader",
+            required = true
+    )
     @PostMapping("/upload")
     public ResponseEntity<Map<String,String>> upload(@RequestParam("file") MultipartFile file) {
         String filename = storageService.store(file);
@@ -30,6 +41,15 @@ public class UploadController {
         );
     }
 
+    @Operation(
+            summary = "Télécharger un fichier",
+            description = "Retourne le fichier demandé à partir de son nom."
+    )
+    @Parameter(
+            name = "filename",
+            description = "Nom du fichier à récupérer",
+            required = true
+    )
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> serve(@PathVariable String filename) {
         Resource file = storageService.loadAsResource(filename);

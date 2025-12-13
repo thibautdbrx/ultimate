@@ -1,6 +1,7 @@
 package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
 import org.ultimateam.apiultimate.DTO.Genre;
@@ -28,43 +29,83 @@ public class JoueurController {
         this.joueurService = joueurService;
     }
 
+    @Operation(
+            summary = "Lister tous les joueurs",
+            description = "Retourne la liste de tous les joueurs. Il est possible de filtrer par genre via un paramètre optionnel."
+    )
     @GetMapping
     public List<Joueur> getAllJoueurs(@RequestParam(required = false) GenreJoueur genre ) {
         return joueurService.getAll(genre);
     }
 
+    @Operation(
+            summary = "Récupérer un joueur par son identifiant",
+            description = "Retourne le joueur correspondant à l'identifiant fourni. Une erreur est renvoyée si le joueur n'existe pas."
+    )
     @GetMapping("/{id}")
     public Joueur getJoueurById(@PathVariable Long id) {
         return joueurService.getById(id);
     }
 
+    @Operation(
+            summary = "Lister les joueurs d'une équipe",
+            description = "Retourne la liste des joueurs appartenant à l'équipe identifiée par son id."
+    )
     @GetMapping("/equipe/{idEquipe}")
     public List<Joueur> getJoueurByEquipe(@PathVariable Long idEquipe) {
         return joueurService.getJoueurByEquipe(idEquipe);
     }
 
+    @Operation(
+            summary = "Lister les joueurs sans équipe",
+            description = "Retourne la liste des joueurs non assignés à une équipe. Un filtre par genre peut être appliqué."
+    )
     @GetMapping("/solo")
     public List<Joueur> getJoueurSolo(@RequestParam(required = false) GenreJoueur genre) {
         return joueurService.getJoueurSolo(genre);
     }
 
+    @Operation(
+            summary = "Créer un nouveau joueur",
+            description = "Crée un nouveau joueur à partir des informations fournies dans le corps de la requête."
+    )
     @PostMapping
     public Joueur createJoueur(@RequestBody Joueur joueur) {
         return joueurService.addJoueur(joueur);
     }
 
+    @Operation(
+            summary = "Assigner un joueur à une équipe",
+            description = "Assigne un joueur existant à une équipe existante. Une erreur est renvoyée si le joueur ou l'équipe n'existe pas."
+    )
     @PatchMapping("/{idJoueur}/equipe/{idEquipe}")
     public Joueur assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
 
+    @Operation(
+            summary = "Mettre à jour l'image d'un joueur",
+            description = "Met à jour l'image ou l'avatar associé à un joueur."
+    )
     @PatchMapping("/{idJoueur}")
     public Joueur editImage(@RequestBody ImageDTO imageDTO, @PathVariable long idJoueur) { return joueurService.updateJoueur(idJoueur, imageDTO);}
 
+    @Operation(
+            summary = "Modifier les informations d'un joueur",
+            description = "Permet de modifier le nom et/ou les informations principales d'un joueur."
+    )
     @PatchMapping("/{idJoueur}/name")
     public Joueur editNameJoueur(@RequestBody EditJoueurDTO nameDTO, @PathVariable long idJoueur) { return joueurService.editName(nameDTO, idJoueur);}
 
+    @Operation(
+            summary = "Retirer un joueur de son équipe",
+            description = "Supprime l'association entre un joueur et une équipe."
+    )
     @DeleteMapping("/{idJoueur}/equipe/{idEquipe}")
     public Equipe deleteEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.deleteEquipe(idJoueur, idEquipe); }
 
+    @Operation(
+            summary = "Supprimer un joueur",
+            description = "Supprime définitivement le joueur correspondant à l'identifiant fourni."
+    )
     @DeleteMapping("/{id}")
     public void deleteJoueur(@PathVariable Long id) {
         joueurService.deleteJoueur(id);

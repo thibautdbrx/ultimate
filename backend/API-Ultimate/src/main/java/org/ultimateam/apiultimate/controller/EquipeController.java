@@ -29,30 +29,31 @@ public class EquipeController {
 
     @Operation(
             summary = "Lister toutes les équipes",
-            description = "Retourne la liste complète des équipes enregistrés dans la base de données.")
+            description = "Retourne la liste complète de toutes les équipes enregistrées en base de données."
+    )
     @GetMapping
     public List<Equipe> findAll() { return equipeService.findAll(); }
 
     @Operation(
-            summary = "Récupère une équipe en fonction de son id",
-            description = "Retourne l'équipe associé à l'id" +
-                    "Renvoie une erreur si l'équipe n'existe pas")
+            summary = "Récupérer une équipe par son identifiant",
+            description = "Retourne l'équipe correspondant à l'identifiant fourni. Une erreur est renvoyée si aucune équipe ne correspond à cet identifiant."
+    )
     @GetMapping("/{idEquipe}")
     public Equipe getById(@PathVariable long idEquipe) { return equipeService.getById(idEquipe); }
 
     @Operation(
-            summary = "Récupère les indisponibilités d'une équipe en fonction de son id | ",
-            description = "Retourne les indisponibilités de l'équipe associé à l'id" +
-                    "Renvoie une erreur si l'équipe n'existe pas")
+            summary = "Lister les indisponibilités d'une équipe",
+            description = "Retourne la liste des indisponibilités associées à l'équipe identifiée par son id. Une erreur est renvoyée si l'équipe n'existe pas."
+    )
     @GetMapping("/{idEquipe}/indisponibilite")
     public List<Indisponibilite> getIndisponibilites(@PathVariable long idEquipe) {
         return equipeService.getIndisponibilites(idEquipe);
     }
 
     @Operation(
-            summary = "Récupère une liste d'équipes qui possède un même genre",
-            description = "Retourne une liste d'équipe qui possède un certain genre | " +
-                    "Renvoie une erreur si le genre n'existe pas")
+            summary = "Lister les équipes par genre",
+            description = "Retourne la liste des équipes correspondant au genre spécifié (ex: HOMME, FEMME, MIXTE). Une erreur est renvoyée si le genre est invalide."
+    )
     @GetMapping("/genre")
     public List<Equipe> getEquipeGenre(
            Genre genre
@@ -61,32 +62,39 @@ public class EquipeController {
     }
 
     @Operation(
-            summary = "Renvoie le nombre de joueurs dans une équipe",
-            description = "Retourne un entier correspondant au nombre de joueurs dans l'équipe" +
-                    "Renvoie une erreur si l'équipe n'existe pas")
+            summary = "Obtenir le nombre de joueurs d'une équipe",
+            description = "Retourne le nombre total de joueurs appartenant à l'équipe identifiée par son id. Une erreur est renvoyée si l'équipe n'existe pas."
+    )
     @GetMapping("/{idEquipe}/nbjoueurs")
     public int getNbJoueurs(@PathVariable long idEquipe) { return equipeService.getNbJoueurs(idEquipe); }
 
     @Operation(
-            summary = "Créer une équipe",
-            description = "Envoyer un post avec le nom de l'équipe, description et genre")
+            summary = "Créer une nouvelle équipe",
+            description = "Crée une nouvelle équipe à partir des informations fournies dans le corps de la requête (nom, description, genre)."
+    )
     @PostMapping
     public Equipe createEquipe(@RequestBody Equipe equipe) { return equipeService.save(equipe); }
 
     @Operation(
-            summary = "Modifie le nom et/ou la description de l'équipe",
-            description = "Dans le json, remplir nom pour changer celui-ci et description pour changer celle-ci (pas obligatoire de remplir les deux)")
+            summary = "Modifier le nom et/ou la description d'une équipe",
+            description = "Permet de modifier le nom et/ou la description d'une équipe existante. Il n'est pas obligatoire de fournir les deux champs."
+    )
     @PatchMapping("/{idEquipe}/name")
     public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) { return equipeService.editName(equipedto, idEquipe); }
 
     @Operation(
-            summary = "Mettre à jour les genre des équipes",
-            description = "Ne ")
+            summary = "Mettre à jour le genre de toutes les équipes",
+            description = "Met à jour automatiquement le genre de toutes les équipes existantes selon les règles définies dans le service."
+    )
     @PatchMapping("/updategenre")
     public void updateGenre(){
         equipeService.updateAllGenre(equipeService.findAll());
     }
 
+    @Operation(
+            summary = "Supprimer une équipe",
+            description = "Supprime l'équipe correspondant à l'identifiant fourni. Une erreur est renvoyée si l'équipe n'existe pas."
+    )
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }
 
