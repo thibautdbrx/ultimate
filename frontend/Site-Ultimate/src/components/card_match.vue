@@ -54,6 +54,7 @@ const couleurPointsNom2 = computed(() => {
   padding: 1rem 2rem;
   transition: transform 0.2s ease;
   height: 7rem;
+  width: 35rem;
 }
 
 .card_res:hover {
