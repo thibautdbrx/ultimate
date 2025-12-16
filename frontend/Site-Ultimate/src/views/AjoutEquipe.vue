@@ -13,7 +13,6 @@ const descriptionEquipe = ref("")
 const nombreJoueurs = ref(1)
 
 const auth = useAuthStore();
-const router = useRouter();
 
 if (!auth.isAdmin) {
   router.push("/");

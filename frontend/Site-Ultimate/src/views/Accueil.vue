@@ -98,7 +98,6 @@ onMounted(async () => {
             color1="#dbeafe"
             color2="#155dfc"
             :tp="{ path: '/Matchs', query: { filtre: 'notstarted'} }"
-"
 
         />
         <CardInfo
