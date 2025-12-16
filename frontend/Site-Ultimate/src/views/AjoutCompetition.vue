@@ -104,7 +104,7 @@ const valider_ajout_equipe = async () => {
   // --- 3) CRÉATION DE LA COMPÉTITION ---
   try {
     const tournoisPayload = {
-      genre: genreApi.value,
+      genre: genre.value,
       format: format.value,
       dateDebut: toSimpleDate(dateDebut.value),
       dateFin: toSimpleDate(dateFin.value),
@@ -149,17 +149,6 @@ const valider_ajout_equipe = async () => {
 };
 
 
-const GENRE_API_MAP = {
-  HOMME: "HOMME",
-  FEMMME: "FEMMME",
-  MIXTE: "MIXTE",
-  MALE: "HOMME",
-  FEMALE: "FEMMME"
-}
-
-const genreApi = computed(() => {
-  return GENRE_API_MAP[genre.value] ?? ""
-})
 
 </script>
 
@@ -186,13 +175,13 @@ const genreApi = computed(() => {
       <label>Format :</label>
       <select v-model="format" class="select-format">
         <option value="V5">V5</option>
-        <option value="V7">V7</option>
+        <option value="v7">V7</option>
       </select>
 
       <label>Genre :</label>
       <select v-model="genre" class="select-genre">
-        <option value="MALE">HOMME</option>
-        <option value="FEMALE">FEMME</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
         <option value="MIXTE">MIXTE</option>
       </select>
 

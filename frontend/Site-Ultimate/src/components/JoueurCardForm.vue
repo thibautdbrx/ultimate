@@ -70,13 +70,13 @@ const supprimerPhoto = () => {
 
     <label v-if="joueur.clickable" class="photo-label">
       Photo du joueur :
-      <input 
+      <input
         ref="fileInput"
-        id="file-upload" 
-        class="photo_input" 
+        id="file-upload"
+        class="photo_input"
         type="file"
         accept=".jpg, .jpeg, .png, .avif"
-        @change="handleFileChange" 
+        @change="handleFileChange"
       />
     </label>
 

@@ -15,12 +15,11 @@ const joueur = ref({
   idJoueur: null,
   nomJoueur: "",
   prenomJoueur: "",
-  genre: "HOMME",
+  genre: "",
   photoJoueur: null, 
   clickable: true
 })
 
-const apiBaseUrl = "http://localhost:8080";
 
 const uploadFile = async (file) => {
     const formData = new FormData();
@@ -32,7 +31,7 @@ const uploadFile = async (file) => {
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const uploadRes = await fetch(`${apiBaseUrl}/api/files/upload`, {
+    const uploadRes = await fetch(`/api/files/upload`, {
         method: "POST",
         headers: headers, 
         body: formData 

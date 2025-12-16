@@ -11,7 +11,7 @@ import Photo_pnj from "@/assets/img_joueur/pnj.jpg";
 
 <template>
   <div class="carte">
-    <img :src="photo || Photo_pnj" alt="photo joueur" class="photo" />
+    <img :src="`http://localhost:8080${photo}` || Photo_pnj" alt="photo joueur" class="photo" />
     <h3>{{ nom }} {{prenom}}</h3>
     <p class="role">{{ genre }}</p>
   </div>
@@ -28,7 +28,9 @@ import Photo_pnj from "@/assets/img_joueur/pnj.jpg";
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .photo {
-  width: 5rem;
+  min-height: 5rem;
+  max-height: 5rem;
+
   border-radius: 10px;
   margin-bottom: 1rem;
 }

@@ -8,7 +8,7 @@ import { useAuthStore } from "@/stores/auth";
 
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
-import CardRes from '../components/Card_resultat.vue'
+import CardRes from '../components/card_match.vue'
 
 
 const stats = ref({
@@ -88,7 +88,7 @@ onMounted(async () => {
             :icon="LiveIcon"
             color1="#FFD6D6"
             color2="#d31a42"
-
+            :tp= "{ path: '/Matchs', query: { filtre: 'started'} }"
 
         />
         <CardInfo
@@ -97,6 +97,8 @@ onMounted(async () => {
             :icon="CalendarIcon"
             color1="#dbeafe"
             color2="#155dfc"
+            :tp="{ path: '/Matchs', query: { filtre: 'notstarted'} }"
+"
 
         />
         <CardInfo
@@ -115,7 +117,7 @@ onMounted(async () => {
       <p v-if="errorMsg" class="error-text">{{ errorMsg }}</p>
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
         <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card">
-          <CardRes :title="formatDate(match.dateMatch)" :nom1="match.equipe1.nomEquipe" :nom2="match.equipe2.nomEquipe" :points1="match.scoreEquipe1" :points2="match.scoreEquipe2"
+          <CardRes :title="formatDate(match.dateMatch)" :match="match"
           />
         </div>
 
