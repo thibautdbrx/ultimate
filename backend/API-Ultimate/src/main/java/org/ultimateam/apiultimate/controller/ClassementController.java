@@ -6,13 +6,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Classement;
-import org.ultimateam.apiultimate.model.ParticipationId;
 import org.ultimateam.apiultimate.service.ClassementService;
 
 import java.util.List;
 @RestController
+@Tag(name = "Classement", description = "Endpoints pour gérer le classement")
 @RequestMapping("/api/classement")
 @Tag(name = "Classement", description = "Endpoints pour gérer les classements")
 public class ClassementController {
@@ -46,23 +47,9 @@ public class ClassementController {
         return classementService.getAll();
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/competition/{idCompetition}/equipe/{idEquipe}")
-    @Operation(
-            summary = "Supprimer un classement",
-            description = "Supprime le classement d'une équipe pour une compétition donnée. Accessible uniquement aux admins."
-    )
-    @Parameter(
-            name = "idCompetition",
-            description = "Identifiant unique de la compétition.",
-            required = true
-    )
-    @Parameter(
-            name = "idEquipe",
-            description = "Identifiant unique de l'équipe.",
-            required = true
-    )
-    public void deleteClassement(@PathVariable Long idCompetition, @PathVariable Long idEquipe) {
-        classementService.deleteById(new ParticipationId(idCompetition, idEquipe));
+    @DeleteMapping("/competition/{idCompetition}")
+    public void deleteClassementCompetition(@PathVariable Long idCompetition) {
+        classementService.deleteByIdCompetition(idCompetition);
     }
+
 }
