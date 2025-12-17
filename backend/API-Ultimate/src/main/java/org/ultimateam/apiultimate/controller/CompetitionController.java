@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Competition;
+import org.ultimateam.apiultimate.model.*;
+import org.ultimateam.apiultimate.service.ChampionnatService;
 import org.ultimateam.apiultimate.service.CompetitionService;
+import org.ultimateam.apiultimate.service.TournoisService;
 
 import java.util.List;
 
@@ -22,11 +22,16 @@ import java.util.List;
 public class CompetitionController {
 
     private final CompetitionService competitionService;
+    private final TournoisService tournoisService;
+    private final ChampionnatService championnatService;
 
     @Autowired
-    public CompetitionController(CompetitionService competitionService) {
+    public CompetitionController(CompetitionService competitionService, TournoisService tournoisService, ChampionnatService championnatService) {
         this.competitionService = competitionService;
+        this.tournoisService = tournoisService;
+        this.championnatService = championnatService;
     }
+
 
     @GetMapping
     @Operation(
@@ -102,5 +107,19 @@ public class CompetitionController {
      public void genererCompetition(Long idCompetition){ CompetitionService.genererCompetition(idCompetition);}
 
      */
+
+    @GetMapping("/tournois")
+    public List<Tournois> findAllTournois() { return (List<Tournois>) tournoisService.getAllTournois(); }
+
+    @PostMapping("/tournois")
+    public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+
+    @GetMapping("/championnat")
+    public List<Championnat> findAll() { return (List<Championnat>) championnatService.getAllChampionnat(); }
+
+
+    @PostMapping("/championnat")
+    public Championnat creerChampionnat(@RequestBody Championnat championnat) {return championnatService.saveChampionnat(championnat); }
+
 
 }
