@@ -20,12 +20,12 @@ public class Classement {
 
     @ManyToOne
     @MapsId("idEquipe")
-    @JoinColumn(name = "idEquipe")
+    @JoinColumn(name = "id_equipe")
     private Equipe equipe;
 
     @ManyToOne
     @MapsId("idCompetition")
-    @JoinColumn(name = "idCompetition")
+    @JoinColumn(name = "id_competition")
     private Competition competition;
 
 

@@ -7,6 +7,7 @@ import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.repository.ClassementRepository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
@@ -18,15 +19,17 @@ public class EquipeService {
 
     private final EquipeRepository equipeRepository;
     private final JoueurRepository joueurRepository;
+    private final ClassementService classementService;
 
     /**
      * Constructeur pour l'injection de la dépendance EquipeRepository.
      *
      * @param equipeRepository Le repository pour l'accès aux données des équipes.
      */
-    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository) {
+    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository, ClassementService classementService) {
         this.equipeRepository = equipeRepository;
         this.joueurRepository = joueurRepository;
+        this.classementService = classementService;
     }
 
     /**
@@ -54,7 +57,7 @@ public class EquipeService {
     public Equipe save(Equipe equipe) { return equipeRepository.save(equipe);}
 
     /**
-     * Supprime une équipe de la base de données en utilisant son identifiant.
+     * Supprime une équipe de la base de données en utilisant son identifiant et les classements associé.
      *
      * @param id L'identifiant de l'équipe à supprimer.
      */
@@ -63,6 +66,8 @@ public class EquipeService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'equipe n'existe pas");
         }
         equipeRepository.deleteById(id);
+        classementService.deleteByIdEquipe(id);
+
     }
 
     public Equipe editName(EquipeNameDTO equipedto, long idEquipe) {

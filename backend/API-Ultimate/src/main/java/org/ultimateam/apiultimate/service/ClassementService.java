@@ -19,32 +19,55 @@ public class ClassementService {
 
     public Iterable<Classement> getAll() {return classementRepository.findAll();}
     public Classement save(Classement classement) { return classementRepository.save(classement); }
-    public void deleteById(ParticipationId id) {
-        if (!classementRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le classement n'existe pas.");
+    public List<Classement> deleteByIdCompetition(Long idCompetition) {
+        List<Classement> classements = classementRepository.findAllByCompetition_IdCompetition(idCompetition);
+        if (classements.size() == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Classement not found");
         }
-        classementRepository.deleteById(id);
+        classementRepository.deleteAll(classements);
+        return classements;
+    }
+    public List<Classement> deleteByIdEquipe(Long idEquipe) {
+        List<Classement> classements = classementRepository.findAllByEquipe_IdEquipe(idEquipe);
+        if (classements.size() == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Equipe not found");
+        }
+        classementRepository.deleteAll(classements);
+        return classements;
+
     }
 
+
     public void mettreAJourClassement(Match match) {
+        if (match==null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas.");
+
         if (match.getStatus() != Match.Status.FINISHED) {
             return;
         }
 
         Competition competition = match.getIdCompetition();
+        if (competition == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le competition n'existe pas.");
+        }
         Equipe equipe1 = match.getEquipe1();
         Equipe equipe2 = match.getEquipe2();
 
-        Classement classement1 = classementRepository.findByCompetitionAndEquipe(competition,equipe1);
-        Classement classement2 = classementRepository.findByCompetitionAndEquipe(competition,equipe2);
+        Classement classement1 = classementRepository.findClassementByCompetition_IdCompetitionAndEquipe_IdEquipe(competition.getIdCompetition(),equipe1.getIdEquipe());
+        if (classement1 == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le classement n'existe pas.");
+        }
+        Classement classement2 = classementRepository.findClassementByCompetition_IdCompetitionAndEquipe_IdEquipe(competition.getIdCompetition(),equipe2.getIdEquipe());
+        if (classement2 == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le classement n'existe pas.");
+        }
 
         long score1 = match.getScoreEquipe1();
         long score2 = match.getScoreEquipe2();
 
         updateStats(classement1, score1, score2);
         updateStats(classement2, score2, score1);
-        save(classement1);
-        save(classement2);
+
 
     }
 
@@ -63,6 +86,7 @@ public class ClassementService {
         } else {
             classement.setDefaites(classement.getDefaites() + 1);
         }
+        classementRepository.save(classement);
     }
 
 
@@ -71,6 +95,9 @@ public class ClassementService {
         for(int i=0; i<classements.size(); i++) {
             classements.get(i).setRang(i+1);
         }
+
+        classementRepository.saveAll(classements);
+
         return classements;
     }
 

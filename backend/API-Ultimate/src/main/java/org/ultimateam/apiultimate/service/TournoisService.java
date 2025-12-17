@@ -19,15 +19,18 @@ public class TournoisService {
     private final MatchRepository matchRepository;
     private final RoundRobinSchedulerService scheduler;
     private final IndisponibiliteRepository indisponibiliteRepository;
+    private final ClassementRepository classementRepository;
 
     public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository, EquipeService equipeService,
-                           MatchRepository matchRepository, RoundRobinSchedulerService scheduler, IndisponibiliteRepository indisponibiliteRepository) {
+                           MatchRepository matchRepository, RoundRobinSchedulerService scheduler, IndisponibiliteRepository indisponibiliteRepository,
+                           ClassementRepository classementRepository) {
         this.tournoisRepository = tournoisRepository;
         this.participationRepository = participationRepository;
         this.equipeService = equipeService;
         this.matchRepository = matchRepository;
         this.scheduler = scheduler;
         this.indisponibiliteRepository = indisponibiliteRepository;
+        this.classementRepository = classementRepository;
     }
 
     public List<Tournois> getAllTournois() {
@@ -92,11 +95,18 @@ public class TournoisService {
             Equipe equipe = equipeService.getById(participation.getId().getIdEquipe());
             equipes.add(equipe);
             indispo.addAll(equipeService.getIndisponibilites(equipe.getIdEquipe()));
+            Classement classement = new Classement(participation.getId());
+            classement.setCompetition(tournoi);
+            classement.setEquipe(equipe);
+            classementRepository.save(classement);
 
         }
 
         ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
         List<Match> matchs = scheduleResult.getMatchs();
+        for (Match match : matchs) {
+            match.setIdCompetition(tournoi);
+        }
         System.out.println(matchs.get(0).getIdMatch());
         List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
 

@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -87,7 +88,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE,
                                         "/api/equipe/**",
                                         "/api/competition/**",
-                                        "/api/joueur/**").hasAuthority("ROLE_ADMIN")
+                                        "/api/joueur/**",
+                                        "/api/classement/**").hasAuthority("ROLE_ADMIN")
 
                                 .requestMatchers(HttpMethod.POST,
                                         "/api/match/**").hasAnyAuthority("ROLE_ADMIN","ROLE_ARBITRE")

@@ -134,11 +134,19 @@ public class MatchService {
         long score2 = match.getScoreEquipe2();
         long SCORE_MAX = 15;
 
-        if (score1 >= SCORE_MAX && score1 > score2) match.setWinner(match.getEquipe1());
-        else if (score2 >= SCORE_MAX && score2 > score1) match.setWinner(match.getEquipe2());
+        if (score1 >= SCORE_MAX && score1 > score2) {
+            match.setWinner(match.getEquipe1());
+            finirMatchSafe(match);
+        }
+
+        else if (score2 >= SCORE_MAX && score2 > score1) {
+            match.setWinner(match.getEquipe2());
+            finirMatchSafe(match);
+        }
 
 
-        finirMatchSafe(match);
+
+
     }
 
     // --------------------- FINIR MATCH ---------------------
@@ -148,6 +156,7 @@ public class MatchService {
         match.setStatus(Match.Status.FINISHED);
         match.setDateFin(LocalDateTime.now());
         annulerScheduler(match);
+        classementService.mettreAJourClassement(match);
         save(match);
     }
 
@@ -155,7 +164,7 @@ public class MatchService {
         Match match = getById(id);
         if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
         finirMatchSafe(match);
-        classementService.mettreAJourClassement(match);
+
         return match;
     }
 
