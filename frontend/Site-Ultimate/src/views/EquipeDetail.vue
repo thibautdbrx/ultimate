@@ -8,10 +8,15 @@ import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
 
 const route = useRoute()
 const equipeId = route.params.id
+const dateDebut = ref("")
+const dateFin = ref("")
+const indispos = ref([])
+
 
 const loading = ref(true)
 const error = ref(null)
 const editMode = ref(false) // pour activer l'affichage des boutons supprimer
+const indispoMode = ref(false)// pour activer l'affichage d'ajout d'indispo
 
 const equipe = ref(null)
 const joueurs = ref([])
@@ -21,6 +26,8 @@ const modalIndex = ref()
 const nomEquipe = ref("")
 const descriptionEquipe = ref("")
 const genre = ref("")
+
+
 onMounted(async () => {
   try {
     //Récupérer l'équipe
@@ -33,7 +40,9 @@ onMounted(async () => {
     const resJoueurs = await fetch(`/api/joueur/equipe/${equipeId}`)
     if (!resJoueurs.ok) throw new Error("Erreur API joueurs")
     joueurs.value = await resJoueurs.json()
+    await get_indispo()
     loading.value = false
+
   } catch (err) {
     console.error(err)
     error.value = "Impossible de charger les informations de l'équipe."
@@ -50,6 +59,68 @@ const supprimerJoueur = async (index) => {
     joueurs.value.splice(index, 1)
   }
 }
+
+const get_indispo = async () => {
+  try {
+    const res = await fetch(`/api/indisponibilite/equipe/${equipeId}`)
+    if (!res.ok) throw new Error("Erreur API indisponibilités")
+    indispos.value = await res.json()
+  } catch (err) {
+    console.error(err)
+    error.value = "Impossible de charger les indisponibilités."
+  }
+}
+
+const ajouterIndispo = async () => {
+  if (!dateDebut.value || !dateFin.value) {
+    alert("Veuillez renseigner les deux dates")
+    return
+  if (!dateDebutFormatted || !dateFinFormatted) return
+
+  try {
+    const res = await fetch(`/api/indisponibilite`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idEquipe: equipeId,
+        dateDebut: dateDebutFormatted,
+        dateFin: dateFinFormatted
+      })
+    })
+
+    if (!res.ok) throw new Error("Erreur ajout indisponibilité")
+
+    const newIndispo = await res.json()
+    indispos.value.push(newIndispo)
+
+    dateDebut.value = ""
+    dateFin.value = ""
+  } catch (err) {
+    console.error(err)
+    alert("Impossible d'ajouter l'indisponibilité")
+  }
+}
+
+
+const supprimerIndispo = async (id, index) => {
+  if (!confirm("Supprimer cette indisponibilité ?")) return
+
+  try {
+    const res = await fetch(`/api/indisponibilite/${id}`, {
+      method: "DELETE"
+    })
+
+    if (!res.ok) throw new Error("Erreur suppression")
+
+    indispos.value.splice(index, 1)
+  } catch (err) {
+    console.error(err)
+    alert("Impossible de supprimer l'indisponibilité")
+  }
+}
+
 
 const valider_titre_desc = async () => {
   if (confirm(`changer le nom ou la desciption de l'équipe ?`)) {
@@ -89,6 +160,10 @@ const toggleEditMode = () => {
   editMode.value = !editMode.value
 }
 
+const toggleindispoMode = () => {
+  indispoMode.value = !indispoMode.value
+}
+
 const selectExisting = async (joueur) => {
   try {
     // 1. Appeler l’API pour associer le joueur à l’équipe
@@ -118,6 +193,16 @@ const selectExisting = async (joueur) => {
   }
 }
 
+const formatDateTimeSafe = (value) => {
+  const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/
+
+  if (!regex.test(value)) {
+    alert("Format de date invalide (YYYY-MM-DD HH:mm attendu)")
+    return null
+  }
+
+  return value.replace("T", " ")
+}
 
 
 </script>
@@ -132,6 +217,9 @@ const selectExisting = async (joueur) => {
     <div v-else>
       <button class="btn" @click="toggleEditMode">
         {{ editMode ? "Quitter la modification" : "Modifier" }}
+      </button>
+      <button class="btn" @click="toggleindispoMode">
+        {{ indispoMode ? "Quitter l'ajout d'indisponibilité " : "ajouter une indisponibilité" }}
       </button>
 
 
@@ -160,6 +248,63 @@ const selectExisting = async (joueur) => {
       <p v-if="!editMode" class="description">
         {{ equipe.descriptionEquipe || "Aucune description disponible." }}
       </p>
+
+
+      <div v-if="indispoMode" class="date_indispo">
+        <p>Veuillez choisir une date de début et une date de fin d'indisponibilité</p>
+
+        <label >Date début :</label>
+        <input
+            type="datetime-local"
+            v-model="dateDebut"
+            class="select-format"
+        />
+
+        <label>Date fin :</label>
+        <input
+            type="datetime-local"
+            v-model="dateFin"
+            class="select-format"
+        />
+
+        <button class="btn" @click="ajouterIndispo">
+          Ajouter
+        </button>
+
+
+
+        <h3>Indisponibilités existantes</h3>
+
+        <div
+            v-for="(indispo, i) in indispos"
+            :key="indispo.idIndisponibilite"
+            class="joueur-wrapper"
+        >
+          <p>
+             {{ indispo.dateDebut }} → {{ indispo.dateFin }}
+          </p>
+
+          <button
+              class="btn-supprimer"
+              @click="supprimerIndispo(indispo.idIndisponibilite, i)"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       <div class="modif">
         <champ_input
@@ -291,5 +436,11 @@ const selectExisting = async (joueur) => {
 #ajouter_j{
   width: 10rem;
   height: 3rem;
+}
+
+.date_indispo{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
