@@ -6,7 +6,10 @@ const props = defineProps({
   icon: Object,
   color1: String,
   color2:String,
-  tp: { type:String, default: null}
+  tp: {
+    type: [String, Object],
+    default: null
+  }
 })
 
 const router = useRouter()

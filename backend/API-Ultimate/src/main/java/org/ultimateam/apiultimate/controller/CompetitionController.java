@@ -1,0 +1,106 @@
+package org.ultimateam.apiultimate.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.parameters.P;
+import org.springframework.web.bind.annotation.*;
+import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.Match;
+import org.ultimateam.apiultimate.model.Competition;
+import org.ultimateam.apiultimate.service.CompetitionService;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/competition")
+@Tag(name = "Competition", description = "Endpoints pour gérer les compétitions")
+public class CompetitionController {
+
+    private final CompetitionService competitionService;
+
+    @Autowired
+    public CompetitionController(CompetitionService competitionService) {
+        this.competitionService = competitionService;
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "Lister toutes les compétitions",
+            description = "Retourne la liste complète de toutes les compétitions."
+    )
+    public List<Competition> findAll() { return (List<Competition>) competitionService.getAllCompetition(); }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Récupérer une compétition par son identifiant",
+            description = "Retourne la compétition correspondant à l'identifiant fourni."
+    )
+    @Parameter(
+            name = "id",
+            description = "Identifiant unique de la compétition.",
+            required = true
+    )
+    public Competition findById(@PathVariable Long id) { return competitionService.getCompetitionById(id); }
+
+    @GetMapping("{idCompetition}/matchs")
+    @Operation(
+            summary = "Lister les matchs d'une compétition",
+            description = "Retourne la liste des matchs associés à la compétition identifiée par son id."
+    )
+    @Parameter(
+            name = "idCompetition",
+            description = "Identifiant unique de la compétition.",
+            required = true
+    )
+    public List<Match> findMatches(@PathVariable Long idCompetition) { return competitionService.getMatchesByCompetition(idCompetition);}
+
+    @PostMapping
+    @Operation(
+            summary = "Créer une compétition",
+            description = "Crée une nouvelle compétition à partir des informations fournies."
+    )
+    public Competition creerCompetition(@RequestBody Competition competition) {return competitionService.saveCompetition(competition); }
+
+    @PutMapping("/{idCompetition}/create")
+    @Operation(
+            summary = "Générer les matchs d'une compétition",
+            description = "Génère tous les matchs pour la compétition identifiée par son id."
+    )
+    @Parameter(
+            name = "idCompetition",
+            description = "Identifiant unique de la compétition.",
+            required = true
+    )
+    public List<Equipe> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
+
+    @PostMapping("/tournoi")
+    @Operation(
+            summary = "Créer une compétition via endpoint tournoi",
+            description = "Crée une nouvelle compétition spécifique au contexte 'tournoi'."
+    )
+    public Competition createCompetition(@RequestBody Competition competition) { return competitionService.saveCompetition(competition); }
+
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Supprimer une compétition",
+            description = "Supprime la compétition correspondant à l'identifiant fourni."
+    )
+    @Parameter(
+            name = "id",
+            description = "Identifiant unique de la compétition à supprimer.",
+            required = true
+    )
+    public void deleteById(@PathVariable Long id) { competitionService.deleteCompetitionById(id); }
+
+    /**
+     @PostMapping("/Creation_Competition")
+     public void genererCompetition(Long idCompetition){ CompetitionService.genererCompetition(idCompetition);}
+
+     */
+
+}

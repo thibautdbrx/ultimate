@@ -20,7 +20,7 @@ const modalIndex = ref()
 
 const nomEquipe = ref("")
 const descriptionEquipe = ref("")
-
+const genre = ref("")
 onMounted(async () => {
   try {
     //Récupérer l'équipe
@@ -28,7 +28,7 @@ onMounted(async () => {
     if (!resEquipe.ok) throw new Error("Erreur API équipe")
     equipe.value = await resEquipe.json()
     nomEquipe.value = equipe.value.nomEquipe
-
+    genre.value = equipe.value.genre
     //Récupérer les joueurs de l'équipe
     const resJoueurs = await fetch(`/api/joueur/equipe/${equipeId}`)
     if (!resJoueurs.ok) throw new Error("Erreur API joueurs")
@@ -105,7 +105,8 @@ const selectExisting = async (joueur) => {
       idJoueur: joueur.idJoueur,
       nomJoueur: joueur.nomJoueur,
       prenomJoueur: joueur.prenomJoueur,
-      genre: joueur.genre
+      genre: joueur.genre,
+      photoJoueur: joueur.photoJoueur
     })
     alert("joueur bien ajouté dans la base de donnée")
     // 3. Fermer la modale
@@ -196,10 +197,12 @@ const selectExisting = async (joueur) => {
               :nom="j.nomJoueur"
               :prenom="j.prenomJoueur"
               :genre="j.genre"
+              :photo="j.photoJoueur"
           />
         </div>
         <SelectJoueur
           :show="modalShow_1"
+          :genre="genre"
           @close="modalShow_1 = false"
           @select="selectExisting"
       />

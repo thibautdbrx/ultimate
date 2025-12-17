@@ -2,6 +2,7 @@ package org.ultimateam.apiultimate.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.model.Joueur;
 
 import java.util.List;
@@ -11,6 +12,6 @@ public interface JoueurRepository extends JpaRepository<Joueur, Long> {
     List<Joueur> findAllByEquipe_IdEquipe(Long idEquipe);
     int countByEquipe_IdEquipe(Long idEquipe);
     List<Joueur> findAllByEquipe_IdEquipeIsNull();
-    List<Joueur> findAllByEquipe_IdEquipeIsNullAndGenre(Joueur.Genre genre);
-    List<Joueur> findAllByGenre(Joueur.Genre genre);
+    List<Joueur> findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur genre);
+    List<Joueur> findAllByGenre(GenreJoueur genre);
 }

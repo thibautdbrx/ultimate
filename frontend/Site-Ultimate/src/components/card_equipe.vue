@@ -24,7 +24,7 @@ defineProps({
 
     <div class="competition-info">
       <h3>{{ equipe.nomEquipe }}</h3>
-      <p v-if="licencie">{{ equipe.nbJoueur }} licencié(e)s</p>
+      <p v-if="licencie">{{ equipe.genre }} </p>
     </div>
   </div>
 </template>

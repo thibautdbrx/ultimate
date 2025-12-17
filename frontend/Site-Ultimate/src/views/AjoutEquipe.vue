@@ -10,8 +10,13 @@ import { useAuthStore } from "@/stores/auth";
 
 const nomEquipe = ref("")
 const descriptionEquipe = ref("")
-const nombreJoueurs = ref(0)
+const nombreJoueurs = ref(1)
 
+const auth = useAuthStore();
+
+if (!auth.isAdmin) {
+  router.push("/");
+}
 
 // 20 joueurs
 const joueurs = ref(
@@ -20,7 +25,7 @@ const joueurs = ref(
       nom: "",
       prenom: "",
       genre: "",
-      photo: null,
+      photoJoueur: null,
       clickable: false
     }))
 )
@@ -31,6 +36,10 @@ const modalShow_1 = ref(false) //bool qui dit si c'est affiché ou non
 const modalShow_2 = ref(false)
 
 const openModal_1 = (i) => {
+  if (!genre.value) {
+    alert("Vous devez sélectionner un genre avant d'ajouter des équipes")
+    return
+  }
   modalIndex.value = i
   modalShow_1.value = true
   modalShow_2.value = false
@@ -52,6 +61,7 @@ const selectExisting = (joueur) => {
   j.nom = joueur.nomJoueur
   j.prenom = joueur.prenomJoueur
   j.genre = joueur.genre
+  j.photoJoueur = joueur.photoJoueur
   j.clickable = false
   modalShow_1.value = false
 
@@ -59,7 +69,7 @@ const selectExisting = (joueur) => {
 
 const router = useRouter()
 
-
+const genre = ref("")
 
 const valider_ajout_equipe = async () => {
 
@@ -100,7 +110,8 @@ const valider_ajout_equipe = async () => {
     // 3) Création de l'équipe
     const equipePayload = {
       nomEquipe: nomEquipe.value,
-      description: descriptionEquipe.value
+      description: descriptionEquipe.value,
+      genre: genre.value
     };
 
     const resEquipe = await fetch("/api/equipe", {
@@ -138,10 +149,10 @@ const valider_ajout_equipe = async () => {
 </script>
 
 <template>
-  <main class="page-ajout">
+  <main v-if="auth.isAdmin" class="page-ajout">
 
     <h2>Ajouter une équipe</h2>
-    <p id="sous-titre">Creer une équipe avec minimum un joueur dedans, vous pourrais la modifier plus tard</p>
+    <p id="sous-titre">Creer une équipe sans minimum un joueur dedans, vous pourrais la modifier plus tard</p>
 
     <div class="form-block">
       <champs_input
@@ -157,9 +168,17 @@ const valider_ajout_equipe = async () => {
           placeholder="Description de l'équipe"
       />
 
+      <label>Genre :</label>
+      <select v-model="genre" class="select-genre">
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
+        <option value="MIXTE">MIXTE</option>
+      </select>
+
+
       <label>Nombre de joueurs :</label>
       <select v-model="nombreJoueurs" class="select-nb">
-        <option v-for="n in 20" :value="n">{{ n }}</option>
+        <option v-for="n in 20" :value="n" >{{ n }}</option>
       </select>
     </div>
 
@@ -180,6 +199,7 @@ const valider_ajout_equipe = async () => {
     <!-- les @ c les variables qu'on recoit de l'overlay quand il "emit" une donnée, donc une des trois -->.
     <SelectJoueur
         :show="modalShow_1"
+        :genre="genre"
         @close="modalShow_1 = false"
         @select="selectExisting"
         @nvj="openModal_2"

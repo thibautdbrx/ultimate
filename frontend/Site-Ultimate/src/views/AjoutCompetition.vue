@@ -5,6 +5,7 @@ import champs_input from "@/components/champs_input.vue"
 import SelectEqiupe from "@/components/SelectionEquipeOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import image from "@/assets/img/img_equipe.jpg"
+import { useAuthStore } from "@/stores/auth";
 
 
 const nomCompetition = ref("")
@@ -15,6 +16,13 @@ const DescriptionCompetition = ref("")
 const nombreEquipe = ref(0)
 const format = ref("")
 const genre = ref("")
+
+const auth = useAuthStore();
+const router = useRouter();
+
+if (!auth.isAdmin) {
+  router.push("/")
+}
 
 // 20 joueurs
 const equipes = ref(
@@ -56,7 +64,6 @@ const selectExisting = (equipe) => {
   modalShow_1.value = false
 }
 
-const router = useRouter()
 
 function toSimpleDate(dateString) {
   return dateString ?? null;
@@ -97,7 +104,7 @@ const valider_ajout_equipe = async () => {
   // --- 3) CRÉATION DE LA COMPÉTITION ---
   try {
     const tournoisPayload = {
-      genre: genreApi.value,
+      genre: genre.value,
       format: format.value,
       dateDebut: toSimpleDate(dateDebut.value),
       dateFin: toSimpleDate(dateFin.value),
@@ -142,22 +149,11 @@ const valider_ajout_equipe = async () => {
 };
 
 
-const GENRE_API_MAP = {
-  HOMME: "HOMME",
-  FEMMME: "FEMMME",
-  MIXTE: "MIXTE",
-  MALE: "HOMME",
-  FEMALE: "FEMMME"
-}
-
-const genreApi = computed(() => {
-  return GENRE_API_MAP[genre.value] ?? ""
-})
 
 </script>
 
 <template>
-  <main class="page-ajout">
+  <main v-if="auth.isAdmin" class="page-ajout">
 
     <h2>Ajouter une compétitions</h2>
     <p id="sous-titre">Creer une compétitions, vous pourrais la modifier plus tard</p>
@@ -179,13 +175,13 @@ const genreApi = computed(() => {
       <label>Format :</label>
       <select v-model="format" class="select-format">
         <option value="V5">V5</option>
-        <option value="V7">V7</option>
+        <option value="v7">V7</option>
       </select>
 
       <label>Genre :</label>
       <select v-model="genre" class="select-genre">
-        <option value="MALE">HOMME</option>
-        <option value="FEMALE">FEMME</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
         <option value="MIXTE">MIXTE</option>
       </select>
 

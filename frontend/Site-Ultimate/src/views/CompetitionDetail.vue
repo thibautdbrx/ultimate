@@ -153,6 +153,20 @@ const supprimerEquipe = async (index) => {
     joueurs.value.splice(index, 1)
   }
 }
+
+const format_bien_aff = computed(() => {
+  return (competition.value?.format || "").toUpperCase();
+});
+
+const formatDate = (isoString) => {
+  if (!isoString) return ''
+  return new Date(isoString).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
 </script>
 
 <template>
@@ -166,7 +180,7 @@ const supprimerEquipe = async (index) => {
 
         <h2>
           {{ competition.nomCompetition }} —
-          {{ competition.format }} —
+          {{ format_bien_aff }} —
           {{ competition.genre }} —
           {{ nbTeams }} équipes
         </h2>
@@ -216,7 +230,7 @@ const supprimerEquipe = async (index) => {
 
           <SelectEquipe
               :show="modalShow_1"
-              :genre="genreApi"
+              :genre="competition.genre"
               :all="false"
               @close="modalShow_1 = false"
               @select="selectExisting"
@@ -231,12 +245,9 @@ const supprimerEquipe = async (index) => {
           <SliderCardHorizontal>
             <div v-for="match in upcomingMatches" :key="match.idMatch">
               <CardMatch
-                  :title="match.dateMatch"
-                  :nom1="match.equipe1.nomEquipe"
-                  :nom2="match.equipe2.nomEquipe"
-                  :points1="match.scoreEquipe1"
-                  :points2="match.scoreEquipe2"
-                  :fini="false"
+                  :title="formatDate(match.dateMatch)"
+                  :match ="match"
+
               />
             </div>
           </SliderCardHorizontal>

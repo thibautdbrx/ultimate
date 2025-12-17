@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref,computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_coupe.jpg"
 import { useAuthStore } from "@/stores/auth";
@@ -7,7 +7,7 @@ import { useAuthStore } from "@/stores/auth";
 const router = useRouter()
 
 // Liste des compétitions récupérées depuis ton API
-const competitions = ref([]) // JS pur, tableau vide initial
+const competitions = ref([]) // tableau vide initial
 const loading = ref(true)
 const error = ref(null)
 
@@ -35,6 +35,11 @@ onMounted(() => {
 function goToCompetition(id) { // JS pur, plus de :number
   router.push({ name: 'Competition-details', params: { id } })
 }
+
+const format_bien_aff = (format) => {
+  return (format|| "").toUpperCase();
+};
+
 </script>
 
 
@@ -54,7 +59,7 @@ function goToCompetition(id) { // JS pur, plus de :number
         <img :src="ImageFond" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
           <h3>{{ competition.nomCompetition }}</h3>
-          <p>{{ competition.format + " - " + competition.genre }}</p>
+          <p>{{ format_bien_aff(competition.format) + " - " + competition.genre }}</p>
         </div>
       </div>
     </div>

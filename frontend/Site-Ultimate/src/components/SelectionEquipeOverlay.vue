@@ -6,7 +6,7 @@ const props = defineProps({
   show: Boolean,
   genre: {
     type: String,
-    default: "-",
+    default: "",
     required: true,
   },
   all:{

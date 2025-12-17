@@ -19,6 +19,8 @@ const match = ref(null);
 const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
 
+let etatMatch = ref("WAITING")
+
 const error = ref(null);
 
 const auth = useAuthStore();
@@ -32,6 +34,9 @@ const loadMatch = async () => {
     if (!res.ok) throw new Error("Erreur API match : " + res.status);
 
     match.value = await res.json();
+    console.log(match.value);
+    etatMatch = match.value.status;
+
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -72,8 +77,8 @@ const couleurEquipe1 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
 
-  const s1 = match.value.score_equipe1;
-  const s2 = match.value.score_equipe2;
+  const s1 = match.value.scoreEquipe1;
+  const s2 = match.value.scoreEquipe2;
 
   if (s1 > s2) return "vert";
   if (s1 < s2) return "rouge";
@@ -84,13 +89,68 @@ const couleurEquipe2 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
 
-  const s1 = match.value.score_equipe1;
-  const s2 = match.value.score_equipe2;
+  const s1 = match.value.scoreEquipe1;
+  const s2 = match.value.scoreEquipe2;
 
   if (s2 > s1) return "vert";
   if (s2 < s1) return "rouge";
   return "or";
 });
+
+const AjoutPoint = async (numEquipe, combien) => {
+
+  let score;
+  const matchId = match.value.idMatch; 
+
+  
+  if (numEquipe == 1) {
+    score = match.value.scoreEquipe1 + combien;
+  } else if (numEquipe == 2) {
+    score = match.value.scoreEquipe2 + combien;
+  } else {
+    console.error("Numéro d'équipe invalide :", numEquipe);
+    return;
+  }
+
+  if (score < 0) {
+    console.error("Point négatif impossible");
+    return;
+  }
+  
+
+  console.log(score);
+
+  const point = {
+    point: combien
+  }
+
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(point)
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error("Erreur lors de l'ajout de point.");
+  }
+}
+
+const operationMatch = async (operation) => {
+  const res = await fetch(`/api/match/${matchId}/${operation}`, {
+    method: "PUT"
+  })
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error(`Erreur lors du ${operation} du match.`);
+  }
+} 
+
 
 // ----------------------
 onMounted(async () => {
@@ -104,27 +164,45 @@ onMounted(async () => {
 
     <!-- HEADER : Infos du match -->
     <section class="header" v-if="match">
+
+      <p v-if="!(etatMatch=='FINISHED' || etatMatch=='WAITING')" id="dureeMatch">00:00:00</p>
+
       <h1>
         Championnat régional
       </h1>
 
       <div class="score-box">
         <div class="score">
-          <h2 :class="couleurEquipe1">{{ match.equipe1.nom_equipe }}</h2>
-          <p class="points">{{ match.score_equipe1 }}</p>
+          <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
+
+          <div class="affichagePoint">
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
+            <p class="points">{{ match.scoreEquipe1 }}</p>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
+          </div>
+          
         </div>
 
         <div class="vs">VS</div>
 
         <div class="score">
-          <h2 :class="couleurEquipe2">{{ match.equipe2.nom_equipe }}</h2>
-          <p class="points">{{ match.score_equipe2 }}</p>
+          <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
+
+          <div class="affichagePoint">
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
+            <p class="points">{{ match.scoreEquipe2 }}</p>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
+          </div>
+          
         </div>
       </div>
 
-      <p class="date">
-        Début : {{ new Date(match.dateDebut).toLocaleString() }}
-      </p>
+      <div class="date">
+        <p v-if="!(etatMatch == 'WAITING')">Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
+      </div>
       <p class="status">Status : {{ match.status }}</p>
     </section>
 
@@ -135,7 +213,7 @@ onMounted(async () => {
 
       <!-- COLONNE GAUCHE -->
       <div class="col">
-        <h3 class="subtitle">{{ match.equipe1.nom_equipe }}</h3>
+        <h3 class="subtitle">{{ match.equipe1.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
 
@@ -143,7 +221,7 @@ onMounted(async () => {
           <Card_joueur
               v-for="j in joueursEquipe1"
               :key="j.idJoueur"
-              :nom="j.nom_joueur + ' ' + j.prenom_joueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
               background="#ffdddd"
           />
@@ -154,12 +232,20 @@ onMounted(async () => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <h3>Informations du Match</h3>
-        <p>Ici tu pourras ajouter les stats, durée, arbitres, etc.</p>
+        <p v-if="auth.isAdmin || auth.isArbitre" >Ici tu pourras ajouter les stats, durée, arbitres, etc.</p>
+
+        <div id="actionsMatch">
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction">Commencer le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction">Terminer le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction">Pause le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction">Resume le match</button>
+        </div>
+    
       </div>
 
       <!-- COLONNE DROITE -->
       <div class="col">
-        <h3 class="subtitle">{{ match.equipe2.nom_equipe }}</h3>
+        <h3 class="subtitle">{{ match.equipe2.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
 
@@ -167,7 +253,7 @@ onMounted(async () => {
           <Card_joueur
               v-for="j in joueursEquipe2"
               :key="j.idJoueur"
-              :nom="j.nom_joueur + ' ' + j.prenom_joueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
               background="#dde8ff"
           />
@@ -253,4 +339,44 @@ onMounted(async () => {
   color: red;
   text-align: center;
 }
+
+.affichagePoint {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.boutonScore {
+  border-radius: 20px;
+  border: none;
+  height: 4em;
+  width: 4em;
+
+  margin: 2em;
+
+  font-weight: bold;
+  font-size: 1em;
+
+  padding: 0;
+
+  transition: opacity 0.3s;
+}
+
+.boutonScore:hover {
+  opacity: 0.7;
+}
+
+.boutonPlus {
+  background-color: rgb(65, 133, 65);
+}
+
+.boutonMoins {
+  background : rgb(194, 80, 80);
+}
+
+#actionsMatch {
+  display: flex;
+  justify-content: space-evenly;
+}
+
 </style>

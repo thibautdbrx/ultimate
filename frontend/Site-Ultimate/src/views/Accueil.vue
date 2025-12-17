@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 import LiveIcon from '@/assets/icons/live.svg'
 import TrophyIcon from '@/assets/icons/trophy.svg'
@@ -8,9 +9,9 @@ import { useAuthStore } from "@/stores/auth";
 
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
-import CardRes from '../components/Card_resultat.vue'
+import CardRes from '../components/card_match.vue'
 
-
+const router = useRouter()
 const stats = ref({
   live: 0,
   upcoming: 0,
@@ -21,6 +22,16 @@ const auth = useAuthStore();
 
 const derniersMatchs = ref([])
 const errorMsg = ref('')
+
+const formatDate = (isoString) => {
+  if (!isoString) return "";
+
+  return new Date(isoString).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+};
 
 onMounted(async () => {
   try {
@@ -64,6 +75,10 @@ onMounted(async () => {
     console.error("Erreur lors du chargement des données:", err)
   }
 })
+
+function goToMatch(id) {
+  router.push(`match/${id}`)
+}
 </script>
 
 
@@ -78,7 +93,7 @@ onMounted(async () => {
             :icon="LiveIcon"
             color1="#FFD6D6"
             color2="#d31a42"
-
+            :tp= "{ path: '/Matchs', query: { filtre: 'started'} }"
 
         />
         <CardInfo
@@ -87,6 +102,7 @@ onMounted(async () => {
             :icon="CalendarIcon"
             color1="#dbeafe"
             color2="#155dfc"
+            :tp="{ path: '/Matchs', query: { filtre: 'notstarted'} }"
 
         />
         <CardInfo
@@ -104,8 +120,8 @@ onMounted(async () => {
       <h2 class="titre_acceuil">Dernier resultats</h2>
       <p v-if="errorMsg" class="error-text">{{ errorMsg }}</p>
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
-        <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card">
-          <CardRes :title="String(match.idMatch)" :nom1="match.equipe1.nomEquipe" :nom2="match.equipe2.nomEquipe" :points1="match.scoreEquipe1" :points2="match.scoreEquipe2"
+        <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card" @click="goToMatch(match.idMatch)">
+          <CardRes :title="formatDate(match.dateMatch)" :match="match"
           />
         </div>
 
