@@ -9,13 +9,12 @@ import lombok.Setter;
 @Setter
 @Entity
 public class Joueur {
-    public enum Genre {MALE, FEMALE}
+    public enum Genre {HOMME, FEMME}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long idJoueur;
-    private int Point;
 
     private String nomJoueur;
     private String prenomJoueur;

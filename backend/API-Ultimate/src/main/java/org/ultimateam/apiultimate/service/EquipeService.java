@@ -107,9 +107,9 @@ public class EquipeService {
         boolean allFemale = true;
 
         for (Joueur joueur : joueurs) {
-            if (joueur.getGenre() == Joueur.Genre.MALE) {
+            if (joueur.getGenre() == Joueur.Genre.HOMME) {
                 allFemale = false;
-            } else if (joueur.getGenre() == Joueur.Genre.FEMALE) {
+            } else if (joueur.getGenre() == Joueur.Genre.FEMME) {
                 allMale = false;
             }
         }

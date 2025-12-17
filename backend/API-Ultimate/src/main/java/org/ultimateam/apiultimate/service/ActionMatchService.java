@@ -4,11 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
+import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.ActionMatchRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -27,12 +29,22 @@ public class ActionMatchService {
         this.joueurService = joueurService;
     }
 
+    public List<ActionMatch> findAll(){ return actionMatchRepository.findAll();}
+    public ActionMatch findById(Long id){ return actionMatchRepository.findById(id).orElse(null);}
+    public List<ActionMatch> findByMatchId(Long matchId){ return actionMatchRepository.findByMatch_IdMatch(matchId);}
+    public List<ActionMatch> findByActionType(ActionTypeDTO actionTypeDTO){ return actionMatchRepository.findByType(actionTypeDTO);}
+    public List<ActionMatch> findByActionTypeAndMatchId(ActionTypeDTO actionTypeDTO, Long matchId){ return actionMatchRepository.findByTypeAndMatch_IdMatch(actionTypeDTO, matchId);}
+    public List<ActionMatch> findByJoueurAndMatchId(Long idJoueur, Long matchId){ return actionMatchRepository.findByJoueur_IdJoueurAndMatch_IdMatch(idJoueur, matchId);}
+    public List<ActionMatch> findByActionAndJoueurAndMatchId(ActionTypeDTO actionTypeDTO, Long matchId, Long joueurId){ return actionMatchRepository.findByTypeAndJoueur_IdJoueurAndMatch_IdMatch(actionTypeDTO, joueurId, matchId);}
+
+
+
     public ActionMatch addPoint(long id_match, long id_equipe, MatchPointDTO matchPointDTO) {
-        return addAction(id_match, id_equipe, id_joueur, ActionTypeDTO.POINT);
+        return addAction(id_match, id_equipe, matchPointDTO.getIdJoueur(), ActionTypeDTO.POINT);
     }
 
-    public ActionMatch addFaute(long id_match, long id_equipe, long id_joueur) {
-        return addAction(id_match, id_equipe, id_joueur, ActionTypeDTO.FAUTE);
+    public ActionMatch addFaute(long id_match, long id_equipe, MatchFauteDTO matchFauteDTO) {
+        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE);
     }
 
     public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type) {
@@ -53,23 +65,14 @@ public class ActionMatchService {
         if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) && !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
         }
+
         ActionMatch action = new ActionMatch();
         action.setMatch(match);
         action.setJoueur(joueur);
         action.setType(type);
         action.setDateAction(LocalDateTime.now());
 
-        actionMatchRepository.save(action);
-        if (type == ActionTypeDTO.POINT) {
-            if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
-                match.setScoreEquipe1(match.getScoreEquipe1() + 1);
-            } else {
-                match.setScoreEquipe2(match.getScoreEquipe2() + 1);
-            }
-            matchRepository.save(match);
-        }
-
-        return action;
+        return actionMatchRepository.save(action);
     }
 
     private void verifyJoueurInMatch(Match match, long id_joueur) {

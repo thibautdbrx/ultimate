@@ -2,12 +2,10 @@ package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
-import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
+import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
-import org.ultimateam.apiultimate.model.ActionMatch;
 import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.service.ActionMatchService;
 import org.ultimateam.apiultimate.service.MatchService;
 
 import java.util.List;
@@ -70,14 +68,14 @@ public class MatchController {
         return matchService.finirMatch(id);
     }
 
-    @PatchMapping("{idMatch}/equipe/{idEquipe}/joueur/{idJoueur}/point")
-    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe, @PathVariable Long idJoueur, @RequestBody MatchPointDTO matchPointDTO) {
-        return matchService.ajouterPoint(idMatch,  idEquipe, matchPointDTO, idJoueur);
+    @PatchMapping("{idMatch}/equipe/{idEquipe}/point")
+    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchPointDTO matchPointDTO) {
+        return matchService.ajouterPoint(idMatch,  idEquipe, matchPointDTO);
     }
 
-    @PatchMapping("{idMatch}/equipe/{idEquipe}/joueur/{idJoueur}/faute")
-    public Match addFaute(@PathVariable Long idMatch, @PathVariable Long idEquipe, @PathVariable Long idJoueur) {
-        return matchService.ajouterFaute(idMatch, idEquipe, idJoueur);
+    @PatchMapping("{idMatch}/equipe/{idEquipe}/faute")
+    public Match addFaute(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchFauteDTO matchFauteDTO) {
+        return matchService.ajouterFaute(idMatch, idEquipe, matchFauteDTO);
     }
 
 

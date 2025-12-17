@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
+import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
@@ -120,9 +121,11 @@ public class MatchService {
     public Match ajouterPoint(long id_match, long id_equipe, MatchPointDTO dto) {
         Match match = getById(id_match);
         Equipe equipe = equipeService.getById(id_equipe);
+
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
         if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
         if (dto.getPoint() == 0) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
+
 
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
             match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
@@ -130,20 +133,20 @@ public class MatchService {
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
 
-        actionMatchService.addAction(id_match, id_equipe, ActionTypeDTO.POINT, dto);
+        actionMatchService.addPoint(id_match, id_equipe, dto);
 
         checkVictory(match);
         return save(match);
     }
 
-    public Match ajouterFaute(long id_match, long id_equipe, Long idJoueur) {
-        Match match = getById(id_match);
-        Equipe equipe = equipeService.getById(id_equipe);
+    public Match ajouterFaute(long idMatch, long idEquipe, MatchFauteDTO fauteDTO) {
+        Match match = getById(idMatch);
+        Equipe equipe = equipeService.getById(idMatch);
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
         if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
 
-        actionMatchService.addFaute(id_match, id_equipe, idJoueur);
-        return save(match);
+        actionMatchService.addFaute(idMatch, idEquipe, fauteDTO);
+        return getById(idMatch);
     }
 
     // --------------------- CHECK VICTORY ---------------------
@@ -154,11 +157,14 @@ public class MatchService {
         long score2 = match.getScoreEquipe2();
         long SCORE_MAX = 15;
 
-        if (score1 >= SCORE_MAX && score1 > score2) match.setWinner(match.getEquipe1());
-        else if (score2 >= SCORE_MAX && score2 > score1) match.setWinner(match.getEquipe2());
-
-
-        finirMatchSafe(match);
+        if (score1 >= SCORE_MAX && score1 > score2) {
+            match.setWinner(match.getEquipe1());
+            finirMatchSafe(match);
+        }
+        else if (score2 >= SCORE_MAX && score2 > score1) {
+            match.setWinner(match.getEquipe2());
+            finirMatchSafe(match);
+        }
     }
 
     // --------------------- FINIR MATCH ---------------------
