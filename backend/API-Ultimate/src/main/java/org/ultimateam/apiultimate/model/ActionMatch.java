@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class ActionMatch {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +27,6 @@ public class ActionMatch {
     private Joueur joueur;
 
     @Enumerated(EnumType.STRING)
-    private ActionType type;
+    private ActionTypeDTO type;
 
     private LocalDateTime dateAction;}

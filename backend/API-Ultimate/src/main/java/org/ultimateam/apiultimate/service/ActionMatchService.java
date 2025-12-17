@@ -3,11 +3,12 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
+import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.ActionMatchRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -26,15 +27,15 @@ public class ActionMatchService {
         this.joueurService = joueurService;
     }
 
-    public ActionMatch addPoint(long id_match, long id_equipe, long id_joueur) {
-        return addAction(id_match, id_equipe, id_joueur, ActionType.POINT);
+    public ActionMatch addPoint(long id_match, long id_equipe, MatchPointDTO matchPointDTO) {
+        return addAction(id_match, id_equipe, id_joueur, ActionTypeDTO.POINT);
     }
 
     public ActionMatch addFaute(long id_match, long id_equipe, long id_joueur) {
-        return addAction(id_match, id_equipe, id_joueur, ActionType.FAUTE);
+        return addAction(id_match, id_equipe, id_joueur, ActionTypeDTO.FAUTE);
     }
 
-    private ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionType type) {
+    public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type) {
         Match match = matchRepository.findById(id_match).orElse(null);
         Equipe equipe = equipeService.getById(id_equipe);
         Joueur joueur = joueurService.getById(id_joueur);
@@ -49,8 +50,7 @@ public class ActionMatchService {
 
         verifyJoueurInMatch(match, id_joueur);
 
-        if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) &&
-                !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+        if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) && !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
         }
         ActionMatch action = new ActionMatch();
@@ -60,7 +60,7 @@ public class ActionMatchService {
         action.setDateAction(LocalDateTime.now());
 
         actionMatchRepository.save(action);
-        if (type == ActionType.POINT) {
+        if (type == ActionTypeDTO.POINT) {
             if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
                 match.setScoreEquipe1(match.getScoreEquipe1() + 1);
             } else {

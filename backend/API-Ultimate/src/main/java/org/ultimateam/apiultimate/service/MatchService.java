@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.*;
@@ -33,14 +34,16 @@ public class MatchService {
     private final ClassementService classementService;
     private final JoueurRepository joueurRepository;
     private final JoueurService joueurService;
+    private final ActionMatchService actionMatchService;
 
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService) {
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService, ActionMatchService actionMatchService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
         this.tournoisService = tournoisService;
         this.classementService = classementService;
         this.joueurRepository = joueurRepository;
         this.joueurService = joueurService;
+        this.actionMatchService = actionMatchService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -114,6 +117,34 @@ public class MatchService {
         return save(match);
     }
 
+    public Match ajouterPoint(long id_match, long id_equipe, MatchPointDTO dto) {
+        Match match = getById(id_match);
+        Equipe equipe = equipeService.getById(id_equipe);
+        if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
+        if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
+        if (dto.getPoint() == 0) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
+
+        if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
+            match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
+        } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+            match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
+
+        actionMatchService.addAction(id_match, id_equipe, ActionTypeDTO.POINT, dto);
+
+        checkVictory(match);
+        return save(match);
+    }
+
+    public Match ajouterFaute(long id_match, long id_equipe, Long idJoueur) {
+        Match match = getById(id_match);
+        Equipe equipe = equipeService.getById(id_equipe);
+        if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
+        if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
+
+        actionMatchService.addFaute(id_match, id_equipe, idJoueur);
+        return save(match);
+    }
 
     // --------------------- CHECK VICTORY ---------------------
     public void checkVictory(Match match) {
