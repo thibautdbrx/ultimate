@@ -115,7 +115,7 @@ public class CompetitionController {
     public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
 
     @GetMapping("/championnat")
-    public List<Championnat> findAll() { return (List<Championnat>) championnatService.getAllChampionnat(); }
+    public List<Championnat> findAllChampionnat() { return (List<Championnat>) championnatService.getAllChampionnat(); }
 
 
     @PostMapping("/championnat")
