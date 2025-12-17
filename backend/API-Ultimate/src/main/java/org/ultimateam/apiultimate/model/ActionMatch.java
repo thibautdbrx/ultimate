@@ -2,8 +2,10 @@ package org.ultimateam.apiultimate.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,14 +17,14 @@ public class ActionMatch {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "idJoueur")
-    private Joueur joueur;
-
-    @ManyToOne
-    @JoinColumn(name = "idMatch")
+    @JoinColumn(name = "match_id")
     private Match match;
 
-    private long points; // Points marqués par le joueur dans ce match
-    private long fautes; // Fautes commises par le joueur dans ce match
+    @ManyToOne
+    @JoinColumn(name = "joueur_id")
+    private Joueur joueur;
 
-}
+    @Enumerated(EnumType.STRING)
+    private ActionType type;
+
+    private LocalDateTime dateAction;}

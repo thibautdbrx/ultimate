@@ -1,6 +1,5 @@
 package org.ultimateam.apiultimate.service;
 
-import org.hibernate.metamodel.mapping.MappingModelCreationLogging_$logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -114,86 +113,6 @@ public class MatchService {
         }
         return save(match);
     }
-
-    public Match ajouterPoint(long id_match, long id_equipe, long id_joueur, MatchPointDTO dto) {
-        Match match = getById(id_match);
-        Equipe equipe = equipeService.getById(id_equipe);
-        Joueur joueur = joueurService.getById(id_joueur);
-        if (match == null || equipe == null || joueur == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe/joueur n'existe pas");
-        }
-        if (match.getStatus() != Match.Status.ONGOING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
-        }
-        if (dto.getPoint() <= 0) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
-        }
-        verifyJoueurInMatch(match, id_joueur);
-        if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) &&
-                !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
-        }
-        ActionMatch action = getOrCreateActionMatch(match, joueur, id_joueur);
-        action.setPoints(action.getPoints() + dto.getPoint());
-        if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
-            match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
-        } else {
-            match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
-        }
-        checkVictory(match);
-        return save(match);
-    }
-
-
-    public Match ajouterFaute(long id_match, long id_equipe, long id_joueur) {
-        Match match = getById(id_match);
-        Equipe equipe = equipeService.getById(id_equipe);
-        Joueur joueur = joueurService.getById(id_joueur);
-        if (match == null || equipe == null || joueur == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match, l'équipe ou le joueur n'existe pas");
-        }
-        if (match.getStatus() != Match.Status.ONGOING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le match n'est pas en cours");
-        }
-        verifyJoueurInMatch(match, id_joueur);
-        if (!Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe()) &&
-                !Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
-        }
-        ActionMatch action = getOrCreateActionMatch(match, joueur, id_joueur);
-        action.setFautes(action.getFautes() + 1);
-        checkVictory(match);
-        return save(match);
-    }
-
-
-    private ActionMatch getOrCreateActionMatch(Match match, Joueur joueur, long id_joueur) {
-        return match.getActions().stream()
-                .filter(a -> Objects.equals(a.getJoueur().getIdJoueur(), id_joueur))
-                .findFirst()
-                .orElseGet(() -> {
-                    ActionMatch newAction = new ActionMatch();
-                    newAction.setJoueur(joueur);
-                    newAction.setMatch(match);
-                    newAction.setPoints(0);
-                    newAction.setFautes(0);
-                    match.getActions().add(newAction);
-                    return newAction;
-                });
-    }
-
-    private void verifyJoueurInMatch(Match match, long id_joueur) {
-        boolean joueurEstDansEquipe1 = match.getEquipe1().getJoueurs().stream()
-                .anyMatch(j -> Objects.equals(j.getIdJoueur(), id_joueur));
-
-        boolean joueurEstDansEquipe2 = match.getEquipe2().getJoueurs().stream()
-                .anyMatch(j -> Objects.equals(j.getIdJoueur(), id_joueur));
-
-        if (!joueurEstDansEquipe1 && !joueurEstDansEquipe2) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Le joueur ne fait partie d'aucune des deux équipes de ce match");
-        }
-    }
-
 
 
     // --------------------- CHECK VICTORY ---------------------
