@@ -3,7 +3,6 @@ package org.ultimateam.apiultimate.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.Classement;
-import org.ultimateam.apiultimate.model.ParticipationId;
 import org.ultimateam.apiultimate.service.ClassementService;
 
 import java.util.List;
