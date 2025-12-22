@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/auth";
 
 const nomCompetition = ref("")
 const nomEquipe = ref("")
+const competition = ref("")
 const dateDebut = ref("")
 const dateFin = ref("")
 const DescriptionCompetition = ref("")
@@ -28,7 +29,7 @@ if (!auth.isAdmin) {
 const equipes = ref(
     Array.from({ length: 20 }, () => ({
       idEquipe: null,
-      nomEquipe: "Equipe",
+      nomEquipe: "Equipe XXX",
     }))
 )
 
@@ -76,6 +77,11 @@ const valider_ajout_equipe = async () => {
     alert("Le nom de la compétition est obligatoire.");
     return;
   }
+  if (!competition.value) {
+    alert("Veuillez choisir le type de compétition (Tournoi ou Championnat).");
+    return;
+  }
+
 
   //  Si 0 équipe, on saute toute la partie équipe
   let equipesSelectionnees = [];
@@ -112,7 +118,12 @@ const valider_ajout_equipe = async () => {
       descriptionCompetition: DescriptionCompetition.value
     };
 
-    const resTournois = await fetch("/api/tournois", {
+    const endpoint =
+        competition.value === "TOURNOI"
+            ? "/api/competition/tournoi"
+            : "/api/competition";
+
+    const resTournois = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(tournoisPayload)
@@ -171,6 +182,12 @@ const valider_ajout_equipe = async () => {
           placeholder="Ex: Tournois Ultimate National école d'ingenieur"
           :icon="UserIcon"
       />
+
+      <label>Compétition :</label>
+      <select v-model="competition" class="select-genre">
+        <option value="TOURNOI">Tournoi</option>
+        <option value="CHAMPIONNAT">Championnat</option>
+      </select>
 
       <label>Format :</label>
       <select v-model="format" class="select-format">

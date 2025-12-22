@@ -143,6 +143,10 @@ function goToEquipe(id, nom) {
 }
 
 const openModal_1 = () => {
+  if (competitionDejaCommencee.value) {
+    alert("La compétition a déjà commencé.")
+    return
+  }
   modalShow_1.value = true
 }
 const supprimerEquipe = async (index) => {
@@ -166,6 +170,21 @@ const formatDate = (isoString) => {
     year: 'numeric'
   })
 }
+
+const competitionDejaCommencee = computed(() => {
+  if (!competition.value?.dateDebut) return false
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const debut = new Date(competition.value.dateDebut)
+  debut.setHours(0, 0, 0, 0)
+
+  return debut < today
+})
+
+
+
 
 </script>
 
@@ -204,8 +223,24 @@ const formatDate = (isoString) => {
 
           <!-- Bouton d'ajout uniquement en mode edition -->
           <div v-if="allowEdit && editMode" class="edit-actions">
-            <button class="btn-primary" @click="openModal_1()">Ajouter une équipe</button>
+
+            <button
+                v-if="!competitionDejaCommencee"
+                class="btn-primary"
+                @click="openModal_1()"
+            >
+              Ajouter une équipe
+            </button>
+
+            <p
+                v-else
+                class="competition-deja-commencee"
+            >
+              La compétition a déjà commencé, il n’est plus possible d’ajouter des équipes.
+            </p>
+
           </div>
+
 
           <div class="teams-grid">
             <div v-for="t in teams" :key="t.idEquipe" class="team-card-wrapper">
@@ -340,4 +375,10 @@ h2 {
   cursor: pointer;
   text-decoration: none;
 }
+.competition-deja-commencee {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 </style>
