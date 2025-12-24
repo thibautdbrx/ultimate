@@ -15,7 +15,7 @@ const error = ref(null)
 
 // Récupération des compétitions
 onMounted(() => {
-  fetch("/api/tournois")
+  fetch("/api/competition")
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
         return res.json()

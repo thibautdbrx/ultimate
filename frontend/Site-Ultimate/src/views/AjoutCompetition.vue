@@ -121,7 +121,7 @@ const valider_ajout_equipe = async () => {
     const endpoint =
         competition.value === "TOURNOI"
             ? "/api/competition/tournoi"
-            : "/api/competition";
+            : "/api/competition/championnat";
 
     const resTournois = await fetch(endpoint, {
       method: "POST",

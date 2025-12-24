@@ -47,7 +47,7 @@ onMounted(async () => {
     stats.value.upcoming = upcomingData.length
 
     // Compétitions
-    const compRes = await fetch(`/api/tournois`)
+    const compRes = await fetch(`/api/competition`)
     console.log(compRes)
     const compData = await compRes.json()
     stats.value.competitions = compData.length

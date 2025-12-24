@@ -33,7 +33,7 @@ async function fetchTeams() {
 }
 
 async function fetchCompetitionInfo() {
-  const res = await fetch(`/api/tournois/${competitionId}`)
+  const res = await fetch(`/api/competition/${competitionId}`)
   if (res.ok) {
     competition.value = await res.json()
     GENRE_API_MAP[competition.genre] ?? ""
@@ -42,7 +42,7 @@ async function fetchCompetitionInfo() {
 }
 
 async function fetchMatches() {
-  const res = await fetch(`/api/tournois/${competitionId}/matchs`)
+  const res = await fetch(`/api/competition/${competitionId}/matchs`)
   if (!res.ok) throw new Error("Erreur HTTP matchs")
   matches.value = await res.json()
 }
@@ -220,7 +220,7 @@ const competitionDejaCommencee = computed(() => {
           {{ nbTeams }} équipes
         </h2>
 
-        <!-- 🔥 MODE SANS MATCHS = ÉDITION ACTIVÉE -->
+        <!--  ÉDITION ACTIVÉE -->
         <div v-if="allowEdit && !loading" class="no-matches">
           <p>Aucun match n’a encore été généré pour cette compétition.</p>
 
