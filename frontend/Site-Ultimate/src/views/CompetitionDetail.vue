@@ -11,6 +11,9 @@ import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 const route = useRoute()
 const router = useRouter()
 
+const classement = ref([])
+
+
 const competitionId = route.params.id
 
 const competition = ref(null)
@@ -44,6 +47,16 @@ async function fetchMatches() {
   matches.value = await res.json()
 }
 
+async function fetchClassement() {
+  const res = await fetch(`/api/classement/competition/${competitionId}`)
+  if (!res.ok) throw new Error("Erreur HTTP classement")
+  classement.value = await res.json()
+}
+
+const classementTrie = computed(() => {
+  return [...classement.value].sort((a, b) => a.rang - b.rang)
+})
+
 
 
 const GENRE_API_MAP = {
@@ -66,6 +79,8 @@ onMounted(async () => {
     await fetchTeams()
     await fetchMatches()
     await fetchCompetitionInfo()
+    await fetchClassement()
+
 
   } catch (err) {
     console.error(err)
@@ -74,6 +89,7 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
 
 
 const selectExisting = async (equipe) => {
@@ -302,6 +318,34 @@ const competitionDejaCommencee = computed(() => {
           </SliderCardHorizontal>
         </div>
 
+        <section class="classement-section">
+          <h3>Classement du tournoi</h3>
+
+          <p v-if="!hasMatches" class="classement-info">
+            Le classement sera mis à jour automatiquement dès que les matchs auront été générés et joués.
+          </p>
+
+          <ul v-else-if="classementTrie.length" class="classement-list">
+            <li
+                v-for="c in classementTrie"
+                :key="c.idClassement.idEquipe"
+                :class="['classement-item', `rang-${c.rang}`]"
+            >
+              <span class="rang">{{ c.rang }}</span>
+
+              <span
+                  class="equipe"
+                  @click="goToEquipe(c.equipe.idEquipe, c.equipe.nomEquipe)"
+              >
+                  {{ c.equipe.nomEquipe }}
+              </span>
+
+              <span class="score">{{ c.score }} pts</span>
+            </li>
+          </ul>
+        </section>
+
+
       </div>
     </div>
   </main>
@@ -380,5 +424,64 @@ h2 {
   font-size: 0.9rem;
   text-align: center;
 }
+
+.classement-section {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 3rem;
+}
+
+.classement-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.classement-item {
+  display: grid;
+  grid-template-columns: 40px 1fr 80px;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 10px;
+  background: #f4f4f4;
+  font-weight: 500;
+}
+
+.classement-item .rang {
+  font-weight: bold;
+  text-align: center;
+}
+
+.classement-item .equipe {
+  cursor: pointer;
+}
+
+.classement-item .score {
+  text-align: right;
+  font-weight: bold;
+}
+
+
+.rang-1 {
+  background: linear-gradient(90deg, #ffd700, #fff4b0);
+}
+
+.rang-2 {
+  background: linear-gradient(90deg, #c0c0c0, #eeeeee);
+}
+
+.rang-3 {
+  background: linear-gradient(90deg, #cd7f32, #f1d1b3);
+}
+
+.classement-info {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
 
 </style>
