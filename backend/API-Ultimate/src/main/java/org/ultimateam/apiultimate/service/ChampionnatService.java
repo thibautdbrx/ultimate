@@ -1,10 +1,14 @@
 package org.ultimateam.apiultimate.service;
 
 import org.springframework.stereotype.Service;
+import org.ultimateam.apiultimate.model.Championnat;
+import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.ChampionnatRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.repository.ParticipationRepository;
 import org.ultimateam.apiultimate.repository.TournoisRepository;
+
+import java.util.List;
 
 @Service
 public class ChampionnatService {
@@ -21,4 +25,13 @@ public class ChampionnatService {
         this.equipeService = equipeService;
         this.matchRepository = matchRepository;
     }
+
+    public Championnat saveChampionnat(Championnat championnat) {
+        return championnatRepository.save(championnat);
+    }
+
+    public List<Championnat> getAllChampionnat() {
+        return championnatRepository.findAll();
+    }
+
 }
