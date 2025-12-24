@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {stringifyQuery, useRoute, useRouter} from 'vue-router'
 
 import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
 import CardMatch from "@/components/card_match.vue"
@@ -150,9 +150,6 @@ function toggleEditMode() {
   editMode.value = !editMode.value
 }
 
-function genererMatchs() {
-  console.log("Générer les poules…")
-}
 
 function goToEquipe(id, nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
@@ -165,12 +162,21 @@ const openModal_1 = () => {
   }
   modalShow_1.value = true
 }
-const supprimerEquipe = async (index) => {
+
+const supprimerEquipe = async (index, id) => {
   if (confirm(`Supprimer ${teams.value[index].nomEquipe} ?`)) {
-    const suppJ = await fetch(`/api/participation//equipe/${equipeId}`, {
+    console.log(teams.value[index].nomEquipe + " supprimé de la bdd askip")
+    const suppJ = await fetch(`/api/participation`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idEquipe: id,
+        idCompetition: competitionId
+      })
     });
-    joueurs.value.splice(index, 1)
+    teams.value.splice(index, 1)
   }
 }
 
@@ -186,6 +192,47 @@ const formatDate = (isoString) => {
     year: 'numeric'
   })
 }
+
+const GenererMatch = async () => {
+  const confirmation = window.confirm(
+      "⚠️ Attention :\n\n" +
+      "Une fois les matchs générés, vous ne pourrez PLUS modifier la compétition " +
+      "(ajout/suppression d'équipes impossible).\n\n" +
+      "Voulez-vous continuer ?"
+  );
+
+  if (!confirmation) {
+    return; // l'utilisateur annule
+  }
+
+  try {
+    const idCompetition = 1; // à récupérer dynamiquement
+
+    const response = await fetch(
+        `/api/competition/${idCompetition}/create`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+    );
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la génération des matchs");
+    }
+
+    const data = await response.json();
+    console.log("Matchs générés :", data);
+
+    alert("Les matchs ont été générés avec succès !");
+
+    // window.location.reload();
+  } catch (error) {
+    console.error(error);
+    alert("Une erreur est survenue lors de la génération des matchs");
+  }
+};
 
 const competitionDejaCommencee = computed(() => {
   if (!competition.value?.dateDebut) return false
@@ -228,7 +275,7 @@ const competitionDejaCommencee = computed(() => {
             {{ editMode ? "Quitter la modification" : "Modifier" }}
           </button>
 
-          <button class="btn-primary" @click="genererMatchs">
+          <button class="btn-primary" @click="GenererMatch">
             Générer les poules et créer les matchs
           </button>
         </div>
@@ -259,13 +306,13 @@ const competitionDejaCommencee = computed(() => {
 
 
           <div class="teams-grid">
-            <div v-for="t in teams" :key="t.idEquipe" class="team-card-wrapper">
+            <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
 
               <!-- Bouton supprimer affiché uniquement en édition -->
               <button
                   v-if="allowEdit && editMode"
                   class="btn-delete"
-                  @click="() => console.log('Supprimer', t.idEquipe)"
+                  @click="supprimerEquipe(i, t.idEquipe)"
               >
                 Supprimer
               </button>
