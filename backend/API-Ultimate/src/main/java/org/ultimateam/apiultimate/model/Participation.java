@@ -19,5 +19,4 @@ public class Participation {
     public Participation(Equipe equipe, Competition competition) {
         this.id = new ParticipationId(equipe.getIdEquipe(), competition.getIdCompetition());
     }
-
 }

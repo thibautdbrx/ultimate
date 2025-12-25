@@ -54,8 +54,13 @@ public class ParticipationService {
         if (competition.getDateDebut().isBefore(LocalDate.now()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter une équipe à une competition déjà commencée");
         List<Participation> participations = getAll();
-        participations.removeIf(p -> p.getId().equals(id));
-        return participationRepository.saveAll(participations);
+        for (Participation p : participations) {
+            if (p.getId().equals(id)){
+                System.out.println(p.getId());
+                participationRepository.delete(p);
+                }
+        }
+        return getAll();
     }
 
 
