@@ -310,7 +310,7 @@ const competitionDejaCommencee = computed(() => {
 
               <!-- Bouton supprimer affiché uniquement en édition -->
               <button
-                  v-if="allowEdit && editMode"
+                  v-if="allowEdit && editMode && !competitionDejaCommencee"
                   class="btn-delete"
                   @click="supprimerEquipe(i, t.idEquipe)"
               >
@@ -330,6 +330,7 @@ const competitionDejaCommencee = computed(() => {
               :show="modalShow_1"
               :genre="competition.genre"
               :all="false"
+              :equipe_utilise="teams"
               @close="modalShow_1 = false"
               @select="selectExisting"
           />
