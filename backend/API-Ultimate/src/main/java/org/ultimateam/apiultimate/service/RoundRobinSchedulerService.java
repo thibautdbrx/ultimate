@@ -173,10 +173,10 @@ public class RoundRobinSchedulerService {
 
         int rounds = rotated.size() - 1;
 
-        for (int round = 0; round < rounds; round++) {
-            for (int i = round; i < rounds; i++) {
+        for (int round = 0; round < rounds-1; round++) {
+            for (int i = round+1; i < rounds; i++) {
                 Equipe a = rotated.get(round);
-                Equipe b = rotated.get(round + i);
+                Equipe b = rotated.get(i);
 
                 if (a != null && b != null || !matches.contains(Pair.of(a,b))) {
                     matches.add(Pair.of(a, b));
