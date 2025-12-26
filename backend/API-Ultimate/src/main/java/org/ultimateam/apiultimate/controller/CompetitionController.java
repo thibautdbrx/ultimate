@@ -109,13 +109,13 @@ public class CompetitionController {
      */
 
     @GetMapping("/tournois")
-    public List<Tournois> findAllTournois() { return (List<Tournois>) tournoisService.getAllTournois(); }
+    public List<Tournois> findAllTournois() { return tournoisService.getAllTournois(); }
 
     @PostMapping("/tournois")
     public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
 
     @GetMapping("/championnat")
-    public List<Championnat> findAllChampionnat() { return (List<Championnat>) championnatService.getAllChampionnat(); }
+    public List<Championnat> findAllChampionnat() { return championnatService.getAllChampionnat(); }
 
 
     @PostMapping("/championnat")

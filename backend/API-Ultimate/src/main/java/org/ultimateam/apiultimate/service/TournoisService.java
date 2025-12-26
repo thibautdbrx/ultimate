@@ -83,7 +83,7 @@ public class TournoisService {
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.
     public List<Equipe> genererRoundRobin(Long idTournois) {
 
-
+        System.out.println(idTournois);
         Tournois tournoi = getTournoisById(idTournois);
         if (tournoi == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournois n'existe pas");
@@ -99,6 +99,7 @@ public class TournoisService {
             classement.setCompetition(tournoi);
             classement.setEquipe(equipe);
             classementRepository.save(classement);
+            System.out.println(equipe.getIdEquipe());
 
         }
 

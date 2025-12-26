@@ -206,7 +206,7 @@ const GenererMatch = async () => {
   }
 
   try {
-    const idCompetition = 1; // à récupérer dynamiquement
+    const idCompetition = route.params.id; // à récupérer dynamiquement
 
     const response = await fetch(
         `/api/competition/${idCompetition}/create`,
