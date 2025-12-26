@@ -71,7 +71,7 @@ function getCompetitionImage(type) {
           class="competition-card"
           @click="goToCompetition(competition.idCompetition)"
       >
-        <img :src="getCompetitionImage(filtre)" alt="Image compétition" class="competition-img" />
+        <img :src="getCompetitionImage(competition.type)" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
           <h3>{{ competition.nomCompetition }}</h3>
           <p>{{ format_bien_aff(competition.format) + " - " + competition.genre }}</p>
