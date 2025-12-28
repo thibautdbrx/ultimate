@@ -133,7 +133,7 @@ const hasMatches = computed(() => matches.value.length > 0)
 
 const finishedMatches = computed(() => {
 
-  const now = new Date()
+  //const now = new Date()
   return matches.value.filter(m =>
       //m.status === "FINISHED" || new Date(m.dateFin) <= now
       m.status === "FINISHED"
@@ -142,7 +142,7 @@ const finishedMatches = computed(() => {
 })
 
 const upcomingMatches = computed(() => {
-  const now = new Date()
+  //const now = new Date()
   return matches.value.filter(m =>
       //m.status !== "FINISHED" || new Date(m.dateFin) <= now
       m.status !== "FINISHED"
@@ -212,7 +212,7 @@ const GenererMatch = async () => {
   }
 
   try {
-    const idCompetition = 1; // à récupérer dynamiquement
+    const idCompetition = route.params.id; // à récupérer dynamiquement
 
     const response = await fetch(
         `/api/competition/${idCompetition}/create`,
