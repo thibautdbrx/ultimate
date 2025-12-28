@@ -45,6 +45,7 @@ async function fetchMatches() {
   const res = await fetch(`/api/competition/${competitionId}/matchs`)
   if (!res.ok) throw new Error("Erreur HTTP matchs")
   matches.value = await res.json()
+  //console.log(matches.value)
 }
 
 async function fetchClassement() {
@@ -125,22 +126,27 @@ const selectExisting = async (equipe) => {
   }
 }
 
-// Logique affichage
+
 const allowEdit = computed(() => matches.value.length === 0)
 
 const hasMatches = computed(() => matches.value.length > 0)
 
 const finishedMatches = computed(() => {
-  const now = new Date()
+
+  //const now = new Date()
   return matches.value.filter(m =>
-      m.status === "FINISHED" || new Date(m.dateFin) <= now
+      //m.status === "FINISHED" || new Date(m.dateFin) <= now
+      m.status === "FINISHED"
+
   )
 })
 
 const upcomingMatches = computed(() => {
-  const now = new Date()
+  //const now = new Date()
   return matches.value.filter(m =>
-      m.status !== "FINISHED" && new Date(m.dateFin) > now
+      //m.status !== "FINISHED" || new Date(m.dateFin) <= now
+      m.status !== "FINISHED"
+
   )
 })
 
@@ -341,7 +347,7 @@ const competitionDejaCommencee = computed(() => {
         <div v-if="hasMatches" class="prochain_matches">
 
           <h3>Matchs prochains</h3>
-          <SliderCardHorizontal>
+          <SliderCardHorizontal v-if="upcomingMatches.length > 0">
             <div v-for="match in upcomingMatches" :key="match.idMatch">
               <CardMatch
                   :title="formatDate(match.dateMatch)"
@@ -352,15 +358,11 @@ const competitionDejaCommencee = computed(() => {
           </SliderCardHorizontal>
 
           <h3>Matchs finis</h3>
-          <SliderCardHorizontal>
+          <SliderCardHorizontal v-if="finishedMatches.length > 0">
             <div v-for="match in finishedMatches" :key="match.idMatch">
               <CardMatch
                   :title="match.dateMatch"
-                  :nom1="match.equipe1.nomEquipe"
-                  :nom2="match.equipe2.nomEquipe"
-                  :points1="match.scoreEquipe1"
-                  :points2="match.scoreEquipe2"
-                  :fini="true"
+                  :match = "match"
               />
             </div>
           </SliderCardHorizontal>
