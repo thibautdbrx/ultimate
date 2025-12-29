@@ -72,11 +72,14 @@ const get_indispo = async () => {
 }
 
 const ajouterIndispo = async () => {
-  console.log("ajout indispo")
   if (!dateDebut.value || !dateFin.value) {
     alert("Veuillez renseigner les deux dates")
     return
   }
+
+  const dateDebutFormatted = formatDateTimeSafe(dateDebut.value)
+  const dateFinFormatted = formatDateTimeSafe(dateFin.value)
+
   if (!dateDebutFormatted || !dateFinFormatted) return
 
   try {
