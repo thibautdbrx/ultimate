@@ -137,18 +137,6 @@ public class RoundRobinSchedulerService {
             }
         }
 
-        /* Plus besoin normalement
-        // Ajoute les indisponibilités déclarées au résultat final
-        for (Indisponibilite indisponibilite : indisponibilites) {
-            result.addIndisponibilite(indisponibilite);
-        }
-         */
-
-
-        //System.out.println(result);
-        //System.out.println("tet");
-        //System.out.println(result.getMatchs().get(0).getDateMatch());
-
         return result;
     }
 

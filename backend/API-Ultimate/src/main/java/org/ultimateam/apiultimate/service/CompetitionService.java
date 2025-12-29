@@ -7,7 +7,6 @@ import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.*;
 
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,8 +15,6 @@ import java.util.Objects;
 public class CompetitionService {
 
     private final CompetitionRepository competitionRepository;
-    private final TournoisService tournoisService;
-    private final ChampionnatService championnatService;
     private final MatchRepository matchRepository;
     private final ParticipationRepository participationRepository;
     private final EquipeService equipeService;
@@ -26,8 +23,6 @@ public class CompetitionService {
     private final ClassementRepository classementRepository;
 
     public CompetitionService(
-            TournoisService tournoisService,
-            ChampionnatService championnatService,
             CompetitionRepository competitionRepository,
             MatchRepository matchRepository,
             ParticipationRepository participationRepository,
@@ -36,8 +31,6 @@ public class CompetitionService {
             IndisponibiliteRepository indisponibiliteRepository,
             ClassementRepository classementRepository
     ) {
-        this.tournoisService = tournoisService;
-        this.championnatService = championnatService;
         this.competitionRepository = competitionRepository;
         this.matchRepository = matchRepository;
         this.participationRepository = participationRepository;
@@ -64,13 +57,7 @@ public class CompetitionService {
     }
 
 
-    public List<Match> genererCompetition(Long idCompetition) {
-        return genererRoundRobin(idCompetition);
-    }
-
-
-
-    public List<Match> genererRoundRobin(Long idCompeptition) {
+    public List<Match> genererCompetition(Long idCompeptition) {
 
         Competition competition = getCompetitionById(idCompeptition);
         if (competition == null) {
@@ -104,7 +91,6 @@ public class CompetitionService {
         for (Match match : matchs) {
             match.setIdCompetition(competition);
         }
-        //System.out.println(matchs.get(0).getIdMatch());
         List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
 
         matchRepository.saveAll(matchs);
