@@ -58,26 +58,6 @@ public class TournoisService {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idTournois);
     }
 
-    public record ScheduleResult(
-            List<Match> matchs,
-            List<Indisponibilite> indisponibilites
-    ) {
-        public List<Match> getMatchs() {
-            return matchs;
-        }
-
-        public List<Indisponibilite> getIndisponibilites() {
-            return indisponibilites;
-        }
-
-        public void addMatch(Match match) {
-            matchs.add(match);
-        }
-
-        public void addIndisponibilite(Indisponibilite indisponibilite) {
-            indisponibilites.add(indisponibilite);
-        }
-    }
 
 /**
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.

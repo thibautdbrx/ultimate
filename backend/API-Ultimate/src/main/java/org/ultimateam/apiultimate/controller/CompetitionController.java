@@ -49,7 +49,7 @@ public class CompetitionController {
     )
     public Competition findById(@PathVariable Long id) { return competitionService.getCompetitionById(id); }
 
-    @GetMapping("{idCompetition}/matchs")
+    @GetMapping("/{idCompetition}/matchs")
     @Operation(
             summary = "Lister les matchs d'une compétition",
             description = "Retourne la liste des matchs associés à la compétition identifiée par son id."
@@ -80,13 +80,6 @@ public class CompetitionController {
     )
     public List<Match> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
 
-    @PostMapping("/tournoi")
-    @Operation(
-            summary = "Créer une compétition via endpoint tournoi",
-            description = "Crée une nouvelle compétition spécifique au contexte 'tournoi'."
-    )
-    public Competition createCompetition(@RequestBody Competition competition) { return competitionService.saveCompetition(competition); }
-
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Supprimer une compétition",
@@ -99,16 +92,10 @@ public class CompetitionController {
     )
     public void deleteById(@PathVariable Long id) { competitionService.deleteCompetitionById(id); }
 
-    /**
-     @PostMapping("/Creation_Competition")
-     public void genererCompetition(Long idCompetition){ CompetitionService.genererCompetition(idCompetition);}
-
-     */
-
-    @GetMapping("/tournois")
+    @GetMapping("/tournoi")
     public List<Tournoi> findAllTournois() { return tournoisService.getAllTournois(); }
 
-    @PostMapping("/tournois")
+    @PostMapping("/tournoi")
     public Tournoi creerTournois(@RequestBody Tournoi tournoi) {return tournoisService.saveTournois(tournoi); }
 
     @GetMapping("/championnat")
