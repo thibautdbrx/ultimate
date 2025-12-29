@@ -1,11 +1,16 @@
 package org.ultimateam.apiultimate.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.*;
-import org.ultimateam.apiultimate.repository.CompetitionRepository;
-import org.ultimateam.apiultimate.repository.MatchRepository;
+import org.ultimateam.apiultimate.repository.*;
 
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CompetitionService {
@@ -14,12 +19,32 @@ public class CompetitionService {
     private final TournoisService tournoisService;
     private final ChampionnatService championnatService;
     private final MatchRepository matchRepository;
+    private final ParticipationRepository participationRepository;
+    private final EquipeService equipeService;
+    private final RoundRobinSchedulerService scheduler;
+    private final IndisponibiliteRepository indisponibiliteRepository;
+    private final ClassementRepository classementRepository;
 
-    public CompetitionService(TournoisService tournoisService, ChampionnatService championnatService, CompetitionRepository competitionRepository, MatchRepository matchRepository) {
+    public CompetitionService(
+            TournoisService tournoisService,
+            ChampionnatService championnatService,
+            CompetitionRepository competitionRepository,
+            MatchRepository matchRepository,
+            ParticipationRepository participationRepository,
+            EquipeService equipeService,
+            RoundRobinSchedulerService scheduler,
+            IndisponibiliteRepository indisponibiliteRepository,
+            ClassementRepository classementRepository
+    ) {
         this.tournoisService = tournoisService;
         this.championnatService = championnatService;
         this.competitionRepository = competitionRepository;
         this.matchRepository = matchRepository;
+        this.participationRepository = participationRepository;
+        this.equipeService = equipeService;
+        this.scheduler = scheduler;
+        this.indisponibiliteRepository = indisponibiliteRepository;
+        this.classementRepository = classementRepository;
     }
 
     public List<Competition> getAllCompetition() {
@@ -39,15 +64,54 @@ public class CompetitionService {
     }
 
 
-    public List<Equipe> genererCompetition(Long idCompetition) {
-        Competition compet =  competitionRepository.findById(idCompetition).orElse(null);
-        if (compet instanceof Tournois) {
-            return tournoisService.genererRoundRobin(idCompetition);
-        } else if (compet instanceof Championnat) {
-            return List.of();
-        } else {
-            return List.of();
+    public List<Match> genererCompetition(Long idCompetition) {
+        return genererRoundRobin(idCompetition);
+    }
+
+
+
+    public List<Match> genererRoundRobin(Long idCompeptition) {
+
+        Competition competition = getCompetitionById(idCompeptition);
+        if (competition == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
+        List<Participation> participations = participationRepository.findById_idCompetition(idCompeptition);
+        List<Equipe> equipes = new ArrayList<>();
+        List<Indisponibilite> indispo = new ArrayList<>();
+        for (Participation participation : participations) {
+            Equipe equipe = equipeService.getById(participation.getId().getIdEquipe());
+            equipes.add(equipe);
+            indispo.addAll(equipeService.getIndisponibilites(equipe.getIdEquipe()));
+            Classement classement = new Classement(participation.getId());
+            classement.setCompetition(competition);
+            classement.setEquipe(equipe);
+            classementRepository.save(classement);
+
+        }
+        ScheduleResult scheduleResult;
+        if (Objects.equals(competition.getTypeCompetition(), "Tournoi")) {
+            scheduleResult = scheduler.generateSchedule(equipes, competition.getDateDebut(), competition.getDateFin(), true, indispo);
+            List<Match> matchs = scheduleResult.getMatchs();
+        }
+        else if (Objects.equals(competition.getTypeCompetition(), "Championnat")){
+            scheduleResult = scheduler.generateSchedule(equipes, competition.getDateDebut(), competition.getDateFin(), false, indispo);
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pas une competition valide");
+        }
+        List<Match> matchs = scheduleResult.getMatchs();
+        for (Match match : matchs) {
+            match.setIdCompetition(competition);
+        }
+        //System.out.println(matchs.get(0).getIdMatch());
+        List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
+
+        matchRepository.saveAll(matchs);
+        indisponibiliteRepository.saveAll(indisponibilites);
+
+
+        return matchs;
     }
 
     public List<Match> getMatchesByCompetition(Long idCompetition) {

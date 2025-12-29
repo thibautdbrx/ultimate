@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Tournois;
+import org.ultimateam.apiultimate.model.Tournoi;
+import org.ultimateam.apiultimate.service.CompetitionService;
 import org.ultimateam.apiultimate.service.TournoisService;
 
 import java.util.List;
@@ -20,10 +21,12 @@ public class TournoisController {
 
 
     private final TournoisService tournoisService;
+    private final CompetitionService competitionService;
 
     @Autowired
-    public TournoisController(TournoisService tournoisService) {
+    public TournoisController(TournoisService tournoisService, CompetitionService competitionService) {
         this.tournoisService = tournoisService;
+        this.competitionService = competitionService;
     }
 
     @Operation(
@@ -31,7 +34,7 @@ public class TournoisController {
             description = "Retourne la liste complète de tous les tournois."
     )
     @GetMapping
-    public List<Tournois> findAll() { return (List<Tournois>) tournoisService.getAllTournois(); }
+    public List<Tournoi> findAll() { return (List<Tournoi>) tournoisService.getAllTournois(); }
 
     @Operation(
             summary = "Récupérer un tournoi par son identifiant",
@@ -43,7 +46,7 @@ public class TournoisController {
             required = true
     )
     @GetMapping("/{id}")
-    public Tournois findById(@PathVariable Long id) { return tournoisService.getTournoisById(id); }
+    public Tournoi findById(@PathVariable Long id) { return tournoisService.getTournoisById(id); }
 
     @Operation(
             summary = "Lister les matchs d'un tournoi",
@@ -62,7 +65,7 @@ public class TournoisController {
             description = "Crée un nouveau tournoi à partir des informations fournies."
     )
     @PostMapping
-    public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+    public Tournoi creerTournois(@RequestBody Tournoi tournoi) {return tournoisService.saveTournois(tournoi); }
 
     @Operation(
             summary = "Modifier le nom d'un tournoi",
@@ -74,7 +77,7 @@ public class TournoisController {
             required = true
     )
     @PatchMapping("/{idTournoi}")
-    public Tournois editTournoi(@RequestBody EquipeNameDTO nameDTO, @PathVariable long idTournoi) { return tournoisService.editTournois(nameDTO, idTournoi);}
+    public Tournoi editTournoi(@RequestBody EquipeNameDTO nameDTO, @PathVariable long idTournoi) { return tournoisService.editTournois(nameDTO, idTournoi);}
 
     @Operation(
             summary = "Générer les matchs d'un tournoi",
@@ -85,8 +88,8 @@ public class TournoisController {
             description = "Identifiant unique du tournoi pour lequel générer les matchs.",
             required = true
     )
-    @PutMapping("/{idTournoi}/create")
-    public List<Equipe> genererMatchs(@PathVariable Long idTournoi) { return tournoisService.genererRoundRobin(idTournoi);}
+    @PutMapping("/{idCompetition}/create")
+    public List<Match> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererRoundRobin(idCompetition);}
 
     @Operation(
             summary = "Supprimer un tournoi",

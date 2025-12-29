@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Match;
@@ -43,17 +44,17 @@ public class RoundRobinSchedulerService {
     /**
      * Méthode principale qui génère un calendrier Round Robin pour un tournoi.
      */
-    public TournoisService.ScheduleResult generateSchedule(
+    public ScheduleResult generateSchedule(
             List<Equipe> equipes,
             LocalDate startDate,
             LocalDate endDate,
             boolean homeAndAway, // aller-retour ou non
             List<Indisponibilite> indisponibilites
     ) {
-
+        //autoBlocks.clear();
         // Objet qui contiendra les matchs + indisponibilités renvoyés
-        TournoisService.ScheduleResult result =
-                new TournoisService.ScheduleResult(new ArrayList<Match>(), indisponibilites);
+        ScheduleResult result =
+                new ScheduleResult(new ArrayList<Match>(), indisponibilites);
 
         if (equipes.size() < 2) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut au moins 2 équipes.");
@@ -163,37 +164,31 @@ public class RoundRobinSchedulerService {
      */
     private List<Pair<Equipe, Equipe>> generateRoundRobinPairs(List<Equipe> equipes, boolean homeAndAway) {
         List<Pair<Equipe, Equipe>> matches = new ArrayList<>();
-        int n = equipes.size();
+        List<Equipe> rot = new ArrayList<>(equipes);
 
-        List<Equipe> rotated = new ArrayList<>(equipes);
+        // Si nombre impair d'équipes, ajoute une "fantôme" (null)
+        if (rot.size() % 2 == 1) rot.add(null);
 
-        // Nombre impair → ajoute une équipe fantôme
-        if (n % 2 == 1) {
-            rotated.add(null);
-        }
+        int n = rot.size();
 
-        int rounds = rotated.size() - 1;
+        for (int round = 0; round < n - 1; round++) {
+            for (int i = 0; i < n / 2; i++) {
+                Equipe a = rot.get(i);
+                Equipe b = rot.get(n - 1 - i);
 
-        for (int round = 0; round < rounds-1; round++) {
-            for (int i = round+1; i < rounds; i++) {
-                Equipe a = rotated.get(round);
-                Equipe b = rotated.get(i);
-
-                if (a != null && b != null || !matches.contains(Pair.of(a,b))) {
+                if (a != null && b != null) {
                     matches.add(Pair.of(a, b));
-                    if (homeAndAway) {
-                        matches.add(Pair.of(b, a));
-                    }
+                    if (homeAndAway) matches.add(Pair.of(b, a));
                 }
             }
-
-            // Rotation des équipes (round robin algorithm)
-            //Equipe last = rotated.remove(rotated.size() - 1);
-            //rotated.add(1, last);
+            // Rotation : fixe la première équipe et tourne les autres
+            Equipe last = rot.remove(rot.size() - 1);
+            rot.add(1, last);
         }
-        Collections.shuffle(matches);
+
         return matches;
     }
+
 
 
 
@@ -260,7 +255,7 @@ public class RoundRobinSchedulerService {
     /**
      * Bloque automatiquement une équipe pour un créneau (lorsqu'un match lui est attribué)
      */
-    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, TournoisService.ScheduleResult result) {
+    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, ScheduleResult result) {
         autoBlocks.putIfAbsent(equipe, new ArrayList<>());
         autoBlocks.get(equipe).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
 

@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.service.ChampionnatService;
@@ -81,7 +78,7 @@ public class CompetitionController {
             description = "Identifiant unique de la compétition.",
             required = true
     )
-    public List<Equipe> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
+    public List<Match> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
 
     @PostMapping("/tournoi")
     @Operation(
@@ -109,10 +106,10 @@ public class CompetitionController {
      */
 
     @GetMapping("/tournois")
-    public List<Tournois> findAllTournois() { return tournoisService.getAllTournois(); }
+    public List<Tournoi> findAllTournois() { return tournoisService.getAllTournois(); }
 
     @PostMapping("/tournois")
-    public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+    public Tournoi creerTournois(@RequestBody Tournoi tournoi) {return tournoisService.saveTournois(tournoi); }
 
     @GetMapping("/championnat")
     public List<Championnat> findAllChampionnat() { return championnatService.getAllChampionnat(); }

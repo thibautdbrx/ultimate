@@ -1,13 +1,11 @@
 package org.ultimateam.apiultimate.service;
 
-import org.hibernate.metamodel.mapping.MappingModelCreationLogging_$logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 import org.ultimateam.apiultimate.model.Match;
 import java.time.Duration;

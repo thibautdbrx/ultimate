@@ -33,27 +33,27 @@ public class TournoisService {
         this.classementRepository = classementRepository;
     }
 
-    public List<Tournois> getAllTournois() {
+    public List<Tournoi> getAllTournois() {
         return tournoisRepository.findAll();
     }
 
-    public Tournois getTournoisById(Long id) {
+    public Tournoi getTournoisById(Long id) {
         return tournoisRepository.findById(id).orElse(null);
     }
 
-    public Tournois saveTournois(Tournois tournois) {
-        return tournoisRepository.save(tournois);
+    public Tournoi saveTournois(Tournoi tournoi) {
+        return tournoisRepository.save(tournoi);
     }
 
     public void deleteTournoisById(Long id) {
         tournoisRepository.deleteById(id);
     }
 
-
+/**
     public void genererTournois(Long idTournois) {
         genererRoundRobin(idTournois);
     }
-
+*/
     public List<Match> getMatchesByTournois(Long idTournois) {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idTournois);
     }
@@ -79,12 +79,11 @@ public class TournoisService {
         }
     }
 
-
+/**
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.
     public List<Equipe> genererRoundRobin(Long idTournois) {
 
-        System.out.println(idTournois);
-        Tournois tournoi = getTournoisById(idTournois);
+        Tournoi tournoi = getTournoisById(idTournois);
         if (tournoi == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournois n'existe pas");
         }
@@ -99,11 +98,10 @@ public class TournoisService {
             classement.setCompetition(tournoi);
             classement.setEquipe(equipe);
             classementRepository.save(classement);
-            System.out.println(equipe.getIdEquipe());
 
         }
 
-        ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), false, indispo);
+        ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
         List<Match> matchs = scheduleResult.getMatchs();
         for (Match match : matchs) {
             match.setIdCompetition(tournoi);
@@ -117,9 +115,9 @@ public class TournoisService {
 
         return equipes;
     }
-
-    public Tournois editTournois(EquipeNameDTO nameDTO, Long idTournoi) {
-        Tournois tournoi = tournoisRepository.findById(idTournoi)
+*/
+    public Tournoi editTournois(EquipeNameDTO nameDTO, Long idTournoi) {
+        Tournoi tournoi = tournoisRepository.findById(idTournoi)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournoi non trouvée"));
         if (nameDTO.getNom() != null) {
             tournoi.setNomCompetition(nameDTO.getNom());

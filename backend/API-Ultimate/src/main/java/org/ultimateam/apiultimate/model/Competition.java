@@ -29,6 +29,11 @@ public abstract class Competition {
     @Enumerated(EnumType.STRING)
     private Format format;
 
+    @JsonProperty("typeCompetition")
+    public String getTypeCompetition() {
+        return this.getClass().getSimpleName();
+    }
+
     private LocalDate dateDebut;
     private LocalDate dateFin;
 
