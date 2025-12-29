@@ -1,5 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
+import {useRouter} from 'vue-router'
+const router = useRouter()
 
 const props = defineProps({
   match: Object,
@@ -15,30 +17,38 @@ const couleurPointsNom1 = computed(() => {
 })
 
 const couleurPointsNom2 = computed(() => {
-  if (props.match.status !== "FINISHED") return 'noir'
+    if (props.match.status !== "FINISHED") return 'noir'
   if (props.match.scoreEquipe2 > props.match.scoreEquipe1) return 'vert'
   if (props.match.scoreEquipe2 < props.match.scoreEquipe1) return 'rouge'
   return 'or'
 })
 
+const afficherPoints = computed(() => {
+  return (props.match.status === "FINISHED")
+})
 
+function goToMatch(id) {
+  router.push(`/match/${id}`)
+}
 </script>
 
 
 
 <template>
-  <div class="card_res">
+  <div class="card_res" @click="goToMatch(props.match.idMatch)">
     <div class="card-content">
       <h3>{{ title }}</h3>
       <div class="info">
         <div class="equipe">
           <p :class="['nom_equipe', couleurPointsNom1]">{{ props.match.equipe1.nomEquipe }}</p>
-          <p class="points">{{ props.match.scoreEquipe1 }}</p>
+          <p v-if="afficherPoints" :class="['points', couleurPointsNom1]">{{ props.match.scoreEquipe1 }}</p>
+          <p v-else>---</p>
         </div>
 
         <div class="equipe">
           <p :class="['nom_equipe', couleurPointsNom2]">{{ props.match.equipe2.nomEquipe }}</p>
-          <p class="points">{{ props.match.scoreEquipe2 }}</p>
+          <p v-if="afficherPoints" :class="['points', couleurPointsNom2]">{{ props.match.scoreEquipe2 }}</p>
+          <p v-else>---</p>
         </div>
 
       </div>
@@ -121,7 +131,7 @@ h3{
 }
 
 .or {
-  color: gold;
+  color: goldenrod;
   margin: 0.5rem;
   font-weight: bold;
   white-space: nowrap;

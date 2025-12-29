@@ -8,6 +8,7 @@ import CarteEquipe from "@/components/card_equipe.vue"
 import ImageFond from "@/assets/img/img_equipe.jpg"
 import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 
+
 const route = useRoute()
 const router = useRouter()
 
@@ -238,6 +239,7 @@ const GenererMatch = async () => {
     console.error(error);
     alert("Une erreur est survenue lors de la génération des matchs");
   }
+  router.push(`/Competitions/${competitionId}`)
 };
 
 const competitionDejaCommencee = computed(() => {
@@ -359,9 +361,9 @@ const competitionDejaCommencee = computed(() => {
 
           <h3>Matchs finis</h3>
           <SliderCardHorizontal v-if="finishedMatches.length > 0">
-            <div v-for="match in finishedMatches" :key="match.idMatch">
+            <div v-for="match in finishedMatches" :key="match.idMatch" @click="goToMatch(match.idMatch)">
               <CardMatch
-                  :title="match.dateMatch"
+                  :title="formatDate(match.dateMatch)"
                   :match = "match"
               />
             </div>
@@ -476,9 +478,10 @@ h2 {
 }
 
 .classement-section {
-  width: 100%;
-  max-width: 700px;
   margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+
 }
 
 .classement-list {

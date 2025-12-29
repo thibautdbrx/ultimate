@@ -9,7 +9,7 @@ import { useAuthStore } from "@/stores/auth";
 
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
-import CardRes from '../components/card_match.vue'
+import CardMatch from '../components/card_match.vue'
 
 const router = useRouter()
 const stats = ref({
@@ -20,6 +20,7 @@ const stats = ref({
 
 const auth = useAuthStore();
 
+let compData = ref([])
 const derniersMatchs = ref([])
 const errorMsg = ref('')
 
@@ -48,9 +49,11 @@ onMounted(async () => {
 
     // Compétitions
     const compRes = await fetch(`/api/competition`)
-    console.log(compRes)
-    const compData = await compRes.json()
+    compData = await compRes.json()
+    console.log(compData)
+
     stats.value.competitions = compData.length
+
 
 
     //ajouter les match fini uniquement.
@@ -76,9 +79,11 @@ onMounted(async () => {
   }
 })
 
-function goToMatch(id) {
-  router.push(`match/${id}`)
+function getCompetitionName(MatchInfo) { //je capte pas pourquoi on recupere pas l'id ais le match ici
+  const comp = compData.find(c => c.idCompetition === MatchInfo.idCompetition)
+  return comp ? comp.nomCompetition : ''
 }
+
 </script>
 
 
@@ -120,9 +125,12 @@ function goToMatch(id) {
       <h2 class="titre_acceuil">Dernier resultats</h2>
       <p v-if="errorMsg" class="error-text">{{ errorMsg }}</p>
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
-        <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card" @click="goToMatch(match.idMatch)">
-          <CardRes :title="formatDate(match.dateMatch)" :match="match"
+        <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card" >
+          <CardMatch
+              :title="`${formatDate(match.dateMatch)} - ${getCompetitionName(match.idCompetition)}`"
+              :match="match"
           />
+
         </div>
 
       </SliderCardHorizontal>
