@@ -75,35 +75,40 @@ const ajouterIndispo = async () => {
   if (!dateDebut.value || !dateFin.value) {
     alert("Veuillez renseigner les deux dates")
     return
-    if (!dateDebutFormatted || !dateFinFormatted) return
-
-    try {
-      const res = await fetch(`/api/indisponibilite`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          idEquipe: equipeId,
-          dateDebut: dateDebutFormatted,
-          dateFin: dateFinFormatted
-        })
-      })
-
-      if (!res.ok) throw new Error("Erreur ajout indisponibilité")
-
-      const newIndispo = await res.json()
-      indispos.value.push(newIndispo)
-
-      dateDebut.value = ""
-      dateFin.value = ""
-    } catch (err) {
-      console.error(err)
-      alert("Impossible d'ajouter l'indisponibilité")
-    }
   }
 
+  const dateDebutFormatted = formatDateTimeSafe(dateDebut.value)
+  const dateFinFormatted = formatDateTimeSafe(dateFin.value)
+
+  if (!dateDebutFormatted || !dateFinFormatted) return
+
+  try {
+    const res = await fetch(`/api/indisponibilite`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idEquipe: equipeId,
+        dateDebut: dateDebutFormatted,
+        dateFin: dateFinFormatted
+      })
+    })
+
+    if (!res.ok) throw new Error("Erreur ajout indisponibilité")
+
+    const newIndispo = await res.json()
+    indispos.value.push(newIndispo)
+
+    dateDebut.value = ""
+    dateFin.value = ""
+  } catch (err) {
+    console.error(err)
+    alert("Impossible d'ajouter l'indisponibilité")
+  }
 }
+
+
   const supprimerIndispo = async (id, index) => {
     if (!confirm("Supprimer cette indisponibilité ?")) return
 

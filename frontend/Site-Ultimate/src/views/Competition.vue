@@ -14,7 +14,7 @@ const filtre = ref('all') // 'all', 'tournoi', 'championnat'
 
 const endpoints = {
   all: '/api/competition',
-  tournoi: '/api/competition/tournois',
+  tournoi: '/api/competition/tournoi',
   championnat: '/api/competition/championnat'
 }
 

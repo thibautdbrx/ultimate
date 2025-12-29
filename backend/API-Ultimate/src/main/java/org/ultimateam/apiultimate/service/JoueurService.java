@@ -4,12 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
-import org.ultimateam.apiultimate.DTO.Genre;
 import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
-import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.List;

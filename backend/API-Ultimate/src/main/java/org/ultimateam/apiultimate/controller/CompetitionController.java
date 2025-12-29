@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.service.ChampionnatService;
@@ -52,7 +49,7 @@ public class CompetitionController {
     )
     public Competition findById(@PathVariable Long id) { return competitionService.getCompetitionById(id); }
 
-    @GetMapping("{idCompetition}/matchs")
+    @GetMapping("/{idCompetition}/matchs")
     @Operation(
             summary = "Lister les matchs d'une compétition",
             description = "Retourne la liste des matchs associés à la compétition identifiée par son id."
@@ -81,14 +78,7 @@ public class CompetitionController {
             description = "Identifiant unique de la compétition.",
             required = true
     )
-    public List<Equipe> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
-
-    @PostMapping("/tournoi")
-    @Operation(
-            summary = "Créer une compétition via endpoint tournoi",
-            description = "Crée une nouvelle compétition spécifique au contexte 'tournoi'."
-    )
-    public Competition createCompetition(@RequestBody Competition competition) { return competitionService.saveCompetition(competition); }
+    public List<Match> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
 
     @DeleteMapping("/{id}")
     @Operation(
@@ -102,17 +92,11 @@ public class CompetitionController {
     )
     public void deleteById(@PathVariable Long id) { competitionService.deleteCompetitionById(id); }
 
-    /**
-     @PostMapping("/Creation_Competition")
-     public void genererCompetition(Long idCompetition){ CompetitionService.genererCompetition(idCompetition);}
+    @GetMapping("/tournoi")
+    public List<Tournoi> findAllTournois() { return tournoisService.getAllTournois(); }
 
-     */
-
-    @GetMapping("/tournois")
-    public List<Tournois> findAllTournois() { return tournoisService.getAllTournois(); }
-
-    @PostMapping("/tournois")
-    public Tournois creerTournois(@RequestBody Tournois tournois) {return tournoisService.saveTournois(tournois); }
+    @PostMapping("/tournoi")
+    public Tournoi creerTournois(@RequestBody Tournoi tournoi) {return tournoisService.saveTournois(tournoi); }
 
     @GetMapping("/championnat")
     public List<Championnat> findAllChampionnat() { return championnatService.getAllChampionnat(); }
