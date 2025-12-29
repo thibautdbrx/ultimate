@@ -103,12 +103,12 @@ public class TournoisService {
 
         }
 
-        ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), true, indispo);
+        ScheduleResult scheduleResult = scheduler.generateSchedule(equipes, tournoi.getDateDebut(), tournoi.getDateFin(), false, indispo);
         List<Match> matchs = scheduleResult.getMatchs();
         for (Match match : matchs) {
             match.setIdCompetition(tournoi);
         }
-        System.out.println(matchs.get(0).getIdMatch());
+        //System.out.println(matchs.get(0).getIdMatch());
         List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
 
         matchRepository.saveAll(matchs);

@@ -97,6 +97,7 @@ public class RoundRobinSchedulerService {
                     Pair<Equipe, Equipe> pair = pairs.get(matchIndex);
                     Equipe A = pair.getLeft();
                     Equipe B = pair.getRight();
+                    if (A == null || B == null) break;
 
                     LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
 
@@ -187,10 +188,10 @@ public class RoundRobinSchedulerService {
             }
 
             // Rotation des équipes (round robin algorithm)
-            Equipe last = rotated.remove(rotated.size() - 1);
-            rotated.add(1, last);
+            //Equipe last = rotated.remove(rotated.size() - 1);
+            //rotated.add(1, last);
         }
-
+        Collections.shuffle(matches);
         return matches;
     }
 
@@ -232,12 +233,14 @@ public class RoundRobinSchedulerService {
 
         // Vérification indisponibilités déclarées
         for (Indisponibilite ind : declaredBlocks) {
-            if (ind.getEquipe().equals(equipe)) {
-                boolean noOverlap =
-                        end.isBefore(ind.getDateDebutIndisponibilite()) ||
-                                start.isAfter(ind.getDateFinIndisponibilite());
+            if (ind.getEquipe() != null) {
+                if (ind.getEquipe().equals(equipe)) {
+                    boolean noOverlap =
+                            end.isBefore(ind.getDateDebutIndisponibilite()) ||
+                                    start.isAfter(ind.getDateFinIndisponibilite());
 
-                if (!noOverlap) return false;
+                    if (!noOverlap) return false;
+                }
             }
         }
 
