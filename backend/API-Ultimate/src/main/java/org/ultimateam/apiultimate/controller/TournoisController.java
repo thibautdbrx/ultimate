@@ -89,7 +89,7 @@ public class TournoisController {
             required = true
     )
     @PutMapping("/{idCompetition}/create")
-    public List<Match> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererRoundRobin(idCompetition);}
+    public List<Match> genererMatchs(@PathVariable Long idCompetition) { return competitionService.genererCompetition(idCompetition);}
 
     @Operation(
             summary = "Supprimer un tournoi",
