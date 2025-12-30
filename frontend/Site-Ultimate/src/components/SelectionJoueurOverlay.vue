@@ -13,7 +13,11 @@ const search = ref("")
 const joueurs = ref([])
 
 async function loadJoueurs() {
-  const res = await fetch(`/api/joueur/solo?genre=${props.genre}`)
+  let res
+  if (props.genre === "MIXTE")
+    res = await fetch("/api/joueur/solo")
+  else
+    res = await fetch(`/api/joueur/solo?genre=${props.genre}`)
   joueurs.value = await res.json()
 }
 
