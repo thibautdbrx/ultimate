@@ -19,7 +19,7 @@ const endpoints = {
 }
 
 function goToMatch(id) {
-  router.push(`match/${id}`)
+  router.push(`/match/${id}`)
 }
 
 const formatDate = (isoString) => {

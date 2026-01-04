@@ -163,7 +163,7 @@ onMounted(async () => {
   <main class="page">
 
     <!-- HEADER : Infos du match -->
-    <section class="header" v-if="match">
+    <section class="haut" v-if="match">
 
       <p v-if="!(etatMatch=='FINISHED' || etatMatch=='WAITING')" id="dureeMatch">00:00:00</p>
 
@@ -232,7 +232,7 @@ onMounted(async () => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <h3>Informations du Match</h3>
-        <p v-if="auth.isAdmin || auth.isArbitre" >Ici tu pourras ajouter les stats, durée, arbitres, etc.</p>
+        <p v-if="auth.isAdmin || auth.isArbitre" ></p>
 
         <div id="actionsMatch">
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction">Commencer le match</button>
@@ -266,117 +266,167 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.page {
-  padding: 2rem;
-  font-family: "Poppins", sans-serif;
-}
-
-/* --- HEADER --- */
-.header {
+.haut {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
-.team-name {
+.haut h1 {
+  font-size: 1.8rem;
   font-weight: 700;
+  margin-bottom: 1.5rem;
 }
-
-/* COULEURS */
-.noir { color: black; }
-.vert { color: green; }
-.rouge { color: red; }
-.or   { color: goldenrod; }
-
 .score-box {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 3rem;
-  margin: 1rem 0;
+  gap: 5rem;
+  margin: 2rem 0;
 }
 
 .score {
   text-align: center;
-  flex: 1;
+  width: 260px;   /* fixe pour centré le vs */
+}
+
+
+.score h2 {
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
 
 }
 
+
 .points {
-  font-size: 2.4rem;
-  font-weight: 700;
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .vs {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
-  flex: 0;
-  text-align: center;
+color: gray}
+
+.noir { color: #222; }
+.vert { color: #1b9c41; }
+.rouge { color: #c0392b; }
+.or { color: #c9a227; }
+
+/* BOUTONS SCORE */
+.affichagePoint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.boutonScore {
+  border-radius: 50%;
+  border: none;
+  height: 3rem;
+  width: 3rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.boutonPlus {
+  background-color: #2ecc71;
+}
+
+.boutonMoins {
+  background-color: #e74c3c;
+}
+
+.boutonScore:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+.date {
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.status {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #888;
 }
 
 .layout {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
+  align-items: flex-start;
 }
 
+/* COLONNES EQUIPES */
 .col {
-  width: 28%;
-}
-
-.middle {
-  flex: 1;
-  padding: 1rem;
-  background: #fafafa;
-  border-radius: 10px;
+  width: 26%;
 }
 
 .subtitle {
   text-align: center;
-  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #eee;
+}
+
+
+.middle {
+  flex: 1;
+  padding: 1.5rem;
+  border-left: 2px solid #f0f0f0;
+  border-right: 2px solid #f0f0f0;
+}
+
+.middle h3 {
+  text-align: center;
+  margin-bottom: 1rem;
   font-weight: 600;
 }
 
-.error {
-  color: red;
-  text-align: center;
-}
-
-.affichagePoint {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.boutonScore {
-  border-radius: 20px;
-  border: none;
-  height: 4em;
-  width: 4em;
-
-  margin: 2em;
-
-  font-weight: bold;
-  font-size: 1em;
-
-  padding: 0;
-
-  transition: opacity 0.3s;
-}
-
-.boutonScore:hover {
-  opacity: 0.7;
-}
-
-.boutonPlus {
-  background-color: rgb(65, 133, 65);
-}
-
-.boutonMoins {
-  background : rgb(194, 80, 80);
-}
 
 #actionsMatch {
   display: flex;
-  justify-content: space-evenly;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.boutonAction {
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: none;
+  background: #f4f4f4;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.boutonAction:hover {
+  background: #eaeaea;
+  transform: translateY(-1px);
+}
+
+
+.error {
+  color: #c0392b;
+  text-align: center;
+  font-weight: 600;
+  margin-top: 1rem;
 }
 
 </style>
