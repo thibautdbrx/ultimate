@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 
 import Card_joueur from "@/components/card_joueur.vue";
@@ -44,7 +44,49 @@ const loadMatch = async () => {
   } finally {
     loadingMatch.value = false;
   }
+
+
 };
+
+const calculDuree = computed(() => {
+  const dateDebut = match.value.dateDebut;
+  if (!dateDebut) return 0;
+
+  let dureePause;
+  dureePause = match.value.dureePause;
+  if (!dureePause) {
+    dureePause = 0;
+  }
+
+  duree = 0;
+
+  if (etatMatch == "ONGOING") {
+    duree = maintenant.value - Date.parse(dateDebut) - dureePause;
+  }
+  else if (etatMatch == "FINISHED") {
+    const dateFin = match.value.dateFin;
+    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut);
+  }
+  else if (etatMatch == "PAUSED") {
+    const datePause = match.value.datePause;
+    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut);
+  }
+  
+
+
+  return formatDuree(duree);
+});
+
+function formatDuree(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+
+  const format = (n) => String(n).padStart(2, '0');
+
+  return `${format(h)}:${format(m)}:${format(s)}`;
+}
+
 
 // ----------------------
 // 2) Charger les joueurs
@@ -107,7 +149,8 @@ const AjoutPoint = async (numEquipe, combien) => {
   const matchId = match.value.idMatch; 
 
   const point = {
-    point: combien
+    point: combien,
+    idJoueur:97
   }
 
   const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
@@ -145,9 +188,21 @@ const operationMatch = async (operation) => {
 
 
 // ----------------------
+const maintenant = ref(Date.now());
+let interval = null;
+
+
 onMounted(async () => {
   await loadMatch();
   await loadPlayers();
+
+  interval = setInterval(() => {
+    maintenant.value = Date.now();
+  }, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(interval);
 });
 </script>
 
@@ -157,7 +212,7 @@ onMounted(async () => {
     <!-- HEADER : Infos du match -->
     <section class="haut" v-if="match">
 
-      <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{duree}}</p>
+      <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{ calculDuree }}</p>
 
       <h1>
         Championnat régional
