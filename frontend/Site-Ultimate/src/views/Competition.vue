@@ -45,8 +45,8 @@ watch(filtre, fetchCompetitions, { immediate: true })
 
 // Retourne l'image en fonction du type
 function getCompetitionImage(type) {
-  if (type === 'tournoi') return ImageTournoi
-  if (type === 'championnat') return ImageChampionnat
+  if (type.toLowerCase() === 'tournoi') return ImageTournoi
+  if (type.toLowerCase() === 'championnat') return ImageChampionnat
   return ImageTournoi // valeur par défaut
 }
 </script>
@@ -71,7 +71,7 @@ function getCompetitionImage(type) {
           class="competition-card"
           @click="goToCompetition(competition.idCompetition)"
       >
-        <img :src="getCompetitionImage(competition.type)" alt="Image compétition" class="competition-img" />
+        <img :src="getCompetitionImage(competition.typeCompetition)" alt="Image compétition" class="competition-img" />
         <div class="competition-info">
           <h3>{{ competition.nomCompetition }}</h3>
           <p>{{ format_bien_aff(competition.format) + " - " + competition.genre }}</p>

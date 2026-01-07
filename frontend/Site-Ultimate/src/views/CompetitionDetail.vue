@@ -454,12 +454,17 @@ h2 {
   cursor: pointer;
 }
 
+/* 3. LE SLIDER */
 .prochain_matches {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   width: 100%;
-  max-width: 1000px;
+
+  /* --- MODIFICATIONS POUR CENTRER --- */
+  max-width: 1200px;       /* 1. On remet la limite de largeur (comme tes h2) */
+  margin: 1rem auto 0 auto;/* 2. 'auto' à gauche et à droite centre le bloc */
+  box-sizing: border-box;  /* 4. Pour que le padding ne dépasse pas les 100% */
 }
 
 .btn-primary{
