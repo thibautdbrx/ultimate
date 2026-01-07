@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/auth";
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
 import CardMatch from '../components/card_match.vue'
+import PUB from "@/components/PUB.vue"
 
 const router = useRouter()
 const stats = ref({
@@ -80,7 +81,7 @@ onMounted(async () => {
 })
 
 function getCompetitionName(MatchInfo) { //je capte pas pourquoi on recupere pas l'id ais le match ici
-  const comp = compData.find(c => c.idCompetition === MatchInfo)
+  const comp = compData.find(c => c.idCompetition === MatchInfo.idCompetition)
   return comp ? comp.nomCompetition : ''
 }
 
@@ -130,9 +131,7 @@ function getCompetitionName(MatchInfo) { //je capte pas pourquoi on recupere pas
               :title="`${formatDate(match.dateMatch)} - ${getCompetitionName(match.idCompetition)}`"
               :match="match"
           />
-
         </div>
-
       </SliderCardHorizontal>
     </div>
   </main>
