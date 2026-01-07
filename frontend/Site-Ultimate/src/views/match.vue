@@ -105,16 +105,6 @@ const AjoutPoint = async (numEquipe, combien) => {
   let score;
   const matchId = match.value.idMatch; 
 
-  
-  if (numEquipe == 1) {
-    score = match.value.scoreEquipe1 + combien;
-  } else if (numEquipe == 2) {
-    score = match.value.scoreEquipe2 + combien;
-  } else {
-    console.error("Numéro d'équipe invalide :", numEquipe);
-    return;
-  }
-
   if (score < 0) {
     console.error("Point négatif impossible");
     return;
@@ -179,9 +169,9 @@ onMounted(async () => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(1,1)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1)" class="boutonScore boutonPlus">+</button>
             <p class="points">{{ match.scoreEquipe1 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(1,-1)" class="boutonScore boutonMoins">-</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
           </div>
           
         </div>
@@ -192,9 +182,9 @@ onMounted(async () => {
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(2,1)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1)" class="boutonScore boutonPlus">+</button>
             <p class="points">{{ match.scoreEquipe2 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(2,-1)" class="boutonScore boutonMoins">-</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
           </div>
           
         </div>
