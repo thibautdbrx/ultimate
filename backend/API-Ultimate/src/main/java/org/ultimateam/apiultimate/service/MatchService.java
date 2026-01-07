@@ -3,11 +3,16 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
+import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
-import org.ultimateam.apiultimate.model.Equipe;
+import org.ultimateam.apiultimate.model.*;
+import org.ultimateam.apiultimate.repository.JoueurRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
-import org.ultimateam.apiultimate.model.Match;
+import org.ultimateam.apiultimate.model.ActionMatch;
+
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -28,12 +33,18 @@ public class MatchService {
     private final Map<Long, ScheduledFuture<?>> matchSchedulers = new HashMap<>();
     private final TournoisService tournoisService;
     private final ClassementService classementService;
+    private final JoueurRepository joueurRepository;
+    private final JoueurService joueurService;
+    private final ActionMatchService actionMatchService;
 
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService) {
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService, ActionMatchService actionMatchService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
         this.tournoisService = tournoisService;
         this.classementService = classementService;
+        this.joueurRepository = joueurRepository;
+        this.joueurService = joueurService;
+        this.actionMatchService = actionMatchService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -115,9 +126,11 @@ public class MatchService {
     public Match ajouterPoint(long id_match, long id_equipe, MatchPointDTO dto) {
         Match match = getById(id_match);
         Equipe equipe = equipeService.getById(id_equipe);
+
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
         if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
         if (dto.getPoint() == 0) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter 0 point");
+
 
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
             match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
@@ -125,8 +138,20 @@ public class MatchService {
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
 
+        actionMatchService.addPoint(id_match, id_equipe, dto);
+
         checkVictory(match);
         return save(match);
+    }
+
+    public Match ajouterFaute(long idMatch, long idEquipe, MatchFauteDTO fauteDTO) {
+        Match match = getById(idMatch);
+        Equipe equipe = equipeService.getById(idMatch);
+        if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
+        if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
+
+        actionMatchService.addFaute(idMatch, idEquipe, fauteDTO);
+        return getById(idMatch);
     }
 
     // --------------------- CHECK VICTORY ---------------------
@@ -141,15 +166,10 @@ public class MatchService {
             match.setWinner(match.getEquipe1());
             finirMatchSafe(match);
         }
-
         else if (score2 >= SCORE_MAX && score2 > score1) {
             match.setWinner(match.getEquipe2());
             finirMatchSafe(match);
         }
-
-
-
-
     }
 
     // --------------------- FINIR MATCH ---------------------
