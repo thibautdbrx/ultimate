@@ -133,8 +133,12 @@ public class MatchService {
 
 
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
+            if (match.getScoreEquipe1() + dto.getPoint() <=0)
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible de mettre des points négatifs");
             match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
         } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+            if (match.getScoreEquipe2() + dto.getPoint() <=0)
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible de mettre des points négatifs");
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
 
