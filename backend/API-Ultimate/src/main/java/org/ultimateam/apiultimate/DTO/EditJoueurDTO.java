@@ -7,5 +7,5 @@ import org.ultimateam.apiultimate.model.Joueur;
 public class EditJoueurDTO {
     private String nomJoueur;
     private String prenomJoueur;
-    private Joueur.Genre genre;
+    private GenreJoueur genre;
 }

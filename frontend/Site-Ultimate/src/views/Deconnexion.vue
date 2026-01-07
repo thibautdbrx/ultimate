@@ -8,7 +8,8 @@ const auth = useAuthStore();
 
 onMounted(() => {
   auth.logout();
-  router.push('/');
+  //router.push('/');
+  router.back();
 });
 
 </script>

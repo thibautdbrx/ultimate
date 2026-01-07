@@ -58,25 +58,25 @@ const supprimerPhoto = () => {
     <label class="photo-label">
       Genre :
       <select v-if="joueur.clickable" class="genre-select" v-model="joueur.genre">
-        <option value="MALE">MALE</option>
-        <option value="FEMALE">FEMALE</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
       </select>
 
       <select v-else class="genre-select" v-model="joueur.genre" disabled>
-        <option value="MALE">MALE</option>
-        <option value="FEMALE">FEMALE</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
       </select>
     </label>
 
     <label v-if="joueur.clickable" class="photo-label">
       Photo du joueur :
-      <input 
+      <input
         ref="fileInput"
-        id="file-upload" 
-        class="photo_input" 
+        id="file-upload"
+        class="photo_input"
         type="file"
         accept=".jpg, .jpeg, .png, .avif"
-        @change="handleFileChange" 
+        @change="handleFileChange"
       />
     </label>
 

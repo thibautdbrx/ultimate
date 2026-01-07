@@ -4,10 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
-import org.ultimateam.apiultimate.model.Tournois;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.List;
@@ -34,7 +34,7 @@ public class JoueurService {
      *
      * @return Un Itérable contenant tous les joueurs.
      */
-    public List<Joueur> getAll(Joueur.Genre genre) {
+    public List<Joueur> getAll(GenreJoueur genre) {
         if(genre==null){
             return joueurRepository.findAll();
         }
@@ -98,7 +98,7 @@ public class JoueurService {
         return joueur;
     }
 
-    public List<Joueur> getJoueurSolo(Joueur.Genre genre) {
+    public List<Joueur> getJoueurSolo(GenreJoueur genre) {
         if(genre == null){
             return joueurRepository.findAllByEquipe_IdEquipeIsNull();
         }
@@ -144,6 +144,6 @@ public class JoueurService {
         return joueurRepository.save(joueur);
     }
 
-    public List<Joueur> getGenre(Joueur.Genre genre) { return joueurRepository.findAllByGenre(genre);}
+    public List<Joueur> getGenre(GenreJoueur genre) { return joueurRepository.findAllByGenre(genre);}
 
 }

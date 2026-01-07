@@ -4,13 +4,12 @@ import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.ultimateam.apiultimate.DTO.GenreJoueur;
 
 @Getter
 @Setter
 @Entity
 public class Joueur {
-    public enum Genre {HOMME, FEMME}
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -20,7 +19,7 @@ public class Joueur {
     private String prenomJoueur;
 
     @Enumerated(EnumType.STRING)
-    private Genre genre;
+    private GenreJoueur genre;
 
     @ManyToOne
     @JoinColumn(name = "idEquipe")
@@ -42,7 +41,7 @@ public class Joueur {
      * @param prenomJoueur Le prénom du joueur.
      * @param genre         Le genre du joueur (MALE ou FEMALE).
      */
-    public Joueur(String nomJoueur, String prenomJoueur, Genre genre) {
+    public Joueur(String nomJoueur, String prenomJoueur, GenreJoueur genre) {
         this.nomJoueur = nomJoueur;
         this.prenomJoueur = prenomJoueur;
         this.genre = genre;
@@ -56,7 +55,7 @@ public class Joueur {
      * @param genre         Le genre du joueur (MALE ou FEMALE).
      * @param equipe        L'équipe à laquelle le joueur est associé.
      */
-    public Joueur(String nomJoueur, String prenomJoueur, Genre genre, Equipe equipe) {
+    public Joueur(String nomJoueur, String prenomJoueur, GenreJoueur genre, Equipe equipe) {
         this.nomJoueur = nomJoueur;
         this.prenomJoueur = prenomJoueur;
         this.genre = genre;

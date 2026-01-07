@@ -4,19 +4,22 @@ import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth";
 
-const router = useRouter()
+const router = useRouter();
 const auth = useAuthStore();
+
+if (!auth.isAdmin) {
+  router.push("/");
+}
 
 const joueur = ref({
   idJoueur: null,
   nomJoueur: "",
   prenomJoueur: "",
-  genre: "MALE",
+  genre: "",
   photoJoueur: null, 
   clickable: true
 })
 
-const apiBaseUrl = "http://localhost:8080";
 
 const uploadFile = async (file) => {
     const formData = new FormData();
@@ -28,7 +31,7 @@ const uploadFile = async (file) => {
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const uploadRes = await fetch(`${apiBaseUrl}/api/files/upload`, {
+    const uploadRes = await fetch(`/api/files/upload`, {
         method: "POST",
         headers: headers, 
         body: formData 

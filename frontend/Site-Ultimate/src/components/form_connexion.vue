@@ -37,7 +37,8 @@ const submitForm = async () => {
       console.log(JSON.parse(atob(document.cookie.split('.')[1])).role) //.split('=')[1]
 
       auth.loadToken();
-      await router.push("/")
+      //await router.push("/")
+      await router.back();
     }
 
   } catch (error) {

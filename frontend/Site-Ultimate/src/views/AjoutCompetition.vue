@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/auth";
 
 const nomCompetition = ref("")
 const nomEquipe = ref("")
+const competition = ref("")
 const dateDebut = ref("")
 const dateFin = ref("")
 const DescriptionCompetition = ref("")
@@ -18,12 +19,17 @@ const format = ref("")
 const genre = ref("")
 
 const auth = useAuthStore();
+const router = useRouter();
+
+if (!auth.isAdmin) {
+  router.push("/")
+}
 
 // 20 joueurs
 const equipes = ref(
     Array.from({ length: 20 }, () => ({
       idEquipe: null,
-      nomEquipe: "Equipe",
+      nomEquipe: "Equipe XXX",
     }))
 )
 
@@ -59,7 +65,6 @@ const selectExisting = (equipe) => {
   modalShow_1.value = false
 }
 
-const router = useRouter()
 
 function toSimpleDate(dateString) {
   return dateString ?? null;
@@ -72,6 +77,11 @@ const valider_ajout_equipe = async () => {
     alert("Le nom de la compétition est obligatoire.");
     return;
   }
+  if (!competition.value) {
+    alert("Veuillez choisir le type de compétition (Tournoi ou Championnat).");
+    return;
+  }
+
 
   //  Si 0 équipe, on saute toute la partie équipe
   let equipesSelectionnees = [];
@@ -100,7 +110,7 @@ const valider_ajout_equipe = async () => {
   // --- 3) CRÉATION DE LA COMPÉTITION ---
   try {
     const tournoisPayload = {
-      genre: genreApi.value,
+      genre: genre.value,
       format: format.value,
       dateDebut: toSimpleDate(dateDebut.value),
       dateFin: toSimpleDate(dateFin.value),
@@ -108,7 +118,12 @@ const valider_ajout_equipe = async () => {
       descriptionCompetition: DescriptionCompetition.value
     };
 
-    const resTournois = await fetch("/api/tournois", {
+    const endpoint =
+        competition.value === "TOURNOI"
+            ? "/api/competition/tournoi"
+            : "/api/competition/championnat";
+
+    const resTournois = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(tournoisPayload)
@@ -145,17 +160,6 @@ const valider_ajout_equipe = async () => {
 };
 
 
-const GENRE_API_MAP = {
-  HOMME: "HOMME",
-  FEMMME: "FEMMME",
-  MIXTE: "MIXTE",
-  MALE: "HOMME",
-  FEMALE: "FEMMME"
-}
-
-const genreApi = computed(() => {
-  return GENRE_API_MAP[genre.value] ?? ""
-})
 
 </script>
 
@@ -179,16 +183,22 @@ const genreApi = computed(() => {
           :icon="UserIcon"
       />
 
+      <label>Compétition :</label>
+      <select v-model="competition" class="select-genre">
+        <option value="TOURNOI">Tournoi</option>
+        <option value="CHAMPIONNAT">Championnat</option>
+      </select>
+
       <label>Format :</label>
       <select v-model="format" class="select-format">
         <option value="V5">V5</option>
-        <option value="V7">V7</option>
+        <option value="v7">V7</option>
       </select>
 
       <label>Genre :</label>
       <select v-model="genre" class="select-genre">
-        <option value="MALE">HOMME</option>
-        <option value="FEMALE">FEMME</option>
+        <option value="HOMME">HOMME</option>
+        <option value="FEMME">FEMME</option>
         <option value="MIXTE">MIXTE</option>
       </select>
 

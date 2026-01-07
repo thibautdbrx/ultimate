@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {stringifyQuery, useRoute, useRouter} from 'vue-router'
 
 import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
 import CardMatch from "@/components/card_match.vue"
@@ -8,8 +8,12 @@ import CarteEquipe from "@/components/card_equipe.vue"
 import ImageFond from "@/assets/img/img_equipe.jpg"
 import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 
+
 const route = useRoute()
 const router = useRouter()
+
+const classement = ref([])
+
 
 const competitionId = route.params.id
 
@@ -30,7 +34,7 @@ async function fetchTeams() {
 }
 
 async function fetchCompetitionInfo() {
-  const res = await fetch(`/api/tournois/${competitionId}`)
+  const res = await fetch(`/api/competition/${competitionId}`)
   if (res.ok) {
     competition.value = await res.json()
     GENRE_API_MAP[competition.genre] ?? ""
@@ -39,10 +43,21 @@ async function fetchCompetitionInfo() {
 }
 
 async function fetchMatches() {
-  const res = await fetch(`/api/tournois/${competitionId}/matchs`)
+  const res = await fetch(`/api/competition/${competitionId}/matchs`)
   if (!res.ok) throw new Error("Erreur HTTP matchs")
   matches.value = await res.json()
+  //console.log(matches.value)
 }
+
+async function fetchClassement() {
+  const res = await fetch(`/api/classement/competition/${competitionId}`)
+  if (!res.ok) throw new Error("Erreur HTTP classement")
+  classement.value = await res.json()
+}
+
+const classementTrie = computed(() => {
+  return [...classement.value].sort((a, b) => a.rang - b.rang)
+})
 
 
 
@@ -66,6 +81,8 @@ onMounted(async () => {
     await fetchTeams()
     await fetchMatches()
     await fetchCompetitionInfo()
+    await fetchClassement()
+
 
   } catch (err) {
     console.error(err)
@@ -74,6 +91,7 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
 
 
 const selectExisting = async (equipe) => {
@@ -109,22 +127,27 @@ const selectExisting = async (equipe) => {
   }
 }
 
-// Logique affichage
+
 const allowEdit = computed(() => matches.value.length === 0)
 
 const hasMatches = computed(() => matches.value.length > 0)
 
 const finishedMatches = computed(() => {
-  const now = new Date()
+
+  //const now = new Date()
   return matches.value.filter(m =>
-      m.status === "FINISHED" || new Date(m.dateFin) <= now
+      //m.status === "FINISHED" || new Date(m.dateFin) <= now
+      m.status === "FINISHED"
+
   )
 })
 
 const upcomingMatches = computed(() => {
-  const now = new Date()
+  //const now = new Date()
   return matches.value.filter(m =>
-      m.status !== "FINISHED" && new Date(m.dateFin) > now
+      //m.status !== "FINISHED" || new Date(m.dateFin) <= now
+      m.status !== "FINISHED"
+
   )
 })
 
@@ -134,29 +157,103 @@ function toggleEditMode() {
   editMode.value = !editMode.value
 }
 
-function genererMatchs() {
-  console.log("Générer les poules…")
-}
 
 function goToEquipe(id, nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
 }
 
 const openModal_1 = () => {
+  if (competitionDejaCommencee.value) {
+    alert("La compétition a déjà commencé.")
+    return
+  }
   modalShow_1.value = true
 }
-const supprimerEquipe = async (index) => {
+
+const supprimerEquipe = async (index, id) => {
   if (confirm(`Supprimer ${teams.value[index].nomEquipe} ?`)) {
-    const suppJ = await fetch(`/api/participation//equipe/${equipeId}`, {
+    console.log(teams.value[index].nomEquipe + " supprimé de la bdd askip")
+    const suppJ = await fetch(`/api/participation`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idEquipe: id,
+        idCompetition: competitionId
+      })
     });
-    joueurs.value.splice(index, 1)
+    teams.value.splice(index, 1)
   }
 }
 
 const format_bien_aff = computed(() => {
   return (competition.value?.format || "").toUpperCase();
 });
+
+const formatDate = (isoString) => {
+  if (!isoString) return ''
+  return new Date(isoString).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+const GenererMatch = async () => {
+  const confirmation = window.confirm(
+      "⚠️ Attention :\n\n" +
+      "Une fois les matchs générés, vous ne pourrez PLUS modifier la compétition " +
+      "(ajout/suppression d'équipes impossible).\n\n" +
+      "Voulez-vous continuer ?"
+  );
+
+  if (!confirmation) {
+    return; // l'utilisateur annule
+  }
+
+  try {
+    const idCompetition = route.params.id; // à récupérer dynamiquement
+
+    const response = await fetch(
+        `/api/competition/${idCompetition}/create`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+    );
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la génération des matchs");
+    }
+
+    const data = await response.json();
+    console.log("Matchs générés :", data);
+
+    alert("Les matchs ont été générés avec succès !");
+
+    // window.location.reload();
+  } catch (error) {
+    console.error(error);
+    alert("Une erreur est survenue lors de la génération des matchs");
+  }
+  router.push(`/Competitions/${competitionId}`)
+};
+
+const competitionDejaCommencee = computed(() => {
+  if (!competition.value?.dateDebut) return false
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const debut = new Date(competition.value.dateDebut)
+  debut.setHours(0, 0, 0, 0)
+
+  return debut < today
+})
+
 
 
 
@@ -178,7 +275,7 @@ const format_bien_aff = computed(() => {
           {{ nbTeams }} équipes
         </h2>
 
-        <!-- 🔥 MODE SANS MATCHS = ÉDITION ACTIVÉE -->
+        <!--  ÉDITION ACTIVÉE -->
         <div v-if="allowEdit && !loading" class="no-matches">
           <p>Aucun match n’a encore été généré pour cette compétition.</p>
 
@@ -186,7 +283,7 @@ const format_bien_aff = computed(() => {
             {{ editMode ? "Quitter la modification" : "Modifier" }}
           </button>
 
-          <button class="btn-primary" @click="genererMatchs">
+          <button class="btn-primary" @click="GenererMatch">
             Générer les poules et créer les matchs
           </button>
         </div>
@@ -197,17 +294,33 @@ const format_bien_aff = computed(() => {
 
           <!-- Bouton d'ajout uniquement en mode edition -->
           <div v-if="allowEdit && editMode" class="edit-actions">
-            <button class="btn-primary" @click="openModal_1()">Ajouter une équipe</button>
+
+            <button
+                v-if="!competitionDejaCommencee"
+                class="btn-primary"
+                @click="openModal_1()"
+            >
+              Ajouter une équipe
+            </button>
+
+            <p
+                v-else
+                class="competition-deja-commencee"
+            >
+              La compétition a déjà commencé, il n’est plus possible d’ajouter des équipes.
+            </p>
+
           </div>
 
+
           <div class="teams-grid">
-            <div v-for="t in teams" :key="t.idEquipe" class="team-card-wrapper">
+            <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
 
               <!-- Bouton supprimer affiché uniquement en édition -->
               <button
-                  v-if="allowEdit && editMode"
+                  v-if="allowEdit && editMode && !competitionDejaCommencee"
                   class="btn-delete"
-                  @click="() => console.log('Supprimer', t.idEquipe)"
+                  @click="supprimerEquipe(i, t.idEquipe)"
               >
                 Supprimer
               </button>
@@ -223,8 +336,9 @@ const format_bien_aff = computed(() => {
 
           <SelectEquipe
               :show="modalShow_1"
-              :genre="genreApi"
+              :genre="competition.genre"
               :all="false"
+              :equipe_utilise="teams"
               @close="modalShow_1 = false"
               @select="selectExisting"
           />
@@ -235,33 +349,54 @@ const format_bien_aff = computed(() => {
         <div v-if="hasMatches" class="prochain_matches">
 
           <h3>Matchs prochains</h3>
-          <SliderCardHorizontal>
+          <SliderCardHorizontal v-if="upcomingMatches.length > 0">
             <div v-for="match in upcomingMatches" :key="match.idMatch">
               <CardMatch
-                  :title="match.dateMatch"
-                  :nom1="match.equipe1.nomEquipe"
-                  :nom2="match.equipe2.nomEquipe"
-                  :points1="match.scoreEquipe1"
-                  :points2="match.scoreEquipe2"
-                  :fini="false"
+                  :title="formatDate(match.dateMatch)"
+                  :match ="match"
+
               />
             </div>
           </SliderCardHorizontal>
 
           <h3>Matchs finis</h3>
-          <SliderCardHorizontal>
-            <div v-for="match in finishedMatches" :key="match.idMatch">
+          <SliderCardHorizontal v-if="finishedMatches.length > 0">
+            <div v-for="match in finishedMatches" :key="match.idMatch" @click="goToMatch(match.idMatch)">
               <CardMatch
-                  :title="match.dateMatch"
-                  :nom1="match.equipe1.nomEquipe"
-                  :nom2="match.equipe2.nomEquipe"
-                  :points1="match.scoreEquipe1"
-                  :points2="match.scoreEquipe2"
-                  :fini="true"
+                  :title="formatDate(match.dateMatch)"
+                  :match = "match"
               />
             </div>
           </SliderCardHorizontal>
         </div>
+
+        <section class="classement-section">
+          <h3>Classement du tournoi</h3>
+
+          <p v-if="!hasMatches" class="classement-info">
+            Le classement sera mis à jour automatiquement dès que les matchs auront été générés et joués.
+          </p>
+
+          <ul v-else-if="classementTrie.length" class="classement-list">
+            <li
+                v-for="c in classementTrie"
+                :key="c.idClassement.idEquipe"
+                :class="['classement-item', `rang-${c.rang}`]"
+            >
+              <span class="rang">{{ c.rang }}</span>
+
+              <span
+                  class="equipe"
+                  @click="goToEquipe(c.equipe.idEquipe, c.equipe.nomEquipe)"
+              >
+                  {{ c.equipe.nomEquipe }}
+              </span>
+
+              <span class="score">{{ c.score }} pts</span>
+            </li>
+          </ul>
+        </section>
+
 
       </div>
     </div>
@@ -336,4 +471,70 @@ h2 {
   cursor: pointer;
   text-decoration: none;
 }
+.competition-deja-commencee {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.classement-section {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+
+}
+
+.classement-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.classement-item {
+  display: grid;
+  grid-template-columns: 40px 1fr 80px;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 10px;
+  background: #f4f4f4;
+  font-weight: 500;
+}
+
+.classement-item .rang {
+  font-weight: bold;
+  text-align: center;
+}
+
+.classement-item .equipe {
+  cursor: pointer;
+}
+
+.classement-item .score {
+  text-align: right;
+  font-weight: bold;
+}
+
+
+.rang-1 {
+  background: linear-gradient(90deg, #ffd700, #fff4b0);
+}
+
+.rang-2 {
+  background: linear-gradient(90deg, #c0c0c0, #eeeeee);
+}
+
+.rang-3 {
+  background: linear-gradient(90deg, #cd7f32, #f1d1b3);
+}
+
+.classement-info {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+
 </style>

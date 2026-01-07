@@ -19,6 +19,8 @@ const match = ref(null);
 const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
 
+let etatMatch = ref("WAITING")
+
 const error = ref(null);
 
 const auth = useAuthStore();
@@ -32,6 +34,9 @@ const loadMatch = async () => {
     if (!res.ok) throw new Error("Erreur API match : " + res.status);
 
     match.value = await res.json();
+    console.log(match.value);
+    etatMatch = match.value.status;
+
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -57,6 +62,9 @@ const loadPlayers = async () => {
     joueursEquipe1.value = await res1.json();
     joueursEquipe2.value = await res2.json();
 
+  
+   
+
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -72,8 +80,8 @@ const couleurEquipe1 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
 
-  const s1 = match.value.score_equipe1;
-  const s2 = match.value.score_equipe2;
+  const s1 = match.value.scoreEquipe1;
+  const s2 = match.value.scoreEquipe2;
 
   if (s1 > s2) return "vert";
   if (s1 < s2) return "rouge";
@@ -84,13 +92,58 @@ const couleurEquipe2 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
 
-  const s1 = match.value.score_equipe1;
-  const s2 = match.value.score_equipe2;
+  const s1 = match.value.scoreEquipe1;
+  const s2 = match.value.scoreEquipe2;
 
   if (s2 > s1) return "vert";
   if (s2 < s1) return "rouge";
   return "or";
 });
+
+const AjoutPoint = async (numEquipe, combien) => {
+
+  let score;
+  const matchId = match.value.idMatch; 
+
+  if (score < 0) {
+    console.error("Point négatif impossible");
+    return;
+  }
+  
+
+  console.log(score);
+
+  const point = {
+    point: combien
+  }
+
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(point)
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error("Erreur lors de l'ajout de point.");
+  }
+}
+
+const operationMatch = async (operation) => {
+  const res = await fetch(`/api/match/${matchId}/${operation}`, {
+    method: "PUT"
+  })
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error(`Erreur lors du ${operation} du match.`);
+  }
+} 
+
 
 // ----------------------
 onMounted(async () => {
@@ -103,28 +156,46 @@ onMounted(async () => {
   <main class="page">
 
     <!-- HEADER : Infos du match -->
-    <section class="header" v-if="match">
+    <section class="haut" v-if="match">
+
+      <p v-if="!(etatMatch=='FINISHED' || etatMatch=='WAITING')" id="dureeMatch">00:00:00</p>
+
       <h1>
         Championnat régional
       </h1>
 
       <div class="score-box">
         <div class="score">
-          <h2 :class="couleurEquipe1">{{ match.equipe1.nom_equipe }}</h2>
-          <p class="points">{{ match.score_equipe1 }}</p>
+          <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
+
+          <div class="affichagePoint">
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1)" class="boutonScore boutonPlus">+</button>
+            <p class="points">{{ match.scoreEquipe1 }}</p>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
+          </div>
+          
         </div>
 
         <div class="vs">VS</div>
 
         <div class="score">
-          <h2 :class="couleurEquipe2">{{ match.equipe2.nom_equipe }}</h2>
-          <p class="points">{{ match.score_equipe2 }}</p>
+          <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
+
+          <div class="affichagePoint">
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1)" class="boutonScore boutonPlus">+</button>
+            <p class="points">{{ match.scoreEquipe2 }}</p>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
+          </div>
+          
         </div>
       </div>
 
-      <p class="date">
-        Début : {{ new Date(match.dateDebut).toLocaleString() }}
-      </p>
+      <div class="date">
+        <p v-if="!(etatMatch == 'WAITING')">Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
+      </div>
       <p class="status">Status : {{ match.status }}</p>
     </section>
 
@@ -135,7 +206,7 @@ onMounted(async () => {
 
       <!-- COLONNE GAUCHE -->
       <div class="col">
-        <h3 class="subtitle">{{ match.equipe1.nom_equipe }}</h3>
+        <h3 class="subtitle">{{ match.equipe1.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
 
@@ -143,8 +214,9 @@ onMounted(async () => {
           <Card_joueur
               v-for="j in joueursEquipe1"
               :key="j.idJoueur"
-              :nom="j.nom_joueur + ' ' + j.prenom_joueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
+              :photo="j.photoJoueur"
               background="#ffdddd"
           />
         </SliderVertical>
@@ -154,12 +226,20 @@ onMounted(async () => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <h3>Informations du Match</h3>
-        <p>Ici tu pourras ajouter les stats, durée, arbitres, etc.</p>
+        <p v-if="auth.isAdmin || auth.isArbitre" ></p>
+
+        <div id="actionsMatch">
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction">Commencer le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction">Terminer le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction">Pause le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction">Resume le match</button>
+        </div>
+    
       </div>
 
       <!-- COLONNE DROITE -->
       <div class="col">
-        <h3 class="subtitle">{{ match.equipe2.nom_equipe }}</h3>
+        <h3 class="subtitle">{{ match.equipe2.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
 
@@ -167,8 +247,9 @@ onMounted(async () => {
           <Card_joueur
               v-for="j in joueursEquipe2"
               :key="j.idJoueur"
-              :nom="j.nom_joueur + ' ' + j.prenom_joueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
+              :photo="j.photoJoueur"
               background="#dde8ff"
           />
         </SliderVertical>
@@ -180,77 +261,167 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.page {
-  padding: 2rem;
-  font-family: "Poppins", sans-serif;
-}
-
-/* --- HEADER --- */
-.header {
+.haut {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
-.team-name {
+.haut h1 {
+  font-size: 1.8rem;
   font-weight: 700;
+  margin-bottom: 1.5rem;
 }
-
-/* COULEURS */
-.noir { color: black; }
-.vert { color: green; }
-.rouge { color: red; }
-.or   { color: goldenrod; }
-
 .score-box {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 3rem;
-  margin: 1rem 0;
+  gap: 5rem;
+  margin: 2rem 0;
 }
 
 .score {
   text-align: center;
-  flex: 1;
+  width: 260px;   /* fixe pour centré le vs */
+}
+
+
+.score h2 {
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
 
 }
 
+
 .points {
-  font-size: 2.4rem;
-  font-weight: 700;
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .vs {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
-  flex: 0;
-  text-align: center;
+color: gray}
+
+.noir { color: #222; }
+.vert { color: #1b9c41; }
+.rouge { color: #c0392b; }
+.or { color: #c9a227; }
+
+/* BOUTONS SCORE */
+.affichagePoint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.boutonScore {
+  border-radius: 50%;
+  border: none;
+  height: 3rem;
+  width: 3rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.boutonPlus {
+  background-color: #2ecc71;
+}
+
+.boutonMoins {
+  background-color: #e74c3c;
+}
+
+.boutonScore:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+.date {
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.status {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #888;
 }
 
 .layout {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
+  align-items: flex-start;
 }
 
+/* COLONNES EQUIPES */
 .col {
-  width: 28%;
-}
-
-.middle {
-  flex: 1;
-  padding: 1rem;
-  background: #fafafa;
-  border-radius: 10px;
+  width: 26%;
 }
 
 .subtitle {
   text-align: center;
-  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #eee;
+}
+
+
+.middle {
+  flex: 1;
+  padding: 1.5rem;
+  border-left: 2px solid #f0f0f0;
+  border-right: 2px solid #f0f0f0;
+}
+
+.middle h3 {
+  text-align: center;
+  margin-bottom: 1rem;
   font-weight: 600;
 }
 
-.error {
-  color: red;
-  text-align: center;
+
+#actionsMatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
 }
+
+.boutonAction {
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: none;
+  background: #f4f4f4;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.boutonAction:hover {
+  background: #eaeaea;
+  transform: translateY(-1px);
+}
+
+
+.error {
+  color: #c0392b;
+  text-align: center;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
 </style>

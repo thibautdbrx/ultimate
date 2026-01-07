@@ -59,7 +59,12 @@ public class MatchService {
 
     public Iterable<Match> getAll() { return matchRepository.findAll(); }
     public List<Match> getStarted() { return matchRepository.findByDateDebutIsNotNullAndDateFinIsNull(); }
-    public List<Match> getNotStarted() { return matchRepository.findByDateDebutIsNull(); }
+    public List<Match> getNotStarted() {
+        LocalDateTime dateBefore = LocalDateTime.now().minusDays(2);
+        return matchRepository.findByDateMatchAfterAndDateDebutIsNull(dateBefore);
+    }
+    //public List<Match> getNotStarted() { return matchRepository.findByDateDebutIsNull(); }
+    public List<Match> getFinished() { return matchRepository.findByDateFinIsNotNull(); }
 
     // --------------------- MATCH CREATION ---------------------
     public Match creerMatch(MatchDTO matchDTO) {
@@ -174,6 +179,7 @@ public class MatchService {
         match.setStatus(Match.Status.FINISHED);
         match.setDateFin(LocalDateTime.now());
         annulerScheduler(match);
+        classementService.mettreAJourClassement(match);
         save(match);
     }
 
@@ -181,7 +187,7 @@ public class MatchService {
         Match match = getById(id);
         if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
         finirMatchSafe(match);
-        classementService.mettreAJourClassement(match);
+
         return match;
     }
 

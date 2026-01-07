@@ -6,14 +6,19 @@ const props = defineProps({
   show: Boolean,
   genre: {
     type: String,
-    default: "-",
+    default: "",
     required: true,
   },
-  all:{
+  all:{ //permet d'avoir un bouton pour ajouter une entité (pas utile pour les équipes en vrai on peut l'enlever et la partie dans le html aussi je pense)
     type: Boolean,
     required: false,
     default: true,
-  }
+  },
+  equipe_utilise:{
+    type: Object,
+    required: false,
+    default: null,
+    }
 })
 
 const emit = defineEmits(["close", "select", "nvj"])
@@ -39,8 +44,7 @@ async function loadEquipes() {
 
 
 
-
-//pour rafraichir les jouerus quand on ouvre l'overlay
+//pour rafraichir les equipes quand on ouvre l'overlay
 watch(
     () => [props.show, props.genre],
     async ([show, genre]) => {
@@ -52,7 +56,23 @@ watch(
     { immediate: true }
 )
 
-const filtered = computed(() => equipes.value.filter(e => (e.nomEquipe) .toLowerCase() .includes(search.value.toLowerCase()) ) )
+
+// ID des équipes déjà utilisées
+const usedIds = computed(() =>
+    new Set((props.equipe_utilise ?? []).map(eu => eu.idEquipe))
+)
+
+// equipes filtrées
+const filtered = computed(() => {
+  const searchLower = search.value.toLowerCase()
+
+  return equipes.value
+      .filter(e => !usedIds.value.has(e.idEquipe)) // exclut les équipes déjà utilisées
+      .filter(e =>
+          searchLower === "" ||
+          e.nomEquipe.toLowerCase().includes(searchLower) // filtre par texte si besoin
+      )
+})
 
 
 

@@ -1,5 +1,8 @@
 org.ultimateam.apiultimate
+org.ultimateam.apiultimate.configuration
 org.ultimateam.apiultimate.controller
+org.ultimateam.apiultimate.DTO
+org.ultimateam.apiultimate.filter
 org.ultimateam.apiultimate.model
 org.ultimateam.apiultimate.repository
 org.ultimateam.apiultimate.service

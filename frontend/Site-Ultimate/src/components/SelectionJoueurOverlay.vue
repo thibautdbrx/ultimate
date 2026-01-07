@@ -4,6 +4,7 @@ import CardJoueur from "@/components/card_joueur.vue"
 
 const props = defineProps({
   show: Boolean,
+  genre: String,
 })
 
 const emit = defineEmits(["close", "select", "nvj"])
@@ -12,7 +13,11 @@ const search = ref("")
 const joueurs = ref([])
 
 async function loadJoueurs() {
-  const res = await fetch("/api/joueur/solo")
+  let res
+  if (props.genre === "MIXTE")
+    res = await fetch("/api/joueur/solo")
+  else
+    res = await fetch(`/api/joueur/solo?genre=${props.genre}`)
   joueurs.value = await res.json()
 }
 
@@ -63,6 +68,7 @@ const filtered = computed(() =>
               :nom="j.nomJoueur"
               :prenom="j.prenomJoueur"
               :genre="j.genre"
+              :photo="j.photoJoueur"
           />
         </div>
       </div>

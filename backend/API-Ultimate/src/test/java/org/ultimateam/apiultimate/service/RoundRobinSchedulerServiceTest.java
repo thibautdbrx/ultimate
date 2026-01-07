@@ -2,6 +2,7 @@ package org.ultimateam.apiultimate.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Match;
@@ -49,7 +50,7 @@ public class RoundRobinSchedulerServiceTest {
         LocalDate start = LocalDate.of(2025, 1, 1);
         LocalDate end = LocalDate.of(2025, 1, 2);
 
-        TournoisService.ScheduleResult result = scheduler.generateSchedule(equipes, start, end, false, indispo);
+        ScheduleResult result = scheduler.generateSchedule(equipes, start, end, false, indispo);
         //System.out.println(result.getIndisponibilites().get(0).getDateDebutIndisponibilite());
         //System.out.println(result.getMatchs().get(0).getDateMatch());
 
@@ -142,7 +143,7 @@ public class RoundRobinSchedulerServiceTest {
 
         List<Indisponibilite> indispo = new ArrayList<>();
 
-        TournoisService.ScheduleResult result = scheduler.generateSchedule(equipes, start, end, true, indispo);
+        ScheduleResult result = scheduler.generateSchedule(equipes, start, end, true, indispo);
         List<Match> matchs = result.getMatchs();
         List<Indisponibilite> indisponibilites = result.getIndisponibilites();
 
