@@ -1,6 +1,7 @@
 package org.ultimateam.apiultimate.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.ultimateam.apiultimate.model.Match;
 
@@ -14,4 +15,5 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByIdCompetition_IdCompetitionOrderByDateMatchAsc(long competitionId);
     List<Match> findByDateMatchAfterAndDateDebutIsNull(LocalDateTime dateMatchBefore);
     List<Match> findByDateFinIsNotNull();
+
 }

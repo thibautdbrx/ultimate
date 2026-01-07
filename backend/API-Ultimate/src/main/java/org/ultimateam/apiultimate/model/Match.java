@@ -48,7 +48,11 @@ public class Match {
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private LocalDateTime dateMatch;
-    private long terrain = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "id_terrain")
+    private Terrain terrain;
+
     @JsonIgnore
     private LocalDateTime datePause = null;
 

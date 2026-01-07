@@ -68,6 +68,18 @@ public class CompetitionController {
     )
     public Competition creerCompetition(@RequestBody Competition competition) {return competitionService.saveCompetition(competition); }
 
+    @Operation(
+            summary = "Ajouter un terrain à une compétition",
+            description = "Lie un terrain existant à une compétition. Ce terrain sera utilisé lors de la génération du planning."
+    )
+    @PostMapping("/{idCompetition}/terrain/{idTerrain}")
+    public Competition ajouterTerrain(
+            @PathVariable Long idCompetition,
+            @PathVariable Long idTerrain) {
+        return competitionService.ajouterTerrainACompetition(idCompetition, idTerrain);
+    }
+
+
     @PutMapping("/{idCompetition}/create")
     @Operation(
             summary = "Générer les matchs d'une compétition",
@@ -104,6 +116,17 @@ public class CompetitionController {
 
     @PostMapping("/championnat")
     public Championnat creerChampionnat(@RequestBody Championnat championnat) {return championnatService.saveChampionnat(championnat); }
+
+    @Operation(
+            summary = "Retirer un terrain d'une compétition",
+            description = "Supprime le lien entre un terrain et une compétition. Le terrain reste présent en base de données."
+    )
+    @DeleteMapping("/{idCompetition}/terrain/{idTerrain}")
+    public Competition retirerTerrain(
+            @PathVariable Long idCompetition,
+            @PathVariable Long idTerrain) {
+        return competitionService.retirerTerrainDeCompetition(idCompetition, idTerrain);
+    }
 
 
 }

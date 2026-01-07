@@ -7,4 +7,5 @@ import java.util.List;
 @Data
 public class MatchDTO {
     private List<Long> idEquipes;
+    private Long idTerrain;
 }

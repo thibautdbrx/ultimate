@@ -21,6 +21,7 @@ public class CompetitionService {
     private final RoundRobinSchedulerService scheduler;
     private final IndisponibiliteRepository indisponibiliteRepository;
     private final ClassementRepository classementRepository;
+    private final TerrainService terrainService;
 
     public CompetitionService(
             CompetitionRepository competitionRepository,
@@ -29,8 +30,8 @@ public class CompetitionService {
             EquipeService equipeService,
             RoundRobinSchedulerService scheduler,
             IndisponibiliteRepository indisponibiliteRepository,
-            ClassementRepository classementRepository
-    ) {
+            ClassementRepository classementRepository,
+            TerrainService terrainService) {
         this.competitionRepository = competitionRepository;
         this.matchRepository = matchRepository;
         this.participationRepository = participationRepository;
@@ -38,6 +39,7 @@ public class CompetitionService {
         this.scheduler = scheduler;
         this.indisponibiliteRepository = indisponibiliteRepository;
         this.classementRepository = classementRepository;
+        this.terrainService = terrainService;
     }
 
     public List<Competition> getAllCompetition() {
@@ -63,9 +65,16 @@ public class CompetitionService {
         if (competition == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
+
+        List<Terrain> terrains = competition.getTerrains();
+        if (terrains.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Impossible de générer la compétition : aucun terrain trouvé");
+        }
+
         List<Participation> participations = participationRepository.findById_idCompetition(idCompeptition);
         List<Equipe> equipes = new ArrayList<>();
         List<Indisponibilite> indispo = new ArrayList<>();
+
         for (Participation participation : participations) {
             Equipe equipe = equipeService.getById(participation.getId().getIdEquipe());
             equipes.add(equipe);
@@ -78,11 +87,10 @@ public class CompetitionService {
         }
         ScheduleResult scheduleResult;
         if (Objects.equals(competition.getTypeCompetition(), "Tournoi")) {
-            scheduleResult = scheduler.generateSchedule(equipes, competition.getDateDebut(), competition.getDateFin(), true, indispo);
-            List<Match> matchs = scheduleResult.getMatchs();
+            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), true, indispo);
         }
         else if (Objects.equals(competition.getTypeCompetition(), "Championnat")){
-            scheduleResult = scheduler.generateSchedule(equipes, competition.getDateDebut(), competition.getDateFin(), false, indispo);
+            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), false, indispo);
         }
         else{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pas une competition valide");
@@ -104,5 +112,30 @@ public class CompetitionService {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idCompetition);
     }
 
+    public Competition ajouterTerrainACompetition(Long idCompetition, Long idTerrain) {
+        Competition competition = competitionRepository.findById(idCompetition)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition introuvable"));
 
+        Terrain terrain = terrainService.getById(idTerrain);
+        if (terrain == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Terrain introuvable");
+        }
+
+        if (!competition.getTerrains().contains(terrain)) {
+            competition.getTerrains().add(terrain);
+        }
+        return competitionRepository.save(competition);
+    }
+
+    public Competition retirerTerrainDeCompetition(Long idCompetition, Long idTerrain) {
+        Competition competition = competitionRepository.findById(idCompetition)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition introuvable"));
+        Terrain terrain = terrainService.getById(idTerrain);
+        if (terrain == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Terrain introuvable");
+        }
+        competition.getTerrains().remove(terrain);
+
+        return competitionRepository.save(competition);
+    }
 }

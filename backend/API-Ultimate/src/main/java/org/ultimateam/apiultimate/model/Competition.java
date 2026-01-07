@@ -8,7 +8,8 @@ import lombok.Setter;
 import org.ultimateam.apiultimate.DTO.Genre;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -39,6 +40,14 @@ public abstract class Competition {
 
     private String nomCompetition;
     private String descriptionCompetition;
+
+    @ManyToMany
+    @JoinTable(
+            name = "competition_terrains",
+            joinColumns = @JoinColumn(name = "id_competition"),
+            inverseJoinColumns = @JoinColumn(name = "id_terrain")
+    )
+    private List<Terrain> terrains = new ArrayList<>();
 
     /**
     @OneToMany(mappedBy = "idCompetition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
