@@ -9,11 +9,12 @@ const router = useRouter()
 
 onMounted(() => {
   fetchPub();
+
 })
 
 async function fetchPub() {
   try {
-    const res = await fetch('https://dummyjson.com/products/category/sunglasses');
+    const res = await fetch('https://dummyjson.com/products');
     const data = await res.json();
 
     if (data.products && data.products.length > 0) {

@@ -1,6 +1,23 @@
 <script setup>
 import { RouterLink } from "vue-router";
 import chien_prankeur from "@/assets/img/chien_prankeur.png"
+import { onMounted, onUnmounted } from "vue";
+import chien_prankeur_audio from "@/assets/sound/chien_prankeur.mp3";
+
+let audio = null;
+
+onMounted(() => {
+  audio = new Audio(chien_prankeur_audio)
+  audio.volume = 0.4
+  audio.play()
+})
+
+onUnmounted(() => {
+  if (audio) {
+    audio.pause()
+    audio.currentTime = 0 // Remet au début
+  }
+})
 </script>
 
 <template>
@@ -10,7 +27,6 @@ import chien_prankeur from "@/assets/img/chien_prankeur.png"
     </div>
     <h1>FAUSSE PUB</h1>
     <p>On rigole !</p>
-
 
     <RouterLink to="/" class="btn-retour">
       Retour
@@ -35,10 +51,16 @@ main {
   animation: bounce 2s infinite;
 }
 
+/* Petit fix pour que l'image ne dépasse pas si elle est grosse */
+.emoji img {
+  max-width: 100%;
+  height: auto;
+}
+
 h1 {
   font-size: 4rem;
   font-weight: 900;
-  color: #ff4757; /* Rouge un peu flashy */
+  color: #ff4757;
   margin: 0;
 }
 
