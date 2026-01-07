@@ -14,10 +14,12 @@ const matchId = Number(route.params.id);
 // State
 const loadingMatch = ref(true);
 const loadingPlayers = ref(true);
+const loadingActions = ref(true);
 
 const match = ref(null);
 const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
+const actions = ref([]);
 
 let etatMatch = ref("WAITING")
 
@@ -117,6 +119,31 @@ const loadPlayers = async () => {
 };
 
 // ----------------------
+// 3) Charger les actions
+// ----------------------
+
+const loadActions = async () => {
+  if (!match.value) return;
+
+  try {
+    const [res1] = await Promise.all([
+      fetch(`/api/action-match/${matchId}`)
+    ]);
+
+    if (!res1.ok)
+      throw new Error("Erreur API joueurs");
+
+    actions.value = await res1.json();
+
+  
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    loadingActions.value = false;
+  }
+};
+
+// ----------------------
 // LOGIQUE COULEURS
 // ----------------------
 
@@ -169,6 +196,7 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
   await loadMatch();
   await loadPlayers();
+  await loadActions();
 }
 
   const AjoutFaute = async (numEquipe, idJoueur) => {
@@ -191,6 +219,7 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
   await loadMatch();
   await loadPlayers();
+  await loadActions();
 }
 
 const operationMatch = async (operation) => {
@@ -206,6 +235,7 @@ const operationMatch = async (operation) => {
 
   await loadMatch();
   await loadPlayers();
+  await loadActions();
 } 
 
 
@@ -217,6 +247,7 @@ let interval = null;
 onMounted(async () => {
   await loadMatch();
   await loadPlayers();
+  await loadActions();
 
   interval = setInterval(() => {
     maintenant.value = Date.now();
@@ -226,6 +257,8 @@ onMounted(async () => {
 onUnmounted(() => {
   clearInterval(interval);
 });
+
+
 </script>
 
 <template>
@@ -245,10 +278,18 @@ onUnmounted(() => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1)" class="boutonScore boutonPlus">+</button>
-            <p class="points">{{ match.scoreEquipe1 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
+            <p class="points">{{ match.scoreEquipe1 }}</p> 
           </div>
+
+            <div class="actions">
+           
+              <p v-if="loadingActions">Chargement…</p>
+
+              <div v-for="i in actions" :key="i.id">
+               <p>{{ i.joueur.equipe.idEquipe }}</p>
+              </div>
+            
+            </div>
           
         </div>
 
@@ -257,10 +298,14 @@ onUnmounted(() => {
         <div class="score">
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
-          <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1)" class="boutonScore boutonPlus">+</button>
-            <p class="points">{{ match.scoreEquipe2 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
+          <div class="affichagePoint">      
+            <p class="points">{{ match.scoreEquipe2 }}</p>       
+          </div>
+
+          <div class="actions">
+           
+            <p v-if="loadingActions">Chargement…</p>
+            
           </div>
           
         </div>
@@ -288,18 +333,18 @@ onUnmounted(() => {
         
         <div class="joueurDiv" v-for="j in joueursEquipe1">
 
-        <div class="boutons">
-          <button v-if="(auth.isAdmin || auth.isArbitre)" @click="AjoutPoint(match.equipe1.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre)" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
-        </div>
-        <Card_joueur
-            
-            :key="j.idJoueur"
-            :nom="j.nomJoueur + ' ' + j.prenomJoueur"
-            :genre="j.genre"
-            :photo="j.photoJoueur"
-            background="#ffdddd"
-        />
+          <div class="boutons">
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
+          </div>
+          <Card_joueur
+              
+              :key="j.idJoueur"
+              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
+              :genre="j.genre"
+              :photo="j.photoJoueur"
+              background="#ffdddd"
+          />
         
         </div>
       
@@ -328,8 +373,8 @@ onUnmounted(() => {
         <div class="joueurDiv" v-for="j in joueursEquipe2">
 
         <div class="boutons">
-          <button v-if="(auth.isAdmin || auth.isArbitre)" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre)" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
         </div>
         <Card_joueur
             
@@ -365,14 +410,15 @@ onUnmounted(() => {
 .score-box {
   display: flex;
   justify-content: center;
-  align-items: center;
+ 
   gap: 5rem;
   margin: 2rem 0;
 }
 
 .score {
   text-align: center;
-  width: 260px;   /* fixe pour centré le vs */
+  width: 260px;  
+  margin-top: 0;
 }
 
 
@@ -410,6 +456,7 @@ color: gray}
   justify-content: center;
   gap: 1.2rem;
   margin-top: 0.5rem;
+  flex-direction: column;
 }
 
 .boutons {
