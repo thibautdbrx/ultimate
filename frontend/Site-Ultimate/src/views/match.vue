@@ -285,9 +285,7 @@ onUnmounted(() => {
            
               <p v-if="loadingActions">Chargement…</p>
 
-              <div v-for="i in actions" :key="i.id">
-               <p>{{ i.joueur.equipe.idEquipe }}</p>
-              </div>
+              
             
             </div>
           
