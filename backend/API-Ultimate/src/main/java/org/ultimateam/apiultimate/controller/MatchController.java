@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
+import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.Match;
 import org.ultimateam.apiultimate.service.MatchService;
@@ -111,14 +112,14 @@ public class MatchController {
         return matchService.finirMatch(id);
     }
 
+    @PatchMapping("{idMatch}/equipe/{idEquipe}/point")
+    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchPointDTO matchPointDTO) {
+        return matchService.ajouterPoint(idMatch,  idEquipe, matchPointDTO);
+    }
 
-    @Operation(
-            summary = "Ajouter un point à une équipe dans un match",
-            description = "Ajoute un ou plusieurs points à une équipe donnée dans un match spécifique."
-    )
-    @PatchMapping("/{idMatch}/equipe/{idEquipe}/point")
-    public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe,@RequestBody MatchPointDTO matchPointDTO) {
-        return matchService.ajouterPoint(idMatch, idEquipe, matchPointDTO);
+    @PatchMapping("{idMatch}/equipe/{idEquipe}/faute")
+    public Match addFaute(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchFauteDTO matchFauteDTO) {
+        return matchService.ajouterFaute(idMatch, idEquipe, matchFauteDTO);
     }
 
 

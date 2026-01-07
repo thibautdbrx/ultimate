@@ -9,7 +9,6 @@ import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
-import org.ultimateam.apiultimate.repository.ClassementRepository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 

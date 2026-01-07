@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.websocket.server.PathParam;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.DTO.Genre;
@@ -23,8 +24,10 @@ import java.util.List;
 public class EquipeController {
 
     private final EquipeService equipeService;
+    private final EquipeRepository equipeRepository;
 
-    public EquipeController(EquipeService equipeService) { this.equipeService = equipeService;
+    public EquipeController(EquipeService equipeService, EquipeRepository equipeRepository) { this.equipeService = equipeService;
+        this.equipeRepository = equipeRepository;
     }
 
     @Operation(
@@ -97,5 +100,8 @@ public class EquipeController {
     )
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }
+
+    @GetMapping("/test/{nbHomme}/{nbFemme}")
+    public List<Equipe> test(@PathVariable int nbHomme, @PathVariable int nbFemme){return equipeRepository.findEquipesAvecHommesEtFemmes(nbHomme,nbFemme);}
 
 }
