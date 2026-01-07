@@ -62,6 +62,9 @@ const loadPlayers = async () => {
     joueursEquipe1.value = await res1.json();
     joueursEquipe2.value = await res2.json();
 
+  
+   
+
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -223,6 +226,7 @@ onMounted(async () => {
               :key="j.idJoueur"
               :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
+              :photo="j.photoJoueur"
               background="#ffdddd"
           />
         </SliderVertical>
@@ -255,6 +259,7 @@ onMounted(async () => {
               :key="j.idJoueur"
               :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
+              :photo="j.photoJoueur"
               background="#dde8ff"
           />
         </SliderVertical>
