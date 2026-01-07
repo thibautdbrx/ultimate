@@ -25,6 +25,8 @@ const error = ref(null);
 
 const auth = useAuthStore();
 
+let duree = ref(null);
+
 // ----------------------
 // 1) Charger infos du match
 // ----------------------
@@ -102,16 +104,7 @@ const couleurEquipe2 = computed(() => {
 
 const AjoutPoint = async (numEquipe, combien) => {
 
-  let score;
   const matchId = match.value.idMatch; 
-
-  if (score < 0) {
-    console.error("Point négatif impossible");
-    return;
-  }
-  
-
-  console.log(score);
 
   const point = {
     point: combien
@@ -130,6 +123,9 @@ const AjoutPoint = async (numEquipe, combien) => {
     console.error("Erreur API:", errorText);
     throw new Error("Erreur lors de l'ajout de point.");
   }
+
+  await loadMatch();
+  await loadPlayers();
 }
 
 const operationMatch = async (operation) => {
@@ -142,6 +138,9 @@ const operationMatch = async (operation) => {
     console.error("Erreur API:", errorText);
     throw new Error(`Erreur lors du ${operation} du match.`);
   }
+
+  await loadMatch();
+  await loadPlayers();
 } 
 
 
@@ -158,7 +157,7 @@ onMounted(async () => {
     <!-- HEADER : Infos du match -->
     <section class="haut" v-if="match">
 
-      <p v-if="!(etatMatch=='FINISHED' || etatMatch=='WAITING')" id="dureeMatch">00:00:00</p>
+      <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{duree}}</p>
 
       <h1>
         Championnat régional
