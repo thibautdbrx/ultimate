@@ -80,7 +80,7 @@ onMounted(async () => {
 })
 
 function getCompetitionName(MatchInfo) { //je capte pas pourquoi on recupere pas l'id ais le match ici
-  const comp = compData.find(c => c.idCompetition === MatchInfo.idCompetition)
+  const comp = compData.find(c => c.idCompetition === MatchInfo)
   return comp ? comp.nomCompetition : ''
 }
 

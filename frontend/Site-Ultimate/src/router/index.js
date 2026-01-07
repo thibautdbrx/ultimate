@@ -13,6 +13,8 @@ import AjoutCompetition from "@/views/AjoutCompetition.vue";
 import Deconnexion from '@/views/Deconnexion.vue'
 import Matchs from '@/views/Matchs.vue'
 import Contact from  '../views/Contact.vue'
+import page_introuvable from  '../views/404.vue'
+import Fausse_pub from '../views/fausse_pub.vue'
 
 
 
@@ -31,7 +33,9 @@ const routes = [
     { path: '/AjouterCompetition', component: AjoutCompetition },
     { path: '/Matchs', component: Matchs },
     {path : '/Contact', component: Contact },
+    {path : '/fausse_pub', component: Fausse_pub },
 
+    { path: '/:pathMatch(.*)*', component: page_introuvable }
 
 ]
 
