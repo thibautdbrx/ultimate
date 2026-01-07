@@ -87,7 +87,7 @@ public class MatchService {
         match.setDateDebut(LocalDateTime.now());
         match.setStatus(Match.Status.ONGOING);
         match.setDureePauseTotale(Duration.ZERO);
-        lancerScheduler(match, Duration.ofMinutes(5));
+        lancerScheduler(match, Duration.ofMinutes(110));
         return save(match);
     }
 
@@ -113,7 +113,7 @@ public class MatchService {
         match.setStatus(Match.Status.ONGOING);
 
         Duration dureeJouee = Duration.between(match.getDateDebut(), LocalDateTime.now()).minus(match.getDureePauseTotale());
-        Duration remaining = Duration.ofMinutes(5).minus(dureeJouee);
+        Duration remaining = Duration.ofMinutes(110).minus(dureeJouee);
 
         if (remaining.isNegative() || remaining.isZero()) {
             finirMatchSafe(match);
