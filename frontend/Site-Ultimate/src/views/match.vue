@@ -79,6 +79,13 @@ const calculDuree = computed(() => {
   return formatDuree(duree);
 });
 
+function calculTemps(dateAction) {
+  const date = Date.parse(dateAction);
+  const dateDebut = Date.parse(match.value.dateDebut);
+
+  return formatDuree(date - dateDebut)
+}
+
 function formatDuree(ms) {
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
@@ -127,7 +134,7 @@ const loadActions = async () => {
 
   try {
     const [res1] = await Promise.all([
-      fetch(`/api/action-match/${matchId}`)
+      fetch(`/api/action-match/match/${matchId}`)
     ]);
 
     if (!res1.ok)
@@ -285,7 +292,11 @@ onUnmounted(() => {
            
               <p v-if="loadingActions">Chargement…</p>
 
-              
+              <div v-for="i in actions">
+               <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
+                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+              </p>
+              </div>
             
             </div>
           
@@ -303,6 +314,12 @@ onUnmounted(() => {
           <div class="actions">
            
             <p v-if="loadingActions">Chargement…</p>
+
+            <div v-for="i in actions">
+               <p v-if="(i.joueur.equipe.idEquipe == match.equipe2.idEquipe) && i.type == 'POINT'">
+                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+              </p>
+              </div>
             
           </div>
           
@@ -343,6 +360,10 @@ onUnmounted(() => {
               :photo="j.photoJoueur"
               background="#ffdddd"
           />
+
+          <div class="fautes gauche" v-for="action in actions">
+          <p v-if="action.type=='FAUTE' && action.joueur.idJoueur == j.idJoueur" class="faute"></p>
+          </div>
         
         </div>
       
@@ -382,6 +403,11 @@ onUnmounted(() => {
             :photo="j.photoJoueur"
             background="#ffdddd"
         />
+
+        <div class="fautes droite" v-for="action in actions">
+          <p v-if="action.type=='FAUTE' && action.joueur.idJoueur == j.idJoueur" class="faute"></p> 
+        </div>
+        
         
         </div>
 
@@ -523,6 +549,8 @@ color: gray}
   margin-bottom: 30px;
   display: flex;
   flex-direction: column;
+
+  position: relative;
 }
 
 .subtitle {
@@ -578,5 +606,32 @@ color: gray}
   font-weight: 600;
   margin-top: 1rem;
 }
+
+
+.fautes {
+  position: absolute;
+}
+
+.droite {
+  left: -2rem;
+}
+
+.gauche {
+  right: -2rem;
+}
+
+.faute {
+  background-color: red;
+  width: 1.2rem;
+  height: 1.7rem;
+
+  border-radius: 15%;
+
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+
 
 </style>
