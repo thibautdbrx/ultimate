@@ -51,28 +51,23 @@ onMounted(async () => {
     // Compétitions
     const compRes = await fetch(`/api/competition`)
     compData = await compRes.json()
-    console.log(compData)
-
     stats.value.competitions = compData.length
 
 
 
-    //ajouter les match fini uniquement.
-
-    const matchsRes = await fetch(`/api/match`)
+    // récupérer les matchs
+    const matchsRes = await fetch('/api/match')
     const matchsData = await matchsRes.json()
-    const matchs = matchsData.sort((a, b) => {
-          if (a.dateDebut && b.dateDebut) {
-            return new Date(b.dateDebut) - new Date(a.dateDebut); // les plus récents en premier
-          } else if (a.dateDebut) {
-            return -1; // a a une date, b non => a avant b
-          } else if (b.dateDebut) {
-            return 1;  // b a une date, a non => b avant a
-          } else {
-            return 0;  // aucun des deux n'a de date => pas de changement
-          }
-        })
+    const isMatchJoue = (match) => { //le filtre
+      return match.status === "FINISHED"
+    }
+    const matchs = matchsData
+        .filter(isMatchJoue) //la on applique le  filtre
+        .sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut)) // récents en premier
+
+// garder les 5 derniers
     derniersMatchs.value = matchs.slice(0, 5)
+
 
   } catch (err) {
     errorMsg.value = "Impossible de récupérer les matchs."
