@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
+import weather_card from  "@/components/weather_card.vue";
 
 import { useAuthStore } from "@/stores/auth";
 
@@ -25,6 +26,47 @@ const error = ref(null);
 
 const auth = useAuthStore();
 
+//------------------------
+// 0) LA METEO
+//-------------------------
+const WEATHER_ERROR_FALLBACK = {
+  current: {
+    weather_code: -1,
+    temperature_2m: null,
+    wind_speed_10m: null
+  },
+  current_units: {
+    temperature_2m: "°C",
+    wind_speed_10m: "km/h"
+  }
+};
+
+const weather = ref(null); // --- METEO : Stockage des infos météo
+
+
+// --- METEO : Fonction de récupération ---
+const loadWeather = async (lat, lon) => {
+  if (lat === null || lat === undefined || lon === null || lon === undefined) {
+    console.warn("Coordonnées manquantes, pas de météo.");
+    return;
+  }
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Erreur météo");
+    weather.value = await res.json();
+    //console.log("Météo reçue :", weather.value);
+
+  } catch (e) {
+    console.error("Impossible de charger la météo", e);
+    weather.value = WEATHER_ERROR_FALLBACK;
+  }
+};
+
+
+
+
 // ----------------------
 // 1) Charger infos du match
 // ----------------------
@@ -34,8 +76,10 @@ const loadMatch = async () => {
     if (!res.ok) throw new Error("Erreur API match : " + res.status);
 
     match.value = await res.json();
-    console.log(match.value);
-    etatMatch = match.value.status;
+    etatMatch.value = match.value.status;
+
+    loadWeather(48.8534, 2.3488);
+    //loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
 
   } catch (err) {
     error.value = err.message;
@@ -226,6 +270,18 @@ onMounted(async () => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <h3>Informations du Match</h3>
+        <div v-if="weather">
+          <weather_card
+              :code="weather.current.weather_code"
+              :temp="weather.current.temperature_2m"
+              :temp_unit="weather.current_units.temperature_2m"
+              :wind="weather.current.wind_speed_10m"
+              :wind_unit="weather.current_units.wind_speed_10m"
+          />
+        </div>
+        <div v-if="match && match.terrain && match.terrain.latitude" class="weather-loading">
+          Chargement météo...
+        </div>
         <p v-if="auth.isAdmin || auth.isArbitre" ></p>
 
         <div id="actionsMatch">
@@ -234,7 +290,7 @@ onMounted(async () => {
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction">Pause le match</button>
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction">Resume le match</button>
         </div>
-    
+
       </div>
 
       <!-- COLONNE DROITE -->
@@ -424,4 +480,12 @@ color: gray}
   margin-top: 1rem;
 }
 
+
+.weather-loading {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #999;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
 </style>
