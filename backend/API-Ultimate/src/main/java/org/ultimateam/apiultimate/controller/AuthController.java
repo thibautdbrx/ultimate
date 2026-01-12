@@ -18,8 +18,10 @@ import org.ultimateam.apiultimate.DTO.AuthResponse;
 import org.ultimateam.apiultimate.DTO.LoginRequest;
 import org.ultimateam.apiultimate.DTO.RegisterRequest;
 
+import org.ultimateam.apiultimate.model.Joueur;
 import org.ultimateam.apiultimate.model.User;
 import org.ultimateam.apiultimate.repository.UserRepository;
+import org.ultimateam.apiultimate.service.JoueurService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,6 +34,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final JoueurService joueurService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) { // permet d'évité qu'une personne envoie un json avec comme role admin
@@ -47,8 +50,15 @@ public class AuthController {
         newUser.setRole(User.Role.ROLE_VISITEUR); // Permet de forcer le role par defaut pour pas q'un pirate s'inscrit en admin
 
         userRepository.save(newUser);
-
-        String token = jwtUtils.generateToken(newUser.getEmail(), newUser.getRole()); // crée le token pour l'utilisateur
+        Joueur joueur = new Joueur();
+        joueurService.addJoueur(joueur);
+        String token = jwtUtils.generateToken(
+                newUser.getEmail(),
+                newUser.getRole(),
+                joueur.getIdJoueur()
+        ); // crée le token pour l'utilisateur
+        newUser.setJoueur(joueur);
+        userRepository.save(newUser);
         return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // 200 ok avec le token
     }
 
@@ -60,7 +70,14 @@ public class AuthController {
             ); // permet de verifier s'il existe sinon ca fait une authentication exception
 
             User authenticatedUser = (User) authentication.getPrincipal();
-            String token = jwtUtils.generateToken(request.email(), authenticatedUser.getRole()); // génère le token
+            Long joueurId = null;
+            // On met joueurId seulement pour les joueurs, null pour les admins
+            if (authenticatedUser.getRole() == User.Role.ROLE_VISITEUR || authenticatedUser.getRole() == User.Role.ROLE_ARBITRE) {
+                if (authenticatedUser.getJoueur() != null) {
+                    joueurId = authenticatedUser.getJoueur().getIdJoueur();
+                }
+            }
+            String token = jwtUtils.generateToken(request.email(), authenticatedUser.getRole(), joueurId); // génère le token
 
             return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // renvoie le token de meme
 

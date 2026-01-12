@@ -26,8 +26,9 @@ public class JwtUtils {
     @Value("${app.expiration-time}")
     private long expirationTime;
 
-    public String generateToken(String username, User.Role role) {
+    public String generateToken(String username, User.Role role, Long joueurId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("joueurId", joueurId); // ajoute l'id du joueur au token
         return createToken(claims, username, role);
     }
 
@@ -40,6 +41,10 @@ public class JwtUtils {
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime)) // d'expiration
                 .signWith(getSignKey(), SignatureAlgorithm.HS256) //signe avec la cle
                 .compact(); // renvoie le token
+    }
+
+    public Long extractJoueurId(String token) {
+        return extractClaim(token, claims -> Long.valueOf(claims.get("joueurId").toString()));
     }
 
     private Key getSignKey() {
