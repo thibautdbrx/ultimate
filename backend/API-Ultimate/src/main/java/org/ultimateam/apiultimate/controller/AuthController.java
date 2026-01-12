@@ -51,6 +51,9 @@ public class AuthController {
 
         userRepository.save(newUser);
         Joueur joueur = new Joueur();
+        joueur.setPrenomJoueur(request.prenom());
+        joueur.setNomJoueur(request.nom());
+        joueur.setGenre(request.genre());
         joueurService.addJoueur(joueur);
         String token = jwtUtils.generateToken(
                 newUser.getEmail(),

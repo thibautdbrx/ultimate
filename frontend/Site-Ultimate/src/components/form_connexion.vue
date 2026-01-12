@@ -38,7 +38,7 @@ const submitForm = async () => {
 
       auth.loadToken();
       //await router.push("/")
-      await router.back();
+      await router.push('/');
     }
 
   } catch (error) {
