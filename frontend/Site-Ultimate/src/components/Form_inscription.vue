@@ -1,19 +1,45 @@
 <script setup>
 import {ref} from 'vue'
-import ConnexionBoutton from './ConnexionBoutton.vue'
 import Champs_input from "@/components/champs_input.vue";
 import CadenaIcon from "@/assets/icons/cadena.svg"
 import EmailIcon from "@/assets/icons/email.svg"
 import AvatarIcon from "@/assets/icons/avatar.svg"
 import InscriptionBoutton from "@/components/InscriptionBoutton.vue";
+import axios from "axios";
 
 const email = ref('')
 const password = ref('')
 const nom = ref('')
 const prenom = ref('')
+const errorMessage = ref(null)
 
-const submitForminscription = () => {
-  alert(`mettre l'api ici d'inscription `)
+
+const submitForminscription = async() => {
+  errorMessage.value = null // Réinitialise l'erreur au début du clic
+
+  try{
+  const response = await axios.post('api/auth/register',
+      {
+        email: email.value,
+        password: password.value
+      })
+  if (response.status === 200) {
+    console.log("inscription reussi, veuillez vous connectez")
+  }
+  } catch (error) {
+    console.error("Erreur d'inscription:", error);
+
+    password.value = ''; // On efface le mot de passe en cas d'erreur
+
+    // Gestion des erreurs
+    if (error.response && error.response.status === 400) {
+      errorMessage.value = "Cet email est déjà utilisé..";
+    } else if (error.code === "ERR_NETWORK") {
+      errorMessage.value = "Impossible de contacter le serveur. Vérifiez qu'il est lancé.";
+    } else {
+      errorMessage.value = "Une erreur inattendue est survenue.";
+    }
+  }
 }
 </script>
 
@@ -51,7 +77,9 @@ const submitForminscription = () => {
         v-model="password"
         :icon="CadenaIcon"
     />
-
+    <p v-if="errorMessage" class="error-text">
+      {{ errorMessage }}
+    </p>
     <InscriptionBoutton texte="S'inscrire" direction="form"/>
 
     <p class="demo-text">
