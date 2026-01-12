@@ -24,7 +24,6 @@ const submitForm = async () => {
   try {
     const response = await axios.post('api/auth/login',
         {
-          // CORRECTION : La clé est 'email' et la valeur vient de la variable email
           email: email.value,
           password: password.value
         },
