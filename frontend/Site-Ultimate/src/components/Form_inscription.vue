@@ -3,12 +3,12 @@
 import {useRouter} from "vue-router";
 
 import {ref} from 'vue'
-import ConnexionBoutton from './ConnexionBoutton.vue'
 import Champs_input from "@/components/champs_input.vue";
 import CadenaIcon from "@/assets/icons/cadena.svg"
 import EmailIcon from "@/assets/icons/email.svg"
 import AvatarIcon from "@/assets/icons/avatar.svg"
 import InscriptionBoutton from "@/components/InscriptionBoutton.vue";
+import axios from "axios";
 
 const email = ref('')
 const password = ref('')
@@ -95,7 +95,9 @@ const submitForminscription = async () => {
         v-model="password"
         :icon="CadenaIcon"
     />
-
+    <p v-if="errorMessage" class="error-text">
+      {{ errorMessage }}
+    </p>
     <InscriptionBoutton texte="S'inscrire" direction="form"/>
 
     <p class="demo-text">
