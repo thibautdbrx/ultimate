@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,14 +13,17 @@ import java.util.Objects;
 @Setter
 public class JoueurRequestId implements Serializable {
 
-    private Long joueur;
-    private Long equipe;
+    @Column(name = "joueur")
+    private Long idJoueur;
+
+    @Column(name = "equipe")
+    private Long idEquipe;
 
     public JoueurRequestId() {}
 
-    public JoueurRequestId(Long joueur, Long equipe) {
-        this.joueur = joueur;
-        this.equipe = equipe;
+    public JoueurRequestId(Long idJoueur, Long idEquipe) {
+        this.idJoueur = idJoueur;
+        this.idEquipe = idEquipe;
     }
 
     @Override
@@ -27,12 +31,12 @@ public class JoueurRequestId implements Serializable {
         if (this == o) return true;
         if (!(o instanceof JoueurRequestId)) return false;
         JoueurRequestId that = (JoueurRequestId) o;
-        return Objects.equals(joueur, that.joueur)
-                && Objects.equals(equipe, that.equipe);
+        return Objects.equals(idJoueur, that.idJoueur)
+                && Objects.equals(idEquipe, that.idEquipe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(joueur, equipe);
+        return Objects.hash(idJoueur, idEquipe);
     }
 }

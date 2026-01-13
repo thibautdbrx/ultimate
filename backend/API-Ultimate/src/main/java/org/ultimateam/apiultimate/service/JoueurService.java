@@ -123,8 +123,7 @@ public class JoueurService {
                 .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée"));
 
         JoueurRequest request = new JoueurRequest(joueur, equipe);
-        JoueurRequestId id = new JoueurRequestId(idJoueur, idEquipe);
-        request.setId(id);
+        request.setId(request.getId());
 
         return joueurRequestRepository.save(request);
     }
@@ -137,7 +136,7 @@ public class JoueurService {
                         "Demande inexistante"
                 ));
         joueurRequestRepository.deleteById(id);
-        return assignerEquipe(joueurRequest.getId().getJoueur(), joueurRequest.getId().getEquipe());
+        return assignerEquipe(joueurRequest.getId().getIdJoueur(), joueurRequest.getId().getIdEquipe());
     }
 
     public void refuseDemande(long idJoueur, long idEquipe) {
@@ -197,5 +196,7 @@ public class JoueurService {
     }
 
     public List<Joueur> getGenre(GenreJoueur genre) { return joueurRepository.findAllByGenre(genre);}
+
+    public List<JoueurRequest> getAllRequests() { return joueurRequestRepository.findAll();}
 
 }

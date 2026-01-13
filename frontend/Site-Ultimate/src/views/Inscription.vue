@@ -10,9 +10,9 @@ const auth = useAuthStore();
 <template>
   <div class="signup_page">
     <div class="signup-container">
-      <h3>Inscription Administrateur</h3>
+      <h3>Inscription Joueur</h3>
       <p id="text_info">
-        Créez un compte pour gérer les équipes, compétitions et matchs
+        Créez un compte pour intégrer une équipe
       </p>
 
       <Form_inscription />

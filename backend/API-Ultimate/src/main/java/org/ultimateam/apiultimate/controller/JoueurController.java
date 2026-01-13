@@ -105,6 +105,9 @@ public class JoueurController {
     @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/refuse")
     public void refuseDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {joueurService.refuseDemande(idJoueur, idEquipe);}
 
+    @GetMapping("/requests")
+    public List<JoueurRequest> getRequests() {return joueurService.getAllRequests();}
+
     @Operation(
             summary = "Mettre à jour l'image d'un joueur",
             description = "Met à jour l'image ou l'avatar associé à un joueur."
