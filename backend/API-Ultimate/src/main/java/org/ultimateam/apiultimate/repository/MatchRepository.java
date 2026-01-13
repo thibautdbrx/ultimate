@@ -15,5 +15,4 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByIdCompetition_IdCompetitionOrderByDateMatchAsc(long competitionId);
     List<Match> findByDateMatchAfterAndDateDebutIsNull(LocalDateTime dateMatchBefore);
     List<Match> findByDateFinIsNotNull();
-
 }

@@ -47,6 +47,8 @@ public abstract class Competition {
             joinColumns = @JoinColumn(name = "id_competition"),
             inverseJoinColumns = @JoinColumn(name = "id_terrain")
     )
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Terrain> terrains = new ArrayList<>();
 
     /**

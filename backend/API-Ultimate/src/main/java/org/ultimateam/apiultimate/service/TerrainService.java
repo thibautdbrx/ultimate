@@ -23,7 +23,7 @@ public class TerrainService {
     }
 
     public Terrain saveTerrain(Terrain terrain) {
-        if (terrain.getVille() != null && (terrain.getLatitude() == null || terrain.getLongitude() == null)) {
+        if (terrain.getVille() != null && (terrain.getLatitude() == null || terrain.getLongitude() == null || terrain.getLatitude() == 0 || terrain.getLongitude() == 0)) {
             completerCoordonnees(terrain);
         }
         else if (terrain.getLatitude() != null && terrain.getLongitude() != null && terrain.getVille() == null) {

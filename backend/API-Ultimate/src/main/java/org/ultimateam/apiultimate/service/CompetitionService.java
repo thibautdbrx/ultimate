@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -66,7 +67,10 @@ public class CompetitionService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
 
-        List<Terrain> terrains = competition.getTerrains();
+        List<Terrain> terrains = competition.getTerrains()
+                .stream()
+                .map(t -> terrainService.getById(t.getId_terrain()))
+                .toList();
         if (terrains.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Impossible de générer la compétition : aucun terrain trouvé");
         }
@@ -97,8 +101,12 @@ public class CompetitionService {
         }
         List<Match> matchs = scheduleResult.getMatchs();
         for (Match match : matchs) {
+            if (match.getTerrain() == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ALERTE : Le match entre " + match.getEquipe1().getIdEquipe() + " et " + match.getEquipe2().getIdEquipe() + " n'a pas de terrain !");
+            }
             match.setIdCompetition(competition);
         }
+
         List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
 
         matchRepository.saveAll(matchs);

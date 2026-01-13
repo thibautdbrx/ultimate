@@ -31,7 +31,7 @@ public class RoundRobinSchedulerServiceTest {
         terrainsDeTest = new ArrayList<>();
         for (long i = 1; i <= 5; i++) {
             Terrain t = new Terrain();
-            t.setId(i);
+            t.setId_terrain(i);
             t.setNom("Terrain " + i);
             terrainsDeTest.add(t);
         }
@@ -74,7 +74,7 @@ public class RoundRobinSchedulerServiceTest {
 
             // VÉRIFICATION CORRIGÉE (On vérifie l'ID de l'objet Terrain)
             assertNotNull(m.getTerrain(), "Le terrain ne doit pas être nul");
-            long terrainId = m.getTerrain().getId();
+            long terrainId = m.getTerrain().getId_terrain();
             assertTrue(terrainId >= 1 && terrainId <= 5,
                     "ID du terrain invalide (doit être entre 1 et 5)");
         }
