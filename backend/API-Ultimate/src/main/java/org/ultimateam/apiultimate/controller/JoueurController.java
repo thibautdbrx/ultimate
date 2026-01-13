@@ -2,13 +2,16 @@ package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
 import org.ultimateam.apiultimate.DTO.Genre;
 import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
+import org.ultimateam.apiultimate.configuration.JwtUtils;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.model.JoueurRequest;
 import org.ultimateam.apiultimate.service.JoueurService;
 
 import java.util.List;
@@ -24,9 +27,11 @@ import java.util.List;
 public class JoueurController {
 
     private final JoueurService joueurService;
+    private final JwtUtils jwtUtils;
 
-    public JoueurController(JoueurService joueurService) {
+    public JoueurController(JoueurService joueurService, JwtUtils jwtUtils) {
         this.joueurService = joueurService;
+        this.jwtUtils = jwtUtils;
     }
 
     @Operation(
@@ -79,7 +84,29 @@ public class JoueurController {
             description = "Assigne un joueur existant à une équipe existante. Une erreur est renvoyée si le joueur ou l'équipe n'existe pas."
     )
     @PatchMapping("/{idJoueur}/equipe/{idEquipe}")
-    public Joueur assignerEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
+    public Joueur assignerEquipe(@PathVariable long idJoueur, @PathVariable long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
+
+    @PostMapping("/request/{idJoueur}/equipe/{idEquipe}")
+    public ResponseEntity<JoueurRequest> requestJoueur(
+            @PathVariable long idJoueur,
+            @PathVariable long idEquipe,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Long joueurIdToken = jwtUtils.extractJoueurId(token);
+
+        JoueurRequest request = joueurService.demandeJoueur(idJoueur, idEquipe, joueurIdToken);
+        return ResponseEntity.ok(request);
+    }
+
+    @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/accept")
+    public Joueur accepterDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {return joueurService.accepterDemande(idJoueur, idEquipe); }
+
+    @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/refuse")
+    public void refuseDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {joueurService.refuseDemande(idJoueur, idEquipe);}
+
+    @GetMapping("/requests")
+    public List<JoueurRequest> getRequests() {return joueurService.getAllRequests();}
 
     @Operation(
             summary = "Mettre à jour l'image d'un joueur",

@@ -34,6 +34,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @OneToOne(cascade = CascadeType.ALL, optional = true)
+    @JoinColumn(name = "joueur_id", referencedColumnName = "idJoueur")
+    private Joueur joueur;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // pour mettre des roles : ex: new SimpleGrantedAuthority(role.name())

@@ -1,6 +1,8 @@
 package org.ultimateam.apiultimate.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
@@ -8,7 +10,11 @@ import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.model.JoueurRequest;
+import org.ultimateam.apiultimate.model.JoueurRequestId;
+import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
+import org.ultimateam.apiultimate.repository.JoueurRequestRepository;
 
 import java.util.List;
 
@@ -17,6 +23,8 @@ public class JoueurService {
 
     public final JoueurRepository joueurRepository;
     public final EquipeService equipeService;
+    public final JoueurRequestRepository joueurRequestRepository;
+    private final EquipeRepository equipeRepository;
 
     /**
      * Constructeur pour l'injection des dépendances JoueurRepository et EquipeService.
@@ -24,9 +32,11 @@ public class JoueurService {
      * @param joueurRepository Le repository pour l'accès aux données des joueurs.
      * @param equipeService Le service pour la gestion des équipes.
      */
-    public JoueurService(JoueurRepository joueurRepository, EquipeService equipeService) {
+    public JoueurService(JoueurRepository joueurRepository, EquipeService equipeService, JoueurRequestRepository joueurRequestRepository, EquipeRepository equipeRepository) {
         this.joueurRepository = joueurRepository;
         this.equipeService = equipeService;
+        this.joueurRequestRepository = joueurRequestRepository;
+        this.equipeRepository = equipeRepository;
     }
 
     /**
@@ -98,6 +108,47 @@ public class JoueurService {
         return joueur;
     }
 
+
+    public JoueurRequest demandeJoueur(long idJoueur, long idEquipe, long idJoueurDuToken) {
+        // Vérification que le joueur n'agit que pour lui-même
+        if (idJoueur != idJoueurDuToken) {
+            throw new AccessDeniedException("Vous ne pouvez créer une demande que pour votre propre joueur");
+        }
+
+        // Ensuite exécuter la logique normale
+        Joueur joueur = joueurRepository.findById(idJoueur)
+                .orElseThrow(() -> new EntityNotFoundException("Joueur non trouvé"));
+
+        Equipe equipe = equipeRepository.findById(idEquipe)
+                .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée"));
+
+        JoueurRequest request = new JoueurRequest(joueur, equipe);
+        request.setId(request.getId());
+
+        return joueurRequestRepository.save(request);
+    }
+
+    public Joueur accepterDemande(long idJoueur, long idEquipe) {
+        JoueurRequestId id = new JoueurRequestId(idJoueur, idEquipe);
+        JoueurRequest joueurRequest = joueurRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Demande inexistante"
+                ));
+        joueurRequestRepository.deleteById(id);
+        return assignerEquipe(joueurRequest.getId().getIdJoueur(), joueurRequest.getId().getIdEquipe());
+    }
+
+    public void refuseDemande(long idJoueur, long idEquipe) {
+        JoueurRequestId id = new JoueurRequestId(idJoueur, idEquipe);
+        JoueurRequest joueurRequest = joueurRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Demande inexistante"
+                ));
+        joueurRequestRepository.deleteById(id);
+    }
+
     public List<Joueur> getJoueurSolo(GenreJoueur genre) {
         if(genre == null){
             return joueurRepository.findAllByEquipe_IdEquipeIsNull();
@@ -145,5 +196,7 @@ public class JoueurService {
     }
 
     public List<Joueur> getGenre(GenreJoueur genre) { return joueurRepository.findAllByGenre(genre);}
+
+    public List<JoueurRequest> getAllRequests() { return joueurRequestRepository.findAll();}
 
 }

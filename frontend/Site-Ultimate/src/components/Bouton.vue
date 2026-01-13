@@ -10,7 +10,7 @@ defineProps({
 </script>
 
 <template>
-  <RouterLink v-if="!auth.isAuthenticated" to="/Connexion" class="btn">{{ label }}</RouterLink>
+  <RouterLink v-if="!auth.isAuthenticated" class="btn">{{ label }}</RouterLink>
   <RouterLink v-else to="/Deconnexion" class="btn">{{ label }}</RouterLink>
 </template>
 
