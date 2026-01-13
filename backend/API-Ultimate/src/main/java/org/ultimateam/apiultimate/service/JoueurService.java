@@ -100,6 +100,9 @@ public class JoueurService {
     public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
         Equipe equipe =equipeService.getById(id_equipe);
+        if (equipe.getJoueurs().contains(joueur)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Le joueur fait déjà parti de l'équipe");
+        }
         equipe.addJoueur(joueur);
         joueur.setEquipe(equipe);
         equipeService.updateGenre(equipe);

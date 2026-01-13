@@ -14,6 +14,7 @@ import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EquipeService {
@@ -138,5 +139,12 @@ public class EquipeService {
     public List<Equipe> getEquipeGenre(Genre genre) {
         updateAllGenre(findAll());
         return equipeRepository.findAllByGenre(genre);
+    }
+
+    public List<Equipe> getNotFull(){
+        List<Equipe> all = equipeRepository.findAll();
+        return all.stream()
+                .filter(e -> !e.isFull())
+                .collect(Collectors.toList());
     }
 }
