@@ -195,7 +195,10 @@ public class JoueurService {
         joueurRequestRepository.deleteById(id);
     }
 
-    public List<Joueur> getJoueurSolo(long idEquipe) {
+    public List<Joueur> getJoueurSolo(Long idEquipe) {
+        if (idEquipe == null) {
+            return joueurRepository.findAllByEquipe_IdEquipeIsNull();
+        }
         List<Joueur> joueurs = joueurRepository.findAllByEquipe_IdEquipe(idEquipe);
         Equipe equipe = equipeRepository.findById(idEquipe).orElse(null);
         if (equipe == null)
