@@ -58,24 +58,76 @@ const selectExisting = (equipe) => {
 }
 
 const valider_ajout_competition = async () => {
-  if (!nomCompetition.value.trim() || !typeCompetition.value) {
-    alert("Le nom et le type de compétition sont obligatoires.");
+  // --- 1) VALIDATIONS DES CHAMPS OBLIGATOIRES ---
+  if (!nomCompetition.value.trim()) {
+    alert("Le nom de la compétition est obligatoire.");
+    return;
+  }
+  if (!typeCompetition.value) {
+    alert("Veuillez choisir le type de compétition (Tournoi ou Championnat).");
+    return;
+  }
+  if (!categorie.value) {
+    alert("Veuillez sélectionner une catégorie.");
+    return;
+  }
+  if (!format.value) {
+    alert("Veuillez sélectionner un format de jeu.");
+    return;
+  }
+  if (categorie.value === 'MIXTE' && !mixite.value) {
+    alert("Pour une compétition MIXTE, veuillez préciser la répartition imposée.");
+    return;
+  }
+  const debut = new Date(dateDebut?.value);
+  const fin = new Date(dateFin?.value);
+  // --- 2) VALIDATION DES DATES ---
+  if (!debut || !fin) {
+    alert("Les dates de début et de fin sont obligatoires.");
     return;
   }
 
-  const equipesSelectionnees = equipes.value.slice(0, nombreEquipe.value).filter(e => e.idEquipe !== null);
 
+
+  if (fin < debut) {
+    alert("La date de fin ne peut pas être antérieure à la date de début.");
+    return;
+  }
+
+  // --- 3) VALIDATION DES ÉQUIPES ---
+  const equipesSelectionnees = equipes.value.slice(0, nombreEquipe.value);
+
+  // On ne valide que s'il y a des slots d'équipes affichés (nombreEquipe > 0)
+  if (nombreEquipe.value > 0) {
+    for (let i = 0; i < equipesSelectionnees.length; i++) {
+      const e = equipesSelectionnees[i];
+      if (!e.idEquipe) {
+        alert(`L'équipe n°${i + 1} n'a pas été sélectionnée.`);
+        return;
+      }
+
+      // Vérification des doublons
+      for (let k = 0; k < equipesSelectionnees.length; k++) {
+        if (k !== i && equipesSelectionnees[k].idEquipe === e.idEquipe) {
+          alert(`L'équipe "${e.nomEquipe}" est sélectionnée plusieurs fois.`);
+          return;
+        }
+      }
+    }
+  }
+
+  // --- 4) ENVOI DES DONNÉES ---
   try {
     const genreFinal = categorie.value === 'MIXTE' ? mixite.value : categorie.value;
-    const formatTexte = format.value === '5v5' ? 'CINQ' : 'SEPT';
+    const formatTexte = format.value === '5v5' ? 'V5' : 'V7';
 
     const payload = {
-      nomCompetition: nomCompetition.value,
-      descriptionCompetition: descriptionCompetition.value,
       genre: genreFinal,
-      nbJoueur: formatTexte,
-      dateDebut: dateDebut.value || null,
-      dateFin: dateFin.value || null
+      format: formatTexte,
+      dateDebut: dateDebut.value,
+      dateFin: dateFin.value,
+      nomCompetition: nomCompetition.value,
+      descriptionCompetition: descriptionCompetition.value
     };
 
     const endpoint = typeCompetition.value === "TOURNOI"
@@ -96,9 +148,11 @@ const valider_ajout_competition = async () => {
     const competitionCree = await res.json();
     const idComp = competitionCree.idCompetition;
 
-    if (equipesSelectionnees.length > 0) {
+    // Ajout des participations
+    const equipesRemplies = equipesSelectionnees.filter(e => e.idEquipe !== null);
+    if (equipesRemplies.length > 0) {
       await Promise.all(
-          equipesSelectionnees.map(e =>
+          equipesRemplies.map(e =>
               fetch(`/api/participation/equipe/${e.idEquipe}/competition/${idComp}`, {
                 method: "POST"
               })
