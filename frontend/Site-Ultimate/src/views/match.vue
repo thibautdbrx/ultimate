@@ -1,11 +1,12 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
 
 import { useAuthStore } from "@/stores/auth";
+const auth = useAuthStore();
 
 // --- Récupération de l'id du match ---
 const route = useRoute();
@@ -14,16 +15,20 @@ const matchId = Number(route.params.id);
 // State
 const loadingMatch = ref(true);
 const loadingPlayers = ref(true);
+const loadingActions = ref(true);
 
 const match = ref(null);
 const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
+const actions = ref([]);
 
 let etatMatch = ref("WAITING")
 
 const error = ref(null);
 
-const auth = useAuthStore();
+
+
+let duree = ref(null);
 
 // ----------------------
 // 1) Charger infos du match
@@ -42,7 +47,56 @@ const loadMatch = async () => {
   } finally {
     loadingMatch.value = false;
   }
+
+
 };
+
+const calculDuree = computed(() => {
+  const dateDebut = match.value.dateDebut;
+  if (!dateDebut) return 0;
+
+  let dureePause;
+  dureePause = match.value.dureePause;
+  if (!dureePause) {
+    dureePause = 0;
+  }
+
+  duree = 0;
+
+  if (etatMatch == "ONGOING") {
+    duree = maintenant.value - Date.parse(dateDebut) - dureePause;
+  }
+  else if (etatMatch == "FINISHED") {
+    const dateFin = match.value.dateFin;
+    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut);
+  }
+  else if (etatMatch == "PAUSED") {
+    const datePause = match.value.datePause;
+    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut);
+  }
+  
+
+
+  return formatDuree(duree);
+});
+
+function calculTemps(dateAction) {
+  const date = Date.parse(dateAction);
+  const dateDebut = Date.parse(match.value.dateDebut);
+
+  return formatDuree(date - dateDebut)
+}
+
+function formatDuree(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+
+  const format = (n) => String(n).padStart(2, '0');
+
+  return `${format(h)}:${format(m)}:${format(s)}`;
+}
+
 
 // ----------------------
 // 2) Charger les joueurs
@@ -69,6 +123,31 @@ const loadPlayers = async () => {
     error.value = err.message;
   } finally {
     loadingPlayers.value = false;
+  }
+};
+
+// ----------------------
+// 3) Charger les actions
+// ----------------------
+
+const loadActions = async () => {
+  if (!match.value) return;
+
+  try {
+    const [res1] = await Promise.all([
+      fetch(`/api/action-match/match/${matchId}`)
+    ]);
+
+    if (!res1.ok)
+      throw new Error("Erreur API joueurs");
+
+    actions.value = await res1.json();
+
+  
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    loadingActions.value = false;
   }
 };
 
@@ -100,21 +179,13 @@ const couleurEquipe2 = computed(() => {
   return "or";
 });
 
-const AjoutPoint = async (numEquipe, combien) => {
+const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
-  let score;
   const matchId = match.value.idMatch; 
 
-  if (score < 0) {
-    console.error("Point négatif impossible");
-    return;
-  }
-  
-
-  console.log(score);
-
   const point = {
-    point: combien
+    point: combien,
+    idJoueur:idJoueur
   }
 
   const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
@@ -130,6 +201,35 @@ const AjoutPoint = async (numEquipe, combien) => {
     console.error("Erreur API:", errorText);
     throw new Error("Erreur lors de l'ajout de point.");
   }
+
+  await loadMatch();
+  await loadPlayers();
+  await loadActions();
+  console.log("aaa");
+}
+
+  const AjoutFaute = async (numEquipe, idJoueur) => {
+
+  const matchId = match.value.idMatch; 
+
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, { 
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({idJoueur : idJoueur})
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Erreur API:", errorText);
+    throw new Error("Erreur lors de l'ajout de point.");
+  }
+
+  await loadMatch();
+  await loadPlayers();
+  await loadActions();
+  console.log("aaa");
 }
 
 const operationMatch = async (operation) => {
@@ -142,14 +242,35 @@ const operationMatch = async (operation) => {
     console.error("Erreur API:", errorText);
     throw new Error(`Erreur lors du ${operation} du match.`);
   }
+
+  await loadMatch();
+  await loadPlayers();
+  await loadActions();
+  console.log("aaa");
 } 
 
 
 // ----------------------
+const maintenant = ref(Date.now());
+let interval = null;
+
+
 onMounted(async () => {
   await loadMatch();
   await loadPlayers();
+  await loadActions();
+  console.log("aaa");
+
+  interval = setInterval(() => {
+    maintenant.value = Date.now();
+  }, 1000);
 });
+
+onUnmounted(() => {
+  clearInterval(interval);
+});
+
+
 </script>
 
 <template>
@@ -158,7 +279,7 @@ onMounted(async () => {
     <!-- HEADER : Infos du match -->
     <section class="haut" v-if="match">
 
-      <p v-if="!(etatMatch=='FINISHED' || etatMatch=='WAITING')" id="dureeMatch">00:00:00</p>
+      <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{ calculDuree }}</p>
 
       <h1>
         Championnat régional
@@ -169,10 +290,20 @@ onMounted(async () => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1)" class="boutonScore boutonPlus">+</button>
-            <p class="points">{{ match.scoreEquipe1 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
+            <p class="points">{{ match.scoreEquipe1 }}</p> 
           </div>
+
+            <div class="actions">
+           
+              <p v-if="loadingActions">Chargement…</p>
+
+              <div v-for="i in actions">
+               <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
+                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+              </p>
+              </div>
+            
+            </div>
           
         </div>
 
@@ -181,10 +312,20 @@ onMounted(async () => {
         <div class="score">
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
-          <div class="affichagePoint">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1)" class="boutonScore boutonPlus">+</button>
-            <p class="points">{{ match.scoreEquipe2 }}</p>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,-1)" class="boutonScore boutonMoins">-</button>
+          <div class="affichagePoint">      
+            <p class="points">{{ match.scoreEquipe2 }}</p>       
+          </div>
+
+          <div class="actions">
+           
+            <p v-if="loadingActions">Chargement…</p>
+
+            <div v-for="i in actions">
+               <p v-if="(i.joueur.equipe.idEquipe == match.equipe2.idEquipe) && i.type == 'POINT'">
+                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+              </p>
+              </div>
+            
           </div>
           
         </div>
@@ -209,18 +350,30 @@ onMounted(async () => {
         <h3 class="subtitle">{{ match.equipe1.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
+        
+        <div class="joueurDiv" v-for="j in joueursEquipe1">
 
-        <SliderVertical v-if="!loadingPlayers" :speed=0.2>
+          <div class="boutons">
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
+          </div>
           <Card_joueur
-              v-for="j in joueursEquipe1"
+              
               :key="j.idJoueur"
               :nom="j.nomJoueur + ' ' + j.prenomJoueur"
               :genre="j.genre"
               :photo="j.photoJoueur"
               background="#ffdddd"
           />
-        </SliderVertical>
 
+        <div class="fautes gauche">
+          <template v-for="action in actions" :key="action.id">
+            <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
+          </template>
+        </div>
+        
+        </div>
+      
       </div>
 
       <!-- COLONNE MILIEU -->
@@ -242,17 +395,33 @@ onMounted(async () => {
         <h3 class="subtitle">{{ match.equipe2.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
+        
+        <div class="joueurDiv" v-for="j in joueursEquipe2">
 
-        <SliderVertical v-if="!loadingPlayers" :speed=0.2>
-          <Card_joueur
-              v-for="j in joueursEquipe2"
-              :key="j.idJoueur"
-              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
-              :genre="j.genre"
-              :photo="j.photoJoueur"
-              background="#dde8ff"
-          />
-        </SliderVertical>
+        <div class="boutons">
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
+        </div>
+        <Card_joueur
+            
+            :key="j.idJoueur"
+            :nom="j.nomJoueur + ' ' + j.prenomJoueur"
+            :genre="j.genre"
+            :photo="j.photoJoueur"
+            background="#ffdddd"
+        />
+
+        <div class="fautes droite">
+          <template v-for="action in actions" :key="action.id">
+            <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
+          </template>
+        </div>
+        
+        
+        </div>
+
+      
+     
       </div>
 
     </div>
@@ -274,14 +443,15 @@ onMounted(async () => {
 .score-box {
   display: flex;
   justify-content: center;
-  align-items: center;
+ 
   gap: 5rem;
   margin: 2rem 0;
 }
 
 .score {
   text-align: center;
-  width: 260px;   /* fixe pour centré le vs */
+  width: 260px;  
+  margin-top: 0;
 }
 
 
@@ -319,15 +489,23 @@ color: gray}
   justify-content: center;
   gap: 1.2rem;
   margin-top: 0.5rem;
+  flex-direction: column;
+}
+
+.boutons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-bottom: 0.5rem;
 }
 
 .boutonScore {
-  border-radius: 50%;
+  border-radius: 10%;
   border: none;
-  height: 3rem;
-  width: 3rem;
+  height: 1.4rem;
+  width: 30%;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   cursor: pointer;
   color: white;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -345,6 +523,8 @@ color: gray}
   transform: scale(1.15);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
+
+
 
 
 .date {
@@ -368,6 +548,18 @@ color: gray}
 /* COLONNES EQUIPES */
 .col {
   width: 26%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.col .joueurDiv {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
 }
 
 .subtitle {
@@ -423,5 +615,32 @@ color: gray}
   font-weight: 600;
   margin-top: 1rem;
 }
+
+
+.fautes {
+  position: absolute;
+}
+
+.droite {
+  left: -2rem;
+}
+
+.gauche {
+  right: -2rem;
+}
+
+.faute {
+  background-color: red;
+  width: 1.2rem;
+  height: 1.7rem;
+
+  border-radius: 15%;
+
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+
 
 </style>
