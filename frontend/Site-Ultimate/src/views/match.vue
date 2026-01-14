@@ -6,6 +6,7 @@ import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
 
 import { useAuthStore } from "@/stores/auth";
+const auth = useAuthStore();
 
 // --- Récupération de l'id du match ---
 const route = useRoute();
@@ -25,7 +26,7 @@ let etatMatch = ref("WAITING")
 
 const error = ref(null);
 
-const auth = useAuthStore();
+
 
 let duree = ref(null);
 
@@ -204,6 +205,7 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
+  console.log("aaa");
 }
 
   const AjoutFaute = async (numEquipe, idJoueur) => {
@@ -227,6 +229,7 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
+  console.log("aaa");
 }
 
 const operationMatch = async (operation) => {
@@ -243,6 +246,7 @@ const operationMatch = async (operation) => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
+  console.log("aaa");
 } 
 
 
@@ -255,6 +259,7 @@ onMounted(async () => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
+  console.log("aaa");
 
   interval = setInterval(() => {
     maintenant.value = Date.now();
@@ -361,9 +366,11 @@ onUnmounted(() => {
               background="#ffdddd"
           />
 
-          <div class="fautes gauche" v-for="action in actions">
-          <p v-if="action.type=='FAUTE' && action.joueur.idJoueur == j.idJoueur" class="faute"></p>
-          </div>
+        <div class="fautes gauche">
+          <template v-for="action in actions" :key="action.id">
+            <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
+          </template>
+        </div>
         
         </div>
       
@@ -404,8 +411,10 @@ onUnmounted(() => {
             background="#ffdddd"
         />
 
-        <div class="fautes droite" v-for="action in actions">
-          <p v-if="action.type=='FAUTE' && action.joueur.idJoueur == j.idJoueur" class="faute"></p> 
+        <div class="fautes droite">
+          <template v-for="action in actions" :key="action.id">
+            <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
+          </template>
         </div>
         
         

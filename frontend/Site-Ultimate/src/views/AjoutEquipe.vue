@@ -13,6 +13,8 @@ const descriptionEquipe = ref("")
 const nombreJoueurs = ref(1)
 
 const auth = useAuthStore();
+const router = useRouter();
+
 
 if (!auth.isAdmin) {
   router.push("/");
@@ -66,8 +68,6 @@ const selectExisting = (joueur) => {
   modalShow_1.value = false
 
 }
-
-const router = useRouter()
 
 const genre = ref("")
 
