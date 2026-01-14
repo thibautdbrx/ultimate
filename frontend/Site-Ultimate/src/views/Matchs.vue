@@ -2,12 +2,14 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import CarteMatch from '@/components/card_match.vue'
+import {useAuthStore} from "@/stores/auth.js";
 
 const router = useRouter()
 const route = useRoute()
 const matchs = ref([])
 const loading = ref(false)
 const error = ref(null)
+const auth = useAuthStore();
 
 const filtre = ref(route.query.filtre || 'all')
 
@@ -15,7 +17,8 @@ const endpoints = {
   all: '/api/match',
   started: '/api/match/started',
   notstarted: '/api/match/notstarted',
-  finished: '/api/match/finished'
+  finished: '/api/match/finished',
+  joueur: '/api/match/equipe/:'
 }
 
 function goToMatch(id) {

@@ -40,6 +40,7 @@ export const useAuthStore = defineStore("auth", {
 
             this.email = payload.sub;
             this.role = payload.role;
+
         },
 
         logout() {
