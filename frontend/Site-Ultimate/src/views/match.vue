@@ -15,7 +15,7 @@ import end from "@/assets/img/matchIcon/end.png";
 import pause from "@/assets/img/matchIcon/pause.png";
 import resume from "@/assets/img/matchIcon/resume.png";
 
-import curseur from "@/assets/img/curseur.png"
+import curseur from "@/assets/img/curseur.cur"
 
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
@@ -652,7 +652,7 @@ color: gray}
   transform: translateY(-1px);
   /* On utilise v-bind pour injecter l'URL de l'image importée */
   /* Note : 'auto' est obligatoire en secours */
-  cursor: v-bind("`url(${curseur}), auto`");
+  cursor: url("@/assets/img/curseur.cur"), pointer;
 }
 
 .boutonAction img {
