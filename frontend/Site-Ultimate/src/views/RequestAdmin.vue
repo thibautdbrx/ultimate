@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
+const router = useRouter()
 const requests = ref([])
 const loading = ref(true)
 const error = ref(null)
@@ -24,6 +26,10 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+if (!auth.isAdmin) {
+  router.push("/");
+}
 
 async function accepter(idJoueur, idEquipe) {
   await fetch(`/api/joueur/request/${idJoueur}/equipe/${idEquipe}/accept`, {

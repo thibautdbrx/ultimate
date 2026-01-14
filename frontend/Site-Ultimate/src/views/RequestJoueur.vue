@@ -99,7 +99,7 @@ function goToEquipe(id, nom) {
           class="equipe-card-container"
       >
         <CarteEquipe :equipe="equipe" :image="ImageFond" />
-        <button class="postuler-btn" @click="postuler(equipe.idEquipe)">Postuler</button>
+        <button v-if="auth.isVisiteur || auth.isAdmin || auth.isArbitre" class="postuler-btn" @click="postuler(equipe.idEquipe)">Postuler</button>
       </div>
     </div>
   </main>
