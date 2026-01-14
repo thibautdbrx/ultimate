@@ -16,7 +16,6 @@ const handleFileChange = (event) => {
   
   if (file) {
     props.joueur.photoJoueur = file;
-    
     const reader = new FileReader();
     reader.onload = (e) => {
       previewSrc.value = e.target.result;

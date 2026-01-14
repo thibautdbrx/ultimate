@@ -357,6 +357,7 @@ const ajouterIndispo = async () => {
         <SelectJoueur
           :show="modalShow_1"
           :genre="genre"
+          :id_equipe = "equipeId"
           @close="modalShow_1 = false"
           @select="selectExisting"
       />

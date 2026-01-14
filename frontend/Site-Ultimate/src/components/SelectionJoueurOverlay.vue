@@ -1,10 +1,11 @@
 <script setup>
 import { ref, watch, onMounted, computed} from "vue"
-import CardJoueur from "@/components/card_joueur.vue"
+import CardJoueur from "@/components/card_joueur.vue";
 
 const props = defineProps({
   show: Boolean,
   genre: String,
+  id_equipe: {type: String,  required: false, default: "None"},
 })
 
 const emit = defineEmits(["close", "select", "nvj"])
@@ -14,10 +15,12 @@ const joueurs = ref([])
 
 async function loadJoueurs() {
   let res
-  if (props.genre === "MIXTE")
-    res = await fetch("/api/joueur/solo")
+  if (props.id_equipe === "None")
+    res = await fetch("/api/joueur/solo/")
   else
-    res = await fetch(`/api/joueur/solo?genre=${props.genre}`)
+    res = await fetch(`/api/joueur/solo/?idEquipe=${props.id_equipe}`)
+
+  console.log(res)
   joueurs.value = await res.json()
 }
 
