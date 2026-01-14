@@ -413,7 +413,7 @@ onUnmounted(() => {
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
         </div>
-    
+
       </div>
 
       <!-- COLONNE DROITE -->
