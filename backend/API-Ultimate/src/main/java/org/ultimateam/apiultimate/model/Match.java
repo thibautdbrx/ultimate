@@ -49,12 +49,12 @@ public class Match {
     private LocalDateTime dateFin;
     private LocalDateTime dateMatch;
     private long terrain = 0;
-    @JsonIgnore
+
     private LocalDateTime datePause = null;
 
     @JsonIgnore
     private Duration dureeTotale = Duration.ZERO;
-    @JsonIgnore
+
     private Duration dureePauseTotale = Duration.ZERO;
 
     @Enumerated(EnumType.STRING)
