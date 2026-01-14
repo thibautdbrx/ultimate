@@ -20,4 +20,5 @@ public interface EquipeRepository extends JpaRepository<Equipe, Long> {
         SUM(CASE WHEN j.genre = 'FEMME' THEN 1 ELSE 0 END) >= :nbFemmes
 """)
     List<Equipe> findEquipesAvecHommesEtFemmes(int nbHommes, int nbFemmes);
+
 }

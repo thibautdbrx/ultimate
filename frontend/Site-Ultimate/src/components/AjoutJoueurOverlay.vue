@@ -16,7 +16,7 @@ const joueur = ref({
   idJoueur: null,
   nomJoueur: "",
   prenomJoueur: "",
-  genre: "",
+  genre: "HOMME", // Valeur par défaut cohérente avec le select
   photoJoueur: null,
   clickable: true
 })

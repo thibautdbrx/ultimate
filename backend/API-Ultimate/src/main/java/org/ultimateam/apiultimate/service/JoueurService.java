@@ -6,6 +6,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
+import org.ultimateam.apiultimate.DTO.Genre;
 import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.model.Equipe;
@@ -100,9 +101,51 @@ public class JoueurService {
     public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
         Equipe equipe =equipeService.getById(id_equipe);
+        if (equipe.getJoueurs().contains(joueur)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Le joueur fait déjà parti de l'équipe");
+        }
+        else if (equipe.isFull())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Equipe complete");
+        else if (equipe.getGenre() == Genre.H2F3){
+            if (joueur.getGenre() == GenreJoueur.HOMME && getNbHommes(equipe) >=2 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+            }
+            else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=3 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+            }
+        }
+        else if (equipe.getGenre() == Genre.H3F2){
+            if (joueur.getGenre() == GenreJoueur.HOMME && getNbHommes(equipe) >=3 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+            }
+            else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=2 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+            }
+        }
+        else if (equipe.getGenre() == Genre.H4F3){
+            if (getNbHommes(equipe) >=4 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+            }
+            else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=3 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+            }
+        }
+        else if (equipe.getGenre() == Genre.H3F4){
+            if (joueur.getGenre() == GenreJoueur.HOMME && getNbHommes(equipe) >=3 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+            }
+            else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=4 ){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+            }
+        }
+        else if (equipe.getGenre() == Genre.FEMME){
+            if (joueur.getGenre() == GenreJoueur.HOMME){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Equipe ne peut pas contenir d'hommes");
+            }
+        }
         equipe.addJoueur(joueur);
         joueur.setEquipe(equipe);
-        equipeService.updateGenre(equipe);
+        //equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
         return joueur;
@@ -122,6 +165,9 @@ public class JoueurService {
         Equipe equipe = equipeRepository.findById(idEquipe)
                 .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée"));
 
+        if (joueur.getEquipe() != null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Impossible de rejoindre plusieurs équipes");
+        }
         JoueurRequest request = new JoueurRequest(joueur, equipe);
         request.setId(request.getId());
 
@@ -149,11 +195,77 @@ public class JoueurService {
         joueurRequestRepository.deleteById(id);
     }
 
-    public List<Joueur> getJoueurSolo(GenreJoueur genre) {
+    public List<Joueur> getJoueurSolo(Long idEquipe) {
+        if (idEquipe == null) {
+            return joueurRepository.findAllByEquipe_IdEquipeIsNull();
+        }
+        List<Joueur> joueurs = joueurRepository.findAllByEquipe_IdEquipe(idEquipe);
+        Equipe equipe = equipeRepository.findById(idEquipe).orElse(null);
+        if (equipe == null)
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Equipe introuvable");
+        else if (equipe.isFull())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Equipe complete");
+        else if (equipe.getGenre() == Genre.FEMME)
+            return joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME);
+
+        else if (equipe.getGenre() == Genre.H2F3){
+            if (getNbHommes(equipe) <2 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.HOMME));
+            }
+            else if (getNbFemmes(equipe) <3 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME));
+            }
+        }
+        else if (equipe.getGenre() == Genre.H3F2){
+            if (getNbHommes(equipe) <3 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.HOMME));
+            }
+            else if (getNbFemmes(equipe) <2 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME));
+            }
+        }
+        else if (equipe.getGenre() == Genre.H4F3){
+            if (getNbHommes(equipe) <4 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.HOMME));
+            }
+            else if (getNbFemmes(equipe) <3 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME));
+            }
+        }
+        else if (equipe.getGenre() == Genre.H3F4){
+            if (getNbHommes(equipe) <3 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.HOMME));
+            }
+            else if (getNbFemmes(equipe) <4 ){
+                joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME));
+            }
+        }
+        /**
         if(genre == null){
             return joueurRepository.findAllByEquipe_IdEquipeIsNull();
         }
         return joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(genre);
+         */
+        return joueurs;
+    }
+
+    private long getNbHommes(Equipe equipe){
+        long nb = 0;
+        for (Joueur joueur : equipe.getJoueurs()) {
+            if (joueur.getGenre() == GenreJoueur.HOMME) {
+                nb++;
+            }
+        }
+        return nb;
+    }
+    private long getNbFemmes(Equipe equipe){
+        long nb = 0;
+        for (Joueur joueur : equipe.getJoueurs()) {
+            if (joueur.getGenre() == GenreJoueur.FEMME) {
+                nb++;
+            }
+        }
+        return nb;
     }
 
     /**
@@ -170,7 +282,7 @@ public class JoueurService {
         Equipe equipe = equipeService.getById(id_equipe);
         equipe.removeJoueur(joueur);
         joueur.setEquipe(null);
-        equipeService.updateGenre(equipe);
+        //equipeService.updateGenre(equipe);
         joueurRepository.save(joueur);
         equipeService.save(equipe);
 

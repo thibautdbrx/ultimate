@@ -24,10 +24,8 @@ import java.util.List;
 public class EquipeController {
 
     private final EquipeService equipeService;
-    private final EquipeRepository equipeRepository;
 
-    public EquipeController(EquipeService equipeService, EquipeRepository equipeRepository) { this.equipeService = equipeService;
-        this.equipeRepository = equipeRepository;
+    public EquipeController(EquipeService equipeService) { this.equipeService = equipeService;
     }
 
     @Operation(
@@ -86,22 +84,14 @@ public class EquipeController {
     public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) { return equipeService.editName(equipedto, idEquipe); }
 
     @Operation(
-            summary = "Mettre à jour le genre de toutes les équipes",
-            description = "Met à jour automatiquement le genre de toutes les équipes existantes selon les règles définies dans le service."
-    )
-    @PatchMapping("/updategenre")
-    public void updateGenre(){
-        equipeService.updateAllGenre(equipeService.findAll());
-    }
-
-    @Operation(
             summary = "Supprimer une équipe",
             description = "Supprime l'équipe correspondant à l'identifiant fourni. Une erreur est renvoyée si l'équipe n'existe pas."
     )
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }
 
-    @GetMapping("/test/{nbHomme}/{nbFemme}")
-    public List<Equipe> test(@PathVariable int nbHomme, @PathVariable int nbFemme){return equipeRepository.findEquipesAvecHommesEtFemmes(nbHomme,nbFemme);}
+
+    @GetMapping("/open")
+    public List<Equipe> openEquipe() {return equipeService.getNotFull();}
 
 }

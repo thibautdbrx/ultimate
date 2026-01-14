@@ -66,6 +66,15 @@ public class MatchService {
     //public List<Match> getNotStarted() { return matchRepository.findByDateDebutIsNull(); }
     public List<Match> getFinished() { return matchRepository.findByDateFinIsNotNull(); }
 
+    public List<Match> getMatchesByEquipe(long idJoueur) {
+        Joueur joueur = joueurRepository.findById(idJoueur).orElse(null);
+        if (joueur == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
+        if (joueur.getEquipe() == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'a pas d'équipe");
+        return matchRepository.findMatchesByEquipe(joueur.getEquipe().getIdEquipe());
+    }
+
+
     // --------------------- MATCH CREATION ---------------------
     public Match creerMatch(MatchDTO matchDTO) {
         Equipe e1 = equipeService.getById(matchDTO.getIdEquipes().get(0));
