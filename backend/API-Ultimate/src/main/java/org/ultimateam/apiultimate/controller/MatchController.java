@@ -59,6 +59,9 @@ public class MatchController {
     @GetMapping("/finished")
     public List<Match> getMatchFinished() {return matchService.getFinished();}
 
+    @GetMapping("/joueur/{idJoueur}")
+    public List<Match> getMatchsEquipe(@PathVariable long idJoueur) {return matchService.getMatchesByEquipe(idJoueur);}
+
     @Operation(
             summary = "Créer un nouveau match",
             description = "Crée un nouveau match à partir des informations fournies dans le corps de la requête (équipes, terrain, date, etc.)."

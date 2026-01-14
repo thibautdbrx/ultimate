@@ -125,6 +125,9 @@ public class JoueurService {
         Equipe equipe = equipeRepository.findById(idEquipe)
                 .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée"));
 
+        if (joueur.getEquipe() != null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Impossible de rejoindre plusieurs équipes");
+        }
         JoueurRequest request = new JoueurRequest(joueur, equipe);
         request.setId(request.getId());
 
