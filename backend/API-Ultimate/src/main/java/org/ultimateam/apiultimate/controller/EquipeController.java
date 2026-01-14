@@ -104,4 +104,7 @@ public class EquipeController {
     @GetMapping("/test/{nbHomme}/{nbFemme}")
     public List<Equipe> test(@PathVariable int nbHomme, @PathVariable int nbFemme){return equipeRepository.findEquipesAvecHommesEtFemmes(nbHomme,nbFemme);}
 
+    @GetMapping("/open")
+    public List<Equipe> openEquipe() {return equipeService.getNotFull();}
+
 }
