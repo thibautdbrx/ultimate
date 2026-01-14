@@ -49,6 +49,9 @@ public class CompetitionService {
     }
 
     public Competition saveCompetition(Competition Competition) {
+        if (Competition.getDateDebut() == null || Competition.getDateFin() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veuillez renseigner les dates");
+        }
         return competitionRepository.save(Competition);
     }
 

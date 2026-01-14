@@ -315,7 +315,6 @@ const competitionDejaCommencee = computed(() => {
 
           </div>
 
-
           <div class="teams-grid">
             <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
 
