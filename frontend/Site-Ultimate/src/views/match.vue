@@ -11,8 +11,11 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 
 import start from "@/assets/img/matchIcon/start.png";
+import end from "@/assets/img/matchIcon/end.png";
 import pause from "@/assets/img/matchIcon/pause.png";
 import resume from "@/assets/img/matchIcon/resume.png";
+
+import curseur from "@/assets/img/curseur.png"
 
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
@@ -405,10 +408,10 @@ onUnmounted(() => {
         <p v-if="auth.isAdmin || auth.isArbitre" ></p>
 
         <div id="actionsMatch">
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING' || true" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING' || true" @click="operationMatch('end')" class="boutonAction actionEnd">□</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING' || true" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED' || true" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction actionEnd"><img :src="end" alt="Terminer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
         </div>
     
       </div>
@@ -632,12 +635,11 @@ color: gray}
   border: none;
   background: #f4f4f4;
   font-weight: 600;
-  cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
 
   border-radius: 50%;
-  width: 5em;
-  height: 5em;
+  width: 2.5em;
+  height: 2.5em;
 
   font-size: 2em;
 
@@ -648,11 +650,14 @@ color: gray}
 
 .boutonAction:hover {
   transform: translateY(-1px);
+  /* On utilise v-bind pour injecter l'URL de l'image importée */
+  /* Note : 'auto' est obligatoire en secours */
+  cursor: v-bind("`url(${curseur}), auto`");
 }
 
 .boutonAction img {
-  max-width: 2em;
-  max-height: 2em;
+  max-width: 1em;
+  max-height: 1em;
 }
 
 .actionStart, .actionResume {
@@ -660,7 +665,11 @@ color: gray}
 }
 
 .actionStart:hover, .actionResume:hover {
-  background-color: #1e7c45;
+  background-color: #29ad60;
+}
+
+.actionPause:hover {
+  background-color: #eaeaea;
 }
 
 .actionEnd {
