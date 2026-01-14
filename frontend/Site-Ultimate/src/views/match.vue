@@ -5,6 +5,15 @@ import { useRoute } from "vue-router";
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
 
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
+
+import start from "@/assets/img/matchIcon/start.png";
+import pause from "@/assets/img/matchIcon/pause.png";
+import resume from "@/assets/img/matchIcon/resume.png";
+
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
 
@@ -22,13 +31,11 @@ const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
 const actions = ref([]);
 
-let etatMatch = ref("WAITING")
+let etatMatch = ref("WAITING");
+let duree = ref(null);
 
 const error = ref(null);
 
-
-
-let duree = ref(null);
 
 // ----------------------
 // 1) Charger infos du match
@@ -51,35 +58,52 @@ const loadMatch = async () => {
 
 };
 
+// Calcul la durée du match en prenant en compte l'état et les pauses
 const calculDuree = computed(() => {
   const dateDebut = match.value.dateDebut;
   if (!dateDebut) return 0;
 
-  let dureePause;
-  dureePause = match.value.dureePause;
-  if (!dureePause) {
-    dureePause = 0;
+  let pause = match.value.dureePauseTotale; // Récupération d'un objet Duration à convertir en un temps en ms
+
+  if (!pause) {
+    pause = 0;
+  } else if (pause.substr(0,2) == "PT") {
+    pause = dayjs.duration(pause).asMilliseconds(); // Conversion en ms
+  } else {
+    pause = 0;
   }
 
   duree = 0;
 
   if (etatMatch == "ONGOING") {
-    duree = maintenant.value - Date.parse(dateDebut) - dureePause;
+    duree = maintenant.value - Date.parse(dateDebut) - pause;
   }
   else if (etatMatch == "FINISHED") {
     const dateFin = match.value.dateFin;
-    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut);
+    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut) - pause;
   }
   else if (etatMatch == "PAUSED") {
     const datePause = match.value.datePause;
-    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut);
+    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut) - pause;
   }
   
-
-
   return formatDuree(duree);
 });
 
+// Calcul la durée de la pause quand le match est en pause
+const calculDureePause = computed(() => {
+  const debut = match.value.datePause;
+
+  if (!debut) {
+    return 0;
+  }
+
+  let dureePause = maintenant.value - Date.parse(debut);
+
+  return formatDuree(dureePause)
+});
+
+// Passage d'une date à un temps pour une action
 function calculTemps(dateAction) {
   const date = Date.parse(dateAction);
   const dateDebut = Date.parse(match.value.dateDebut);
@@ -87,6 +111,7 @@ function calculTemps(dateAction) {
   return formatDuree(date - dateDebut)
 }
 
+// Convertie un temps en ms en un temps sous format heures:minutes:secondes
 function formatDuree(ms) {
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
@@ -102,12 +127,12 @@ function formatDuree(ms) {
 // 2) Charger les joueurs
 // ----------------------
 const loadPlayers = async () => {
-  if (!match.value) return;
+  if (!match.value || !match.value.equipe1 || !match.value.equipe2) return;
 
   try {
     const [res1, res2] = await Promise.all([
-      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`),
-      fetch(`/api/joueur/equipe/${match.value.equipe2.idEquipe}`)
+      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`), // Récupère l'équipe 1 
+      fetch(`/api/joueur/equipe/${match.value.equipe2.idEquipe}`) // Récupère l'équipe 2
     ]);
 
     if (!res1.ok || !res2.ok)
@@ -116,8 +141,6 @@ const loadPlayers = async () => {
     joueursEquipe1.value = await res1.json();
     joueursEquipe2.value = await res2.json();
 
-  
-   
 
   } catch (err) {
     error.value = err.message;
@@ -152,21 +175,23 @@ const loadActions = async () => {
 };
 
 // ----------------------
-// LOGIQUE COULEURS
+// LOGIQUE COULEURS (Pour déterminer la couleur d'affichage des noms des équipes)
 // ----------------------
 
+// Couleur de l'équipe 1
 const couleurEquipe1 = computed(() => {
   if (!match.value) return "noir";
-  if (match.value.status !== "FINISHED") return "noir";
+  if (match.value.status !== "FINISHED") return "noir"; // noir tant que le match n'est pas terminé
 
   const s1 = match.value.scoreEquipe1;
   const s2 = match.value.scoreEquipe2;
 
-  if (s1 > s2) return "vert";
-  if (s1 < s2) return "rouge";
-  return "or";
+  if (s1 > s2) return "vert"; // vert si l'équipe a plus de points
+  if (s1 < s2) return "rouge"; // rouge si moins de points
+  return "or"; // or sinon (correspond à une égalité)
 });
 
+// Couleur de l'équipe 2 (même fonctionnement)
 const couleurEquipe2 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
@@ -179,6 +204,7 @@ const couleurEquipe2 = computed(() => {
   return "or";
 });
 
+// ajoute 1 point à l'équipe "numEquipe", marqué par le joueur "idJoueur"
 const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
   const matchId = match.value.idMatch; 
@@ -202,13 +228,12 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
     throw new Error("Erreur lors de l'ajout de point.");
   }
 
-  await loadMatch();
+  await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 }
-
-  const AjoutFaute = async (numEquipe, idJoueur) => {
+// ajout d'une faute pour le joueur idJoueur de l'équipe numEquipe
+const AjoutFaute = async (numEquipe, idJoueur) => {
 
   const matchId = match.value.idMatch; 
 
@@ -226,12 +251,12 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
     throw new Error("Erreur lors de l'ajout de point.");
   }
 
-  await loadMatch();
+  await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 }
 
+// appel d'une opération sur le match (Resume, Start, Pause ou End)
 const operationMatch = async (operation) => {
   const res = await fetch(`/api/match/${matchId}/${operation}`, {
     method: "PUT"
@@ -243,15 +268,14 @@ const operationMatch = async (operation) => {
     throw new Error(`Erreur lors du ${operation} du match.`);
   }
 
-  await loadMatch();
+  await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 } 
 
 
 // ----------------------
-const maintenant = ref(Date.now());
+const maintenant = ref(Date.now()); // Date actuelle pour le calcul du timer
 let interval = null;
 
 
@@ -259,15 +283,14 @@ onMounted(async () => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 
   interval = setInterval(() => {
-    maintenant.value = Date.now();
+    maintenant.value = Date.now(); // mise à jour de la variable chaque secondes. Ce qui appelera la fonction calculDuree et calculDureePause chaque secondes
   }, 1000);
 });
 
 onUnmounted(() => {
-  clearInterval(interval);
+  clearInterval(interval); // Supprime la mise à jour de la variable quand la page est fermée
 });
 
 
@@ -335,7 +358,7 @@ onUnmounted(() => {
         <p v-if="!(etatMatch == 'WAITING')">Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
         <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
         <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
-        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ calculDureePause }}</p>
       </div>
       <p class="status">Status : {{ match.status }}</p>
     </section>
@@ -382,10 +405,10 @@ onUnmounted(() => {
         <p v-if="auth.isAdmin || auth.isArbitre" ></p>
 
         <div id="actionsMatch">
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction">Commencer le match</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction">Terminer le match</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction">Pause le match</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction">Resume le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING' || true" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING' || true" @click="operationMatch('end')" class="boutonAction actionEnd">□</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING' || true" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED' || true" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
         </div>
     
       </div>
@@ -545,7 +568,9 @@ color: gray}
   align-items: flex-start;
 }
 
-/* COLONNES EQUIPES */
+  /* -----------------------*/
+ /* -- COLONNES EQUIPES -- */
+/* -----------------------*/
 .col {
   width: 26%;
 
@@ -586,9 +611,17 @@ color: gray}
 }
 
 
+
+
+
+  /* -------------------------------- */
+ /* -- Bouton action sur le match -- */
+/* -------------------------------- */
+
 #actionsMatch {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-around;
   gap: 0.8rem;
   margin-top: 1.5rem;
 }
@@ -601,12 +634,46 @@ color: gray}
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
+
+  border-radius: 50%;
+  width: 5em;
+  height: 5em;
+
+  font-size: 2em;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .boutonAction:hover {
-  background: #eaeaea;
   transform: translateY(-1px);
 }
+
+.boutonAction img {
+  max-width: 2em;
+  max-height: 2em;
+}
+
+.actionStart, .actionResume {
+  background-color: #2ecc71;
+}
+
+.actionStart:hover, .actionResume:hover {
+  background-color: #1e7c45;
+}
+
+.actionEnd {
+  background-color: #e74c3c;
+}
+
+.actionEnd:hover {
+  background-color: #b94134;
+}
+
+  /* -------------------- */
+ /* -- Texte d'erreur -- */
+/* -------------------- */
 
 
 .error {
@@ -616,6 +683,13 @@ color: gray}
   margin-top: 1rem;
 }
 
+
+
+
+
+  /* -------------------------------------- */
+ /* -- Affichage des fautes des joueurs -- */
+/* -------------------------------------- */
 
 .fautes {
   position: absolute;
@@ -630,7 +704,7 @@ color: gray}
 }
 
 .faute {
-  background-color: red;
+  background-color: #e74c3c;
   width: 1.2rem;
   height: 1.7rem;
 

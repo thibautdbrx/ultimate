@@ -6,7 +6,7 @@ const contacts = [
   { name: "Loup Gicquel", email: "e45497u@etu.univ-lorraine.fr", role:"Frontend"},
   { name: "Thibaut Debreux", email: "thibaut.debreux7@etu.univ-lorraine.fr", role:"Backend" },
   { name: "Florent Becker", email: "becker367u@etu.univ-lorraine.fr", role:"Backend" },
-  { name: "Caudron Corentin", email: "corentin.caudron1@etu.univ-lorraine.fr", role:"Backend" },
+  { name: "Corentin Caudron", email: "corentin.caudron1@etu.univ-lorraine.fr", role:"Backend" },
   { name: "Valentine Thirion", email: "valentine.thirion6@etu.univ-lorraine.fr", role:"Backend" },
   { name: "Simeon Joseph", email: "simeon.joseph-schenfeigel5@etu.univ-lorraine.fr", role:"Frontend" },
 ]
