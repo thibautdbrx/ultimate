@@ -79,15 +79,15 @@ const valider_ajout_competition = async () => {
     alert("Pour une compétition MIXTE, veuillez préciser la répartition imposée.");
     return;
   }
-  const debut = new Date(dateDebut?.value);
-  const fin = new Date(dateFin?.value);
+
   // --- 2) VALIDATION DES DATES ---
-  if (!debut || !fin) {
+  if (!dateDebut.value || !dateFin?.value || dateDebut.value === "" || dateFin.value === "") {
     alert("Les dates de début et de fin sont obligatoires.");
     return;
   }
 
-
+  const debut = new Date(dateDebut.value);
+  const fin = new Date(dateFin.value);
 
   if (fin < debut) {
     alert("La date de fin ne peut pas être antérieure à la date de début.");
@@ -119,7 +119,7 @@ const valider_ajout_competition = async () => {
   // --- 4) ENVOI DES DONNÉES ---
   try {
     const genreFinal = categorie.value === 'MIXTE' ? mixite.value : categorie.value;
-    const formatTexte = format.value === '5v5' ? 'V5' : 'V7';
+    const formatTexte = format.value === '5v5' ? 'V5' : 'v7';
 
     const payload = {
       genre: genreFinal,
