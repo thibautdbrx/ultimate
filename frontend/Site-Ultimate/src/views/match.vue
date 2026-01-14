@@ -5,6 +5,11 @@ import { useRoute } from "vue-router";
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
 
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
+
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
 
@@ -22,13 +27,11 @@ const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
 const actions = ref([]);
 
-let etatMatch = ref("WAITING")
+let etatMatch = ref("WAITING");
+let duree = ref(null);
 
 const error = ref(null);
 
-
-
-let duree = ref(null);
 
 // ----------------------
 // 1) Charger infos du match
@@ -55,29 +58,45 @@ const calculDuree = computed(() => {
   const dateDebut = match.value.dateDebut;
   if (!dateDebut) return 0;
 
-  let dureePause;
-  dureePause = match.value.dureePause;
-  if (!dureePause) {
-    dureePause = 0;
+  let pause = match.value.dureePauseTotale;
+
+  if (!pause) {
+    pause = 0;
+  } else if (pause.substr(0,2) == "PT") {
+    pause = dayjs.duration(pause).asMilliseconds();
+  } else {
+    pause = 0;
   }
 
   duree = 0;
 
   if (etatMatch == "ONGOING") {
-    duree = maintenant.value - Date.parse(dateDebut) - dureePause;
+    duree = maintenant.value - Date.parse(dateDebut) - pause;
   }
   else if (etatMatch == "FINISHED") {
     const dateFin = match.value.dateFin;
-    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut);
+    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut) - pause;
   }
   else if (etatMatch == "PAUSED") {
     const datePause = match.value.datePause;
-    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut);
+    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut) - pause;
   }
   
 
 
   return formatDuree(duree);
+});
+
+const calculDureePause = computed(() => {
+  const debut = match.value.datePause;
+
+  if (!debut) {
+    return 0;
+  }
+
+  let dureePause = maintenant.value - Date.parse(debut);
+
+  return formatDuree(dureePause)
 });
 
 function calculTemps(dateAction) {
@@ -205,7 +224,6 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 }
 
   const AjoutFaute = async (numEquipe, idJoueur) => {
@@ -229,7 +247,6 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 }
 
 const operationMatch = async (operation) => {
@@ -246,7 +263,6 @@ const operationMatch = async (operation) => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 } 
 
 
@@ -259,7 +275,6 @@ onMounted(async () => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 
   interval = setInterval(() => {
     maintenant.value = Date.now();
@@ -335,7 +350,7 @@ onUnmounted(() => {
         <p v-if="!(etatMatch == 'WAITING')">Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
         <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
         <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
-        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ calculDureePause }}</p>
       </div>
       <p class="status">Status : {{ match.status }}</p>
     </section>
