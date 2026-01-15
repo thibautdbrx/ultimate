@@ -92,7 +92,7 @@ const loadMatch = async () => {
     if (!res.ok) throw new Error("Erreur API match : " + res.status);
 
     match.value = await res.json();
-    etatMatch.value = match.value.status;
+    etatMatch = match.value.status;
 
     //loadWeather(match.value.terrain.latitude, 2.3488);
     loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
@@ -106,13 +106,7 @@ const loadMatch = async () => {
 
 };
 
-// Calcul la durée du match en prenant en compte l'état et les pauses
-const calculDuree = computed(() => {
-  const dateDebut = match.value.dateDebut;
-  if (!dateDebut) return 0;
-
-  let pause = match.value.dureePauseTotale; // Récupération d'un objet Duration à convertir en un temps en ms
-
+function ConversionPause(pause) {
   if (!pause) {
     pause = 0;
   } else if (pause.substr(0,2) == "PT") {
@@ -120,6 +114,16 @@ const calculDuree = computed(() => {
   } else {
     pause = 0;
   }
+
+  return pause;
+}
+
+// Calcul la durée du match en prenant en compte l'état et les pauses
+const calculDuree = computed(() => {
+  const dateDebut = match.value.dateDebut;
+  if (!dateDebut) return 0;
+
+  let pause = ConversionPause(match.value.dureePauseTotale); // Récupération d'un objet Duration à convertir en un temps en ms
 
   duree = 0;
 
@@ -152,11 +156,11 @@ const calculDureePause = computed(() => {
 });
 
 // Passage d'une date à un temps pour une action
-function calculTemps(dateAction) {
+function calculTempsAction(dateAction, tempsPause=0) {
   const date = Date.parse(dateAction);
   const dateDebut = Date.parse(match.value.dateDebut);
 
-  return formatDuree(date - dateDebut)
+  return formatDuree(date - dateDebut - tempsPause)
 }
 
 // Convertie un temps en ms en un temps sous format heures:minutes:secondes
@@ -335,6 +339,8 @@ onMounted(async () => {
   interval = setInterval(() => {
     maintenant.value = Date.now(); // mise à jour de la variable chaque secondes. Ce qui appelera la fonction calculDuree et calculDureePause chaque secondes
   }, 1000);
+
+  
 });
 
 onUnmounted(() => {
@@ -370,7 +376,7 @@ onUnmounted(() => {
 
               <div v-for="i in actions">
                <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
-                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
             
@@ -393,7 +399,7 @@ onUnmounted(() => {
 
             <div v-for="i in actions">
                <p v-if="(i.joueur.equipe.idEquipe == match.equipe2.idEquipe) && i.type == 'POINT'">
-                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
             
@@ -449,6 +455,13 @@ onUnmounted(() => {
 
       <!-- COLONNE MILIEU -->
       <div class="middle">
+        <div id="actionsMatch">
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction actionEnd"><img :src="end" alt="Terminer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
+        </div>
+
         <h3>Informations du Match</h3>
 
         <div class="Info">
@@ -471,16 +484,7 @@ onUnmounted(() => {
               :wind_unit="weather.current_units.wind_speed_10m"
           />
         </div>
-        <PUB/>
-
-        <p v-if="auth.isAdmin || auth.isArbitre" ></p>
-
-        <div id="actionsMatch">
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction actionEnd"><img :src="end" alt="Terminer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
-        </div>
+        <PUB id="pubMilieu"/>
 
       </div>
 
@@ -673,6 +677,10 @@ color: gray}
   padding: 1.5rem;
   border-left: 2px solid #f0f0f0;
   border-right: 2px solid #f0f0f0;
+}
+
+.middle #pubMilieu {
+  margin: auto;
 }
 
 .middle h3 {
