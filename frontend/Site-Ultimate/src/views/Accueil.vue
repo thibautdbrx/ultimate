@@ -123,7 +123,7 @@ function getCompetitionName(MatchInfo) { //je capte pas pourquoi on recupere pas
       <SliderCardHorizontal :autoScroll="true" :autoScrollDelay="500">
         <div v-for="match in derniersMatchs" :key="match.idMatch" class="match-card" >
           <CardMatch
-              :title="`${formatDate(match.dateMatch)} - ${getCompetitionName(match.idCompetition)}`"
+              :title="`${formatDate(match.dateDebut)} - ${getCompetitionName(match.idCompetition)}`"
               :match="match"
           />
         </div>
