@@ -19,6 +19,7 @@ import resume from "@/assets/img/matchIcon/resume.png";
 import curseur from "@/assets/img/curseur.cur"
 
 import { useAuthStore } from "@/stores/auth";
+import PUB from "@/components/PUB.vue";
 const auth = useAuthStore();
 
 // --- Récupération de l'id du match ---
@@ -93,8 +94,8 @@ const loadMatch = async () => {
     match.value = await res.json();
     etatMatch.value = match.value.status;
 
-    loadWeather(48.8534, 2.3488);
-    //loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
+    //loadWeather(match.value.terrain.latitude, 2.3488);
+    loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
 
   } catch (err) {
     error.value = err.message;
@@ -449,6 +450,18 @@ onUnmounted(() => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <h3>Informations du Match</h3>
+
+        <div class="Info">
+          <div class="Nom-Terrain">
+            <p>
+              {{ match.terrain.nom }}
+            </p>
+          </div>
+          <div class="map-terrain">
+            <p>afficher la localisation du terrain...</p>
+          </div>
+        </div>
+
         <div v-if="weather">
           <weather_card
               :code="weather.current.weather_code"
@@ -458,9 +471,8 @@ onUnmounted(() => {
               :wind_unit="weather.current_units.wind_speed_10m"
           />
         </div>
-        <div v-if="match && match.terrain && match.terrain.latitude" class="weather-loading">
-          Chargement météo...
-        </div>
+        <PUB/>
+
         <p v-if="auth.isAdmin || auth.isArbitre" ></p>
 
         <div id="actionsMatch">
@@ -779,6 +791,11 @@ color: gray}
   font-size: 1rem;
   font-weight: bold;
 }
+
+
+
+
+
 
 
 
