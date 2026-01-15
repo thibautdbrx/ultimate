@@ -7,7 +7,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.Genre;
+import org.ultimateam.apiultimate.DTO.NombreJoueurs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +41,16 @@ public class Equipe {
 
     private Genre genre = null;
 
+    @Enumerated(EnumType.STRING)
+    private NombreJoueurs nbJoueurs;
+
+    @Transient
+    @JsonIgnore
+    public boolean isFull() {
+        if (nbJoueurs == null) return false;
+        return joueurs.size() >= nbJoueurs.getValue();
+    }
+
     public Equipe(String nomEquipe) {
         this.nomEquipe = nomEquipe;
     }
@@ -48,6 +62,8 @@ public class Equipe {
      * @param joueur Le joueur à ajouter à cette équipe.
      */
     public void addJoueur(Joueur joueur) {
+        if (this.isFull())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"L'équipe est pleine");
         joueur.setEquipe(this);
     }
 

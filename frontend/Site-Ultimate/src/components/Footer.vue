@@ -9,7 +9,7 @@ import {RouterLink} from "vue-router";
     <div class="footer_top">
       <RouterLink to="/Contact" class="nav-link">Contact</RouterLink>
       <h3 class="footer_title">Ultimate Match Manager</h3>
-      <p id="signature_footer">©VAFLOURENTIB</p>
+      <p id="signature_footer">©VAFLOURENTIBEON</p>
     </div>
   </footer>
 </template>

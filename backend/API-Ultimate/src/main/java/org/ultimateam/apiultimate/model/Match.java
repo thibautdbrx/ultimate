@@ -56,12 +56,11 @@ public class Match {
     @Nullable
     private Terrain terrain;
 
-    @JsonIgnore
     private LocalDateTime datePause = null;
 
     @JsonIgnore
     private Duration dureeTotale = Duration.ZERO;
-    @JsonIgnore
+
     private Duration dureePauseTotale = Duration.ZERO;
 
     @Enumerated(EnumType.STRING)

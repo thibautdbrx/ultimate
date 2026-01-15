@@ -70,6 +70,15 @@ public class MatchService {
     //public List<Match> getNotStarted() { return matchRepository.findByDateDebutIsNull(); }
     public List<Match> getFinished() { return matchRepository.findByDateFinIsNotNull(); }
 
+    public List<Match> getMatchesByEquipe(long idJoueur) {
+        Joueur joueur = joueurRepository.findById(idJoueur).orElse(null);
+        if (joueur == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
+        if (joueur.getEquipe() == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'a pas d'équipe");
+        return matchRepository.findMatchesByEquipe(joueur.getEquipe().getIdEquipe());
+    }
+
+
     // --------------------- MATCH CREATION ---------------------
     public Match creerMatch(MatchDTO matchDTO) {
         Equipe e1 = equipeService.getById(matchDTO.getIdEquipes().get(0));
@@ -93,7 +102,7 @@ public class MatchService {
         match.setDateDebut(LocalDateTime.now());
         match.setStatus(Match.Status.ONGOING);
         match.setDureePauseTotale(Duration.ZERO);
-        lancerScheduler(match, Duration.ofMinutes(5));
+        lancerScheduler(match, Duration.ofMinutes(100));
         return save(match);
     }
 
@@ -119,7 +128,7 @@ public class MatchService {
         match.setStatus(Match.Status.ONGOING);
 
         Duration dureeJouee = Duration.between(match.getDateDebut(), LocalDateTime.now()).minus(match.getDureePauseTotale());
-        Duration remaining = Duration.ofMinutes(5).minus(dureeJouee);
+        Duration remaining = Duration.ofMinutes(100).minus(dureeJouee);
 
         if (remaining.isNegative() || remaining.isZero()) {
             finirMatchSafe(match);
@@ -139,8 +148,12 @@ public class MatchService {
 
 
         if (Objects.equals(equipe.getIdEquipe(), match.getEquipe1().getIdEquipe())) {
+            if (match.getScoreEquipe1() + dto.getPoint() <=0)
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible de mettre des points négatifs");
             match.setScoreEquipe1(match.getScoreEquipe1() + dto.getPoint());
         } else if (Objects.equals(equipe.getIdEquipe(), match.getEquipe2().getIdEquipe())) {
+            if (match.getScoreEquipe2() + dto.getPoint() <=0)
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible de mettre des points négatifs");
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
 

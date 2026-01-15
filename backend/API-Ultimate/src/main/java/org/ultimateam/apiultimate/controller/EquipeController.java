@@ -3,6 +3,7 @@ package org.ultimateam.apiultimate.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.websocket.server.PathParam;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.DTO.Genre;
@@ -83,19 +84,14 @@ public class EquipeController {
     public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) { return equipeService.editName(equipedto, idEquipe); }
 
     @Operation(
-            summary = "Mettre à jour le genre de toutes les équipes",
-            description = "Met à jour automatiquement le genre de toutes les équipes existantes selon les règles définies dans le service."
-    )
-    @PatchMapping("/updategenre")
-    public void updateGenre(){
-        equipeService.updateAllGenre(equipeService.findAll());
-    }
-
-    @Operation(
             summary = "Supprimer une équipe",
             description = "Supprime l'équipe correspondant à l'identifiant fourni. Une erreur est renvoyée si l'équipe n'existe pas."
     )
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }
+
+
+    @GetMapping("/open")
+    public List<Equipe> openEquipe() {return equipeService.getNotFull();}
 
 }

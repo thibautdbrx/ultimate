@@ -6,6 +6,9 @@ import UserIcon from "@/assets/icons/avatar.svg"
 import champ_input from "@/components/champs_input.vue"
 import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
 
+import { useAuthStore } from "@/stores/auth";
+const auth = useAuthStore();
+
 const route = useRoute()
 const equipeId = route.params.id
 const dateDebut = ref("")
@@ -221,10 +224,10 @@ const ajouterIndispo = async () => {
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
 
     <div v-else>
-      <button class="btn" @click="toggleEditMode">
+      <button v-if="auth.isAdmin" class="btn" @click="toggleEditMode">
         {{ editMode ? "Quitter la modification" : "Modifier" }}
       </button>
-      <button class="btn" @click="toggleindispoMode">
+      <button v-if="auth.isAdmin" class="btn" @click="toggleindispoMode">
         {{ indispoMode ? "Quitter l'ajout d'indisponibilité " : "ajouter une indisponibilité" }}
       </button>
 
@@ -354,6 +357,7 @@ const ajouterIndispo = async () => {
         <SelectJoueur
           :show="modalShow_1"
           :genre="genre"
+          :id_equipe = "equipeId"
           @close="modalShow_1 = false"
           @select="selectExisting"
       />

@@ -52,11 +52,10 @@ public class ParticipationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Competition non trouvée"));
 
         if (competition.getDateDebut().isBefore(LocalDate.now()))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter une équipe à une competition déjà commencée");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible de supprimer une équipe à une competition déjà commencée");
         List<Participation> participations = getAll();
         for (Participation p : participations) {
             if (p.getId().equals(id)){
-                System.out.println(p.getId());
                 participationRepository.delete(p);
                 }
         }

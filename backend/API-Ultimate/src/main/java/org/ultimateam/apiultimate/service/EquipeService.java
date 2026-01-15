@@ -9,12 +9,12 @@ import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
-import org.ultimateam.apiultimate.repository.ClassementRepository;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EquipeService {
@@ -98,10 +98,10 @@ public class EquipeService {
 
     public void updateAllGenre(List<Equipe> equipes) {
         for (Equipe equipe : equipes) {
-            updateGenre(equipe);
+            //updateGenre(equipe);
         }
     }
-
+/**
     public Equipe updateGenre(Equipe equipe) {
         List<Joueur> joueurs = equipe.getJoueurs();
 
@@ -131,7 +131,7 @@ public class EquipeService {
 
         return equipeRepository.save(equipe);
     }
-
+*/
     public int getNbJoueurs(Long equipeId) {
         return joueurRepository.countByEquipe_IdEquipe(equipeId);
     }
@@ -139,5 +139,12 @@ public class EquipeService {
     public List<Equipe> getEquipeGenre(Genre genre) {
         updateAllGenre(findAll());
         return equipeRepository.findAllByGenre(genre);
+    }
+
+    public List<Equipe> getNotFull(){
+        List<Equipe> all = equipeRepository.findAll();
+        return all.stream()
+                .filter(e -> !e.isFull())
+                .collect(Collectors.toList());
     }
 }
