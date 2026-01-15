@@ -1,10 +1,12 @@
 package org.ultimateam.apiultimate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.time.Duration;
@@ -48,7 +50,11 @@ public class Match {
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private LocalDateTime dateMatch;
-    private long terrain = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "id_terrain", nullable = false)
+    @Nullable
+    private Terrain terrain;
 
     private LocalDateTime datePause = null;
 

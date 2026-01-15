@@ -9,6 +9,7 @@ import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Match;
+import org.ultimateam.apiultimate.model.Terrain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,8 +33,6 @@ public class RoundRobinSchedulerService {
     private static final int BREAK_DURATION_MIN = 10;  // Pause entre deux matchs
     private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_MIN;
 
-    private static final int MAX_FIELDS = 5; // Nombre maximum de terrains en parallèle
-
     /**
      * autoBlocks garde la liste des créneaux où chaque équipe est automatiquement bloquée
      * (parce qu'un match lui a déjà été attribué).
@@ -46,6 +45,7 @@ public class RoundRobinSchedulerService {
      */
     public ScheduleResult generateSchedule(
             List<Equipe> equipes,
+            List<Terrain> terrainsDisponibles,
             LocalDate startDate,
             LocalDate endDate,
             boolean homeAndAway, // aller-retour ou non
@@ -67,10 +67,11 @@ public class RoundRobinSchedulerService {
         List<LocalTime> timeSlots = generateTimeSlots();
 
         // Calcul du nombre total de matchs et de créneaux disponibles
+        int nbTerrains = terrainsDisponibles.size();
         long totalMatches = pairs.size();
         long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
-        long slotsPerDay = (long) timeSlots.size() * MAX_FIELDS;
+        long slotsPerDay = (long) timeSlots.size() * nbTerrains;
         long totalPossibleSlots = slotsPerDay * totalDays;
 
         // Vérification que la période est suffisante
@@ -90,7 +91,7 @@ public class RoundRobinSchedulerService {
         while (matchIndex < totalMatches) {
 
             for (LocalTime time : timeSlots) {
-                for (int field = 1; field <= MAX_FIELDS; field++) {
+                for (Terrain terrain : terrainsDisponibles) {
 
                     if (matchIndex >= totalMatches) break;
 
@@ -117,7 +118,7 @@ public class RoundRobinSchedulerService {
                     match.setEquipe1(A);
                     match.setEquipe2(B);
                     match.setDateMatch(dateMatch);
-                    match.setTerrain(field);
+                    match.setTerrain(terrain);
 
                     result.addMatch(match);
 

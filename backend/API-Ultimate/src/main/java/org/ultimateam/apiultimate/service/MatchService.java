@@ -3,14 +3,13 @@ package org.ultimateam.apiultimate.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.ultimateam.apiultimate.DTO.ActionTypeDTO;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
 import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
-import org.ultimateam.apiultimate.model.ActionMatch;
+import org.ultimateam.apiultimate.repository.TerrainRepository;
 
 
 import java.time.Duration;
@@ -36,8 +35,11 @@ public class MatchService {
     private final JoueurRepository joueurRepository;
     private final JoueurService joueurService;
     private final ActionMatchService actionMatchService;
+    private final TerrainRepository terrainRepository;
+    private final TerrainService terrainService;
 
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService, ActionMatchService actionMatchService) {
+
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService, ActionMatchService actionMatchService, TerrainRepository terrainRepository, TerrainService terrainService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
         this.tournoisService = tournoisService;
@@ -45,6 +47,8 @@ public class MatchService {
         this.joueurRepository = joueurRepository;
         this.joueurService = joueurService;
         this.actionMatchService = actionMatchService;
+        this.terrainRepository = terrainRepository;
+        this.terrainService = terrainService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -79,11 +83,13 @@ public class MatchService {
     public Match creerMatch(MatchDTO matchDTO) {
         Equipe e1 = equipeService.getById(matchDTO.getIdEquipes().get(0));
         Equipe e2 = equipeService.getById(matchDTO.getIdEquipes().get(1));
-        if (e1 == null || e2 == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Une des équipes n'existe pas");
+        if (e1 == null || e2 == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Une des équipes n'existe pas");
 
         Match match = new Match();
         match.setEquipe1(e1);
         match.setEquipe2(e2);
+        match.setTerrain(terrainService.getById(matchDTO.getIdTerrain()));
         return save(match);
     }
 
@@ -226,19 +232,4 @@ public class MatchService {
         }
         finirMatchSafe(match);
     }
-
-    /**
-    public Match testMatch(){
-        Match match = new Match();
-        Equipe equipe1 = equipeService.getById((long)3);
-        Equipe equipe2 = equipeService.getById((long)4);
-        match.setEquipe1(equipe1);
-        match.setEquipe2(equipe2);
-        match.setDateMatch(LocalDateTime.now());
-        Tournois tournois = tournoisService.getTournoisById((long)1);
-        match.setIdCompetition(tournois);
-        matchRepository.save(match);
-        return match;
-    }
-     */
 }

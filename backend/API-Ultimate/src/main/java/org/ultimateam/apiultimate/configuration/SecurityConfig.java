@@ -75,11 +75,13 @@ public class SecurityConfig {
                                         "/api/classement/**",
                                         "/documentation/**",
                                         "/v3/api-docs/**",
+                                        "/api/templates/**",
                                         "/swagger-ui/**",
                                         "/api/match/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,
                                         "/api/equipe/**",
                                         "/api/competition/**",
+                                        "/api/terrain/**",
                                         "/api/joueur/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers(HttpMethod.PUT,
                                         "/api/equipe/**",
@@ -89,6 +91,7 @@ public class SecurityConfig {
                                         "/api/equipe/**",
                                         "/api/competition/**",
                                         "/api/joueur/**",
+                                        "/api/terrain/**",
                                         "/api/classement/**").hasAuthority("ROLE_ADMIN")
 
                                 .requestMatchers(HttpMethod.POST,
