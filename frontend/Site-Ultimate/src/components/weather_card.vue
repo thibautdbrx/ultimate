@@ -8,7 +8,6 @@ defineProps({
 })
 
 
-// --- METEO : Utilitaire pour traduire le code WMO en icone/texte ---
 const getWeatherInfo = (code) => {
   const codes = { //ca vien de la la norme de l'OMM (Organisation Météorologique Mondiale)
     0: { label: "Ciel dégagé", icon: "☀️" },

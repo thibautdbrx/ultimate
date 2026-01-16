@@ -359,7 +359,7 @@ onUnmounted(() => {
       <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{ calculDuree }}</p>
 
       <h1>
-        Championnat régional
+        {{match.idCompetition.nomCompetition}}
       </h1>
 
       <div class="score-box">
@@ -437,7 +437,8 @@ onUnmounted(() => {
           <Card_joueur
               
               :key="j.idJoueur"
-              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
+              :nom="j.nomJoueur"
+              :prenom="j.prenomJoueur"
               :genre="j.genre"
               :photo="j.photoJoueur"
               background="#ffdddd"
@@ -503,7 +504,8 @@ onUnmounted(() => {
         <Card_joueur
             
             :key="j.idJoueur"
-            :nom="j.nomJoueur + ' ' + j.prenomJoueur"
+            :nom="j.nomJoueur"
+            :prenom="j.prenomJoueur"
             :genre="j.genre"
             :photo="j.photoJoueur"
             background="#ffdddd"
