@@ -77,7 +77,9 @@ public class ParticipationService {
         if (equipe.getGenre().name().equals(competition.getGenre().name())) {
             Participation participation = new Participation(equipe, competition);
             return participationRepository.save(participation);
-        } else {
+        } else if (equipe.isFull())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Equipe pleine");
+        else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pas le même genre");
         }
 

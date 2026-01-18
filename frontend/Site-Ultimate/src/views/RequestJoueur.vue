@@ -33,7 +33,7 @@ onMounted(() => {
     userJoueurId.value = payload.joueurId
   }
 
-  fetch('/api/equipe')
+  fetch(`/api/equipe/open?idJoueur=${userJoueurId.value}`)
       .then(res => {
         if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
         return res.json()
@@ -72,6 +72,10 @@ async function postuler(equipeId) {
     }
 
     const data = await response.json()
+
+    // Supprimer l'équipe de la liste sans recharger la page
+    equipes.value = equipes.value.filter(e => e.idEquipe !== equipeId)
+
     alert("Postulation envoyée avec succès !")
     console.log(data)
   } catch (err) {
@@ -92,14 +96,26 @@ function goToEquipe(id, nom) {
     <div v-if="loading" class="state-msg">Chargement...</div>
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
 
-    <div v-else class="competition-list">
-      <div
-          v-for="equipe in equipes"
-          :key="equipe.idEquipe"
-          class="equipe-card-container"
-      >
-        <CarteEquipe :equipe="equipe" :image="ImageFond" />
-        <button v-if="auth.isVisiteur || auth.isAdmin || auth.isArbitre" class="postuler-btn" @click="postuler(equipe.idEquipe)">Postuler</button>
+    <div v-else>
+      <div v-if="equipes.length === 0" class="state-msg">
+        Aucune équipe disponible à rejoindre pour le moment.
+      </div>
+
+      <div v-else class="competition-list">
+        <div
+            v-for="equipe in equipes"
+            :key="equipe.idEquipe"
+            class="equipe-card-container"
+        >
+          <CarteEquipe :equipe="equipe" :image="ImageFond" />
+          <button
+            v-if="auth.isVisiteur || auth.isAdmin || auth.isArbitre"
+            class="postuler-btn"
+            @click="postuler(equipe.idEquipe)"
+          >
+            Postuler
+          </button>
+        </div>
       </div>
     </div>
   </main>
