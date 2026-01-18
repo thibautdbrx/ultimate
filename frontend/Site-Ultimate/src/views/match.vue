@@ -18,6 +18,9 @@ import resume from "@/assets/img/matchIcon/resume.png";
 
 import curseur from "@/assets/img/curseur.cur"
 
+import "leaflet/dist/leaflet.css"
+import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet"
+
 import { useAuthStore } from "@/stores/auth";
 import PUB from "@/components/PUB.vue";
 const auth = useAuthStore();
@@ -40,6 +43,9 @@ let etatMatch = ref("WAITING");
 let duree = ref(null);
 
 const error = ref(null);
+
+const zoom = ref(7); // zoom pour la carte
+const center = ref([46.603354, 1.888334]);
 
 
 //------------------------
@@ -93,6 +99,10 @@ const loadMatch = async () => {
 
     match.value = await res.json();
     etatMatch = match.value.status;
+
+    if (match.value.terrain && match.value.terrain.latitude) {
+      center.value = [match.value.terrain.latitude, match.value.terrain.longitude];
+    }
 
     //loadWeather(match.value.terrain.latitude, 2.3488);
     loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
@@ -468,12 +478,18 @@ onUnmounted(() => {
         <div class="Info">
           <div class="Nom-Terrain">
             <p>
-              {{ match.terrain.nom }}
+              {{ match.terrain.nom }}, {{ match.terrain.ville }}
             </p>
           </div>
-          <div class="map-terrain">
-            <p>afficher la localisation du terrain...</p>
+          <div class="map-container" v-if="match.terrain && match.terrain.latitude">
+            <l-map ref="map" v-model:zoom="zoom" :center="center" :use-global-leaflet="false">
+              <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"></l-tile-layer>
+              <l-marker :lat-lng="[match.terrain.latitude, match.terrain.longitude]">
+                <l-tooltip>{{ match.terrain.nom }}</l-tooltip>
+              </l-marker>
+            </l-map>
           </div>
+          
         </div>
 
         <div v-if="weather">
@@ -803,8 +819,29 @@ color: gray}
 }
 
 
+.Info {
+  margin-bottom: 2rem;
+  text-align: center;
+}
 
+.Nom-Terrain {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
 
+/* CARTE */
+.map-container {
+  height: 250px; 
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden; 
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+  z-index: 0;
+}
 
 
 
