@@ -21,6 +21,10 @@ const token = document.cookie
     ?.split('=')[1]
 
 onMounted(() => {
+  if (!auth.isVisiteur) {
+    router.push('/Connexion')
+    return
+  }
   // récupérer l'id du joueur et le rôle depuis le cookie ou le store
   const token = document.cookie
       .split('; ')

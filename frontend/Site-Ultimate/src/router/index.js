@@ -17,6 +17,7 @@ import page_introuvable from  '../views/404.vue'
 import Fausse_pub from '../views/fausse_pub.vue'
 import RequestJoueur from "@/views/RequestJoueur.vue";
 import RequestAdmin from "@/views/RequestAdmin.vue";
+import MonCompte from "@/views/MonCompte.vue";
 
 
 
@@ -38,6 +39,7 @@ const routes = [
     {path : '/fausse_pub', component: Fausse_pub },
     {path : '/request', component: RequestJoueur},
     {path : '/requestadmin', component: RequestAdmin},
+    {path : '/moncompte', component: MonCompte},
 
     { path: '/:pathMatch(.*)*', component: page_introuvable }
 
