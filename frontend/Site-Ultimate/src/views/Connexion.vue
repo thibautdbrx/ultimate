@@ -11,6 +11,7 @@ import Form_connexion from '../components/form_connexion.vue'
       </p>
 
       <Form_connexion />
+      <p>Pas encore inscrit ? <router-link to="/Inscription">Inscrivez-vous</router-link></p>
     </div>
   </div>
 </template>
