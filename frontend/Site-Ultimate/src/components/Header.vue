@@ -28,7 +28,6 @@ const clickhome = () => {
       <RouterLink to="/Competition" class="nav-link">Compétition</RouterLink>
       <RouterLink v-if="auth.isVisiteur" to="/mon-compte" class="nav-link">Mon compte</RouterLink>
       <Button v-if="!auth.isAuthenticated" to="/Connexion" active-class="no-active-style" label="Connexion" />
-      <Button v-if="!auth.isAuthenticated" to="/Inscription" active-class="no-active-style" label="Inscription" />
       <Button v-else active-class="no-active-style" label="Deconnexion" />
 
       
