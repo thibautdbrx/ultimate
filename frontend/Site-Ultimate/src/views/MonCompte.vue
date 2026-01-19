@@ -11,6 +11,18 @@ import ImageEquipeFond from "../assets/img/img_equipe.jpg"
 const router = useRouter()
 const auth = useAuthStore()
 
+// --- LOGIQUE TOAST (AJOUTÉ) ---
+const showToast = ref(false)
+const toastMessage = ref("")
+const toastType = ref("error")
+
+const notify = (msg, type = "error") => {
+  toastMessage.value = msg
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 3500)
+}
+
 // --- STATES ---
 const loading = ref(true)
 const error = ref(null)
@@ -45,7 +57,7 @@ function goToEquipe(id,nom) {
 }
 
 function goToTrouverEquipe() {
-  router.push('/request') // Chemin adapté selon votre code
+  router.push('/request')
 }
 
 // --- AUTH / COOKIE ---
@@ -73,7 +85,6 @@ const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  // On récupère le token du store ou du cookie si le store est vide
   let token = auth.token;
   if (!token) {
     const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
@@ -112,41 +123,37 @@ const onFileSelected = (event) => {
   const file = event.target.files[0]
   if (file) {
     selectedFile.value = file
-    // Prévisualisation immédiate
     previewImage.value = URL.createObjectURL(file)
   }
 }
 
 const validerChangementPhoto = async () => {
   if (!selectedFile.value) {
-    alert("Veuillez sélectionner une image.")
+    notify("Veuillez sélectionner une image.", "error")
     return
   }
 
   loadingUpload.value = true
 
   try {
-    // 1. Upload
     const newPhotoUrl = await uploadFile(selectedFile.value)
 
-    // 2. Patch API (Mise à jour du joueur)
     const res = await fetch(`/api/joueur/${joueur.value.idJoueur}`, {
-      method: 'PATCH', // Endpoint PATCH pour l'image
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: newPhotoUrl }) // Correspond au DTO ImageDTO
+      body: JSON.stringify({ image: newPhotoUrl })
     })
 
     if(!res.ok) throw new Error("Erreur lors de la mise à jour du profil.")
 
-    // 3. Mise à jour locale
     joueur.value.photoJoueur = newPhotoUrl
 
     closeEditModal()
-    alert("Photo de profil mise à jour !")
+    notify("Photo de profil mise à jour !", "success")
 
   } catch (e) {
     console.error(e)
-    alert(e.message)
+    notify(e.message, "error")
   } finally {
     loadingUpload.value = false
   }
@@ -156,19 +163,17 @@ const validerChangementPhoto = async () => {
 onMounted(async () => {
   loading.value = true
 
-  // 1. Récupération ID
   let currentJoueurId = auth.joueurId
   if (!currentJoueurId) {
     currentJoueurId = getJoueurIdFromCookie()
   }
 
   if (!currentJoueurId) {
-    router.push('/Connexion') // Chemin adapté selon votre code
+    router.push('/Connexion')
     return
   }
 
   try {
-    // 2. Récupérer les infos du joueur
     const resJoueur = await fetch(`/api/joueur/${currentJoueurId}`)
     if (!resJoueur.ok) {
       if(resJoueur.status === 404) throw new Error("Joueur introuvable.")
@@ -176,7 +181,6 @@ onMounted(async () => {
     }
     joueur.value = await resJoueur.json()
 
-    // 3. Récupérer les matchs (Si équipe existe)
     if (!joueur.value.equipe) {
       console.log("Le joueur n'a pas d'équipe, on ne charge pas les matchs.")
       prochainsMatchs.value = []
@@ -207,6 +211,14 @@ onMounted(async () => {
 
 <template>
   <main class="page-compte">
+
+    <Transition name="toast">
+      <div v-if="showToast" :class="['toast-notification', toastType]">
+        <span class="toast-icon">{{ toastType === 'success' ? '✔' : '✖' }}</span>
+        <span class="toast-text">{{ toastMessage }}</span>
+      </div>
+    </Transition>
+
     <h2 class="title">Mon Espace Joueur</h2>
 
     <div v-if="loading" class="state-msg">Chargement des informations...</div>
@@ -305,6 +317,38 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* --- STYLE DU TOAST (AJOUTÉ) --- */
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.toast-notification.success { background-color: #2ecc71; }
+.toast-notification.error { background-color: #e74c3c; }
+
+.toast-icon {
+  background: white;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: bold;
+}
+.success .toast-icon { color: #2ecc71; }
+.error .toast-icon { color: #e74c3c; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.4s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 40px); }
+
 /* --- Styles de base --- */
 .page-compte {
   display: flex;
@@ -409,7 +453,7 @@ section h3 {
 .state-msg { text-align: center; font-size: 1.2rem; color: #555; margin-top: 3rem; }
 .state-msg.error { color: #e74c3c; }
 
-/* --- Styles MODALE (Identique à votre style Overlay) --- */
+/* --- Styles MODALE --- */
 .overlay-bg {
   position: fixed;
   inset: 0;

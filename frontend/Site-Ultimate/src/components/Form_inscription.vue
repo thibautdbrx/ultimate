@@ -1,7 +1,5 @@
 <script setup>
-
 import {useRouter} from "vue-router";
-
 import {ref} from 'vue'
 import Champs_input from "@/components/champs_input.vue";
 import CadenaIcon from "@/assets/icons/cadena.svg"
@@ -10,11 +8,24 @@ import AvatarIcon from "@/assets/icons/avatar.svg"
 import InscriptionBoutton from "@/components/InscriptionBoutton.vue";
 import axios from "axios";
 
+// --- LOGIQUE TOAST ---
+const showToast = ref(false)
+const toastMessage = ref("")
+const toastType = ref("error")
+
+const notify = (msg, type = "error") => {
+  toastMessage.value = msg
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 3500)
+}
+
 const email = ref('')
 const password = ref('')
 const nom = ref('')
 const prenom = ref('')
 const sexe = ref('')
+const errorMessage = ref('') // Ajouté pour éviter l'erreur dans le template
 const router = useRouter()
 
 const submitForminscription = async () => {
@@ -33,30 +44,38 @@ const submitForminscription = async () => {
 
     if (!response.ok) {
       const error = await response.json();
-      alert(`Erreur : ${error.message}`);
+      notify(`Erreur : ${error.message}`, "error"); // Remplacement de l'alert
       return;
     }
 
     const data = await response.json();
-    console.log("ROLE_VISITEUR"); // juste pour debug
+    console.log("ROLE_VISITEUR");
     document.cookie = `token=${data.token}; path=/; max-age=10800; SameSite=Lax`;
 
-    // auth.loadToken(); // à décommenter si tu importes ton service auth
-    // router.back();   // redirection après inscription
+    notify("Compte créé avec succès !", "success"); // Remplacement de l'alert
 
-    alert("Compte créé avec succès !");
-    await router.back();
+    // Petite pause pour laisser le temps de voir le toast avant la redirection
+    setTimeout(async () => {
+      await router.back();
+    }, 1500);
+
   } catch (err) {
     console.error(err);
-    alert("Erreur lors de la création du compte.");
+    notify("Erreur lors de la création du compte."); // Remplacement de l'alert
   }
 };
 </script>
 
-
-
 <template>
   <form class="login_form" @submit.prevent="submitForminscription">
+
+    <Transition name="toast">
+      <div v-if="showToast" :class="['toast-notification', toastType]">
+        <span class="toast-icon">{{ toastType === 'success' ? '✔' : '✖' }}</span>
+        <span class="toast-text">{{ toastMessage }}</span>
+      </div>
+    </Transition>
+
     <div class="nom_prenom">
       <champs_input
           label="Prenom"
@@ -105,9 +124,40 @@ const submitForminscription = async () => {
   </form>
 </template>
 
-
-
 <style scoped>
+/* --- STYLE DU TOAST (AJOUTÉ) --- */
+.toast-notification {
+  position: fixed;
+  top: 20px; /* En haut c'est mieux pour une page de login/inscription */
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.toast-notification.success { background-color: #2ecc71; }
+.toast-notification.error { background-color: #e74c3c; }
+
+.toast-icon {
+  background: white;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: bold;
+}
+.success .toast-icon { color: #2ecc71; }
+.error .toast-icon { color: #e74c3c; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.4s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, -40px); }
+
+/* --- TES STYLES EXISTANTS --- */
 .login_form {
   display: flex;
   flex-direction: column;
@@ -133,5 +183,4 @@ const submitForminscription = async () => {
   gap: 0.2rem;
   margin-bottom: 0.5rem;
 }
-
 </style>
