@@ -74,11 +74,12 @@ public class ParticipationService {
         if (competition.getDateDebut().isBefore(LocalDate.now()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter une équipe à une competition déjà commencée");
 
-        if (equipe.getGenre().name().equals(competition.getGenre().name())) {
+        if (!equipe.isFull())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "L'équipe n'est pas pleine");
+        else if (equipe.getGenre().name().equals(competition.getGenre().name())) {
             Participation participation = new Participation(equipe, competition);
             return participationRepository.save(participation);
-        } else if (equipe.isFull())
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Equipe pleine");
+        }
         else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pas le même genre");
         }
