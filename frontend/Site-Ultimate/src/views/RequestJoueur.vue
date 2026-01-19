@@ -13,35 +13,34 @@ const equipes = ref([])
 const loading = ref(true)
 const error = ref(null)
 const submittingId = ref(null)
-
-// Nouveau state pour stocker l'équipe actuelle du joueur s'il en a une
 const existingTeam = ref(null)
 
-// --- FONCTION DE SECOURS ---
-function getJoueurIdFromCookie() {
-  const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('token='))
-      ?.split('=')[1]
+// --- STATE POUR LE BANDEAU (TOAST) ---
+const showToast = ref(false)
+const toastMessage = ref("")
 
+// Fonction pour afficher le toast et le cacher automatiquement
+function triggerToast(message) {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+  }, 4000) // Disparaît après 4 secondes
+}
+
+function getJoueurIdFromCookie() {
+  const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
       return payload.joueurId
-    } catch (e) {
-      return null
-    }
+    } catch (e) { return null }
   }
   return null
 }
 
-// --- INIT ---
 onMounted(async () => {
-  let currentJoueurId = auth.joueurId
-  if (!currentJoueurId) {
-    currentJoueurId = getJoueurIdFromCookie()
-  }
-
+  let currentJoueurId = auth.joueurId || getJoueurIdFromCookie()
   if (!currentJoueurId) {
     router.push('/Connexion')
     return
@@ -49,50 +48,40 @@ onMounted(async () => {
 
   try {
     loading.value = true
-
-    // 1. Vérifier le profil du joueur
     const resJoueur = await fetch(`/api/joueur/${currentJoueurId}`)
-    if (!resJoueur.ok) throw new Error("Impossible de récupérer le profil joueur")
+    if (!resJoueur.ok) throw new Error("Impossible de récupérer le profil")
     const joueur = await resJoueur.json()
 
-    // 2. Si le joueur a une équipe, on la stocke et on arrête le chargement
     if (joueur.equipe) {
       existingTeam.value = joueur.equipe
       loading.value = false
-      return // <--- On s'arrête là, pas besoin de charger les autres équipes
+      return
     }
 
-    // 3. Sinon, on charge les équipes disponibles
     const resEquipes = await fetch(`/api/equipe/open?idJoueur=${currentJoueurId}`)
     if (!resEquipes.ok) throw new Error(`Erreur HTTP: ${resEquipes.status}`)
-
     equipes.value = await resEquipes.json()
-
   } catch (err) {
-    console.error(err)
-    error.value = err.message || "Impossible de charger les données."
+    error.value = err.message
   } finally {
     loading.value = false
   }
 })
 
 async function postuler(equipeId) {
-  let currentJoueurId = auth.joueurId || getJoueurIdFromCookie();
-  let token = auth.token;
-
+  let currentJoueurId = auth.joueurId || getJoueurIdFromCookie()
+  let token = auth.token
   if (!token) {
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('token='));
-    if(cookie) token = cookie.split('=')[1];
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('token='))
+    if(cookie) token = cookie.split('=')[1]
   }
 
   if (!currentJoueurId || !token) {
-    alert("Erreur d'authentification.")
-    router.push('/Connexion')
+    triggerToast("Erreur d'authentification.")
     return
   }
 
   submittingId.value = equipeId
-
   try {
     const response = await fetch(`/api/joueur/request/${currentJoueurId}/equipe/${equipeId}`, {
       method: 'POST',
@@ -108,11 +97,13 @@ async function postuler(equipeId) {
     }
 
     equipes.value = equipes.value.filter(e => e.idEquipe !== equipeId)
-    alert("Votre demande a bien été envoyée au capitaine !")
+
+    // --- REMPLACEMENT DE L'ALERT PAR LE TOAST ---
+    triggerToast("Votre postulation a bien été envoyée !")
 
   } catch (err) {
     console.error(err)
-    alert(err.message)
+    triggerToast("Erreur : " + err.message)
   } finally {
     submittingId.value = null
   }
@@ -122,6 +113,12 @@ async function postuler(equipeId) {
 <template>
   <main class="equipes-page">
 
+    <Transition name="toast">
+      <div v-if="showToast" class="toast-notification">
+        ✔ {{ toastMessage }}
+      </div>
+    </Transition>
+
     <h2 class="title" v-if="existingTeam">Votre Équipe</h2>
     <h2 class="title" v-else>Rejoindre une équipe</h2>
 
@@ -129,58 +126,63 @@ async function postuler(equipeId) {
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
 
     <div v-else>
-
       <div v-if="existingTeam" class="already-team-container">
-        <p class="info-text">
-          Vous faites déjà partie d'une équipe ! <br>
-          Il n'est pas possible de rejoindre une nouvelle équipe tant que vous êtes membre de celle-ci.
-        </p>
-
+        <p class="info-text">Vous faites déjà partie d'une équipe !</p>
         <div class="my-team-card">
           <CarteEquipe :equipe="existingTeam" :image="ImageFond" />
         </div>
-
-        <router-link to="/mon-compte" class="action-btn-primary">
-          Aller sur mon espace
-        </router-link>
+        <router-link to="/mon-compte" class="action-btn-primary">Aller sur mon espace</router-link>
       </div>
 
       <div v-else>
-        <p class="subtitle">Voici les équipes qui correspondent à votre profil et qui recrutent.</p>
-
-        <div v-if="equipes.length === 0" class="state-msg info">
-          Aucune équipe disponible pour le moment.
-        </div>
-
+        <p class="subtitle">Voici les équipes qui recrutent.</p>
+        <div v-if="equipes.length === 0" class="state-msg info">Aucune équipe disponible.</div>
         <div v-else class="equipes-list">
-          <div
-              v-for="equipe in equipes"
-              :key="equipe.idEquipe"
-              class="equipe-wrapper"
-          >
-            <router-link
-                :to="{ name: 'Equipe-details', params: { id: equipe.idEquipe, nom: equipe.nomEquipe } }"
-                class="card-link"
-            >
+          <div v-for="equipe in equipes" :key="equipe.idEquipe" class="equipe-wrapper">
+            <router-link :to="{ name: 'Equipe-details', params: { id: equipe.idEquipe, nom: equipe.nomEquipe } }" class="card-link">
               <CarteEquipe :equipe="equipe" :image="ImageFond" />
             </router-link>
-
-            <button
-                class="postuler-btn"
-                :disabled="submittingId === equipe.idEquipe"
-                @click="postuler(equipe.idEquipe)"
-            >
+            <button class="postuler-btn" :disabled="submittingId === equipe.idEquipe" @click="postuler(equipe.idEquipe)">
               {{ submittingId === equipe.idEquipe ? 'Envoi...' : 'Postuler' }}
             </button>
           </div>
         </div>
       </div>
-
     </div>
   </main>
 </template>
 
 <style scoped>
+/* --- STYLE DU TOAST (BANDEAU VERT) --- */
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2ecc71;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  min-width: 300px;
+  justify-content: center;
+}
+
+/* Animation de transition Vue */
+.toast-enter-active, .toast-leave-active {
+  transition: all 0.4s ease;
+}
+.toast-enter-from, .toast-leave-to {
+  opacity: 0;
+  bottom: 0px;
+}
+
+/* --- LE RESTE DES STYLES --- */
 .equipes-page {
   display: flex;
   flex-direction: column;
@@ -190,97 +192,33 @@ async function postuler(equipeId) {
   margin: 0 auto;
 }
 
-.title {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #2c3e50;
-}
+.title { text-align: center; font-size: 2rem; margin-bottom: 1rem; color: #2c3e50; }
+.subtitle { color: #7f8c8d; margin-bottom: 2rem; text-align: center; }
 
-.subtitle {
-  color: #7f8c8d;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-/* --- Style pour "Déjà dans une équipe" --- */
 .already-team-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #f8f9fa;
-  padding: 2.5rem;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
-  text-align: center;
-  gap: 1.5rem;
-  max-width: 600px;
-}
-
-.info-text {
-  font-size: 1.1rem;
-  color: #555;
-  line-height: 1.6;
-}
-
-.my-team-card {
-  transform: scale(1); /* Reset scale */
-  pointer-events: none; /* Juste visuel ici */
+  display: flex; flex-direction: column; align-items: center; background-color: #f8f9fa;
+  padding: 2.5rem; border-radius: 12px; border: 1px solid #e0e0e0; text-align: center; gap: 1.5rem; max-width: 600px;
 }
 
 .action-btn-primary {
-  padding: 0.8rem 1.5rem;
-  background-color: #3498db;
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-.action-btn-primary:hover {
-  background-color: #2980b9;
+  padding: 0.8rem 1.5rem; background-color: #3498db; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;
 }
 
-/* --- Styles Listes existants --- */
+.equipes-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2rem; width: 100%;
+}
+
+.equipe-wrapper { display: flex; flex-direction: column; align-items: center; }
+
+.postuler-btn {
+  margin-top: 1rem; width: 100%; padding: 0.6rem 1rem; background-color: #27ae60; color: white;
+  border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+
+.postuler-btn:hover:not(:disabled) { background-color: #219150; transform: scale(1.02); }
+.postuler-btn:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
+
 .state-msg { text-align: center; font-size: 1.1rem; color: #555; margin-top: 2rem; }
 .state-msg.error { color: #e74c3c; }
 .state-msg.info { background: #eef2ff; padding: 2rem; border-radius: 8px; color: #333; }
-
-.equipes-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 2rem;
-  width: 100%;
-}
-
-.equipe-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.card-link {
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.2s;
-  display: block;
-}
-.card-link:hover { transform: translateY(-4px); }
-
-.postuler-btn {
-  margin-top: 1rem;
-  width: 100%;
-  padding: 0.6rem 1rem;
-  background-color: #27ae60;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: background-color 0.2s;
-}
-
-.postuler-btn:hover:not(:disabled) { background-color: #219150; }
-.postuler-btn:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
 </style>
