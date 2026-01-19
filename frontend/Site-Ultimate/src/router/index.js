@@ -39,7 +39,7 @@ const routes = [
     {path : '/fausse_pub', component: Fausse_pub },
     {path : '/request', component: RequestJoueur},
     {path : '/requestadmin', component: RequestAdmin},
-    {path : '/moncompte', component: MonCompte},
+    {path : '/mon-compte', component: MonCompte},
 
     { path: '/:pathMatch(.*)*', component: page_introuvable }
 
