@@ -50,7 +50,7 @@ class CompetitionServiceTest {
         competition.setDateFin(LocalDate.now().plusDays(5));
 
         terrain = new Terrain();
-        terrain.setId_terrain(10L);
+        terrain.setIdTerrain(10L);
         // Important pour éviter une liste vide dans le service
         competition.setTerrains(new ArrayList<>(List.of(terrain)));
 
