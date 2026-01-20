@@ -52,7 +52,7 @@ public class Match {
     private LocalDateTime dateMatch;
 
     @ManyToOne
-    @JoinColumn(name = "id_terrain", nullable = false)
+    @JoinColumn(name = "idTerrain", nullable = false)
     @Nullable
     private Terrain terrain;
 

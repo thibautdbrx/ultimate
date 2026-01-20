@@ -5,8 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
+import org.ultimateam.apiultimate.model.IndisponibiliteTerrain;
 import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Terrain; // AJOUTÉ
+import org.ultimateam.apiultimate.model.Terrain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,17 +22,16 @@ public class RoundRobinSchedulerServiceTest {
     private static final int BREAK_DURATION_MIN = 10;
     private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_MIN;
     private RoundRobinSchedulerService scheduler;
-    private List<Terrain> terrainsDeTest; // AJOUTÉ
+    private List<Terrain> terrainsDeTest;
 
     @BeforeEach
     void setUp() {
         scheduler = new RoundRobinSchedulerService();
 
-        // Initialisation d'une liste de terrains pour les tests
         terrainsDeTest = new ArrayList<>();
         for (long i = 1; i <= 5; i++) {
             Terrain t = new Terrain();
-            t.setId_terrain(i);
+            t.setIdTerrain(i);
             t.setNom("Terrain " + i);
             terrainsDeTest.add(t);
         }
@@ -51,11 +51,12 @@ public class RoundRobinSchedulerServiceTest {
                 LocalDateTime.of(2025, 1, 1, 15, 30),
                 equipes.get(1)));
 
+        List<IndisponibiliteTerrain> indispoTerrains = new ArrayList<>();
+
         LocalDate start = LocalDate.of(2025, 1, 1);
         LocalDate end = LocalDate.of(2025, 1, 2);
 
-        // APPEL CORRIGÉ (Ajout de terrainsDeTest en 2ème argument)
-        ScheduleResult result = scheduler.generateSchedule(equipes, terrainsDeTest, start, end, false, indispo);
+        ScheduleResult result = scheduler.generateSchedule(equipes, terrainsDeTest, start, end, false, indispo, indispoTerrains);
 
         List<Match> matchs = result.getMatchs();
         List<Indisponibilite> indisponibilites = result.getIndisponibilites();
@@ -72,9 +73,8 @@ public class RoundRobinSchedulerServiceTest {
             assertTrue(time.isAfter(LocalTime.of(8, 59)), "Match avant 9h");
             assertTrue(time.isBefore(LocalTime.of(18, 1)), "Match après 18h");
 
-            // VÉRIFICATION CORRIGÉE (On vérifie l'ID de l'objet Terrain)
             assertNotNull(m.getTerrain(), "Le terrain ne doit pas être nul");
-            long terrainId = m.getTerrain().getId_terrain();
+            long terrainId = m.getTerrain().getIdTerrain();
             assertTrue(terrainId >= 1 && terrainId <= 5,
                     "ID du terrain invalide (doit être entre 1 et 5)");
         }
@@ -108,9 +108,9 @@ public class RoundRobinSchedulerServiceTest {
         LocalDate end = LocalDate.of(2025, 2, 15);
 
         List<Indisponibilite> indispo = new ArrayList<>();
+        List<IndisponibiliteTerrain> indispoTerrains = new ArrayList<>();
 
-        // APPEL CORRIGÉ
-        ScheduleResult result = scheduler.generateSchedule(equipes, terrainsDeTest, start, end, true, indispo);
+        ScheduleResult result = scheduler.generateSchedule(equipes, terrainsDeTest, start, end, true, indispo, indispoTerrains);
         List<Match> matchs = result.getMatchs();
 
         assertEquals(6, matchs.size(), "3 équipes AR = 6 matchs");

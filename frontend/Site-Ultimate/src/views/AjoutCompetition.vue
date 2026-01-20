@@ -7,6 +7,25 @@ import UserIcon from "@/assets/icons/avatar.svg"
 import imgEquipeDefault from "@/assets/img/img_equipe.jpg"
 import { useAuthStore } from "@/stores/auth";
 
+const auth = useAuthStore();
+const router = useRouter();
+
+// --- LOGIQUE TOAST ---
+const showToast = ref(false)
+const toastMessage = ref("")
+const toastType = ref("error")
+
+const notify = (msg, type = "error") => {
+  toastMessage.value = msg
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 3500)
+}
+
+if (!auth.isAdmin) {
+  router.push("/")
+}
+
 const nomCompetition = ref("")
 const descriptionCompetition = ref("")
 const typeCompetition = ref("")
@@ -18,14 +37,6 @@ const format = ref("")
 const mixite = ref("")
 const nombreEquipe = ref(0)
 
-const auth = useAuthStore();
-const router = useRouter();
-
-if (!auth.isAdmin) {
-  router.push("/")
-}
-
-// Emplacements pour 20 équipes
 const equipes = ref(
     Array.from({ length: 20 }, () => ({
       idEquipe: null,
@@ -43,7 +54,7 @@ const genreFilter = computed(() => {
 
 const openModal_1 = (i) => {
   if (!categorie.value || !format.value) {
-    alert("Veuillez sélectionner une catégorie et un format avant d'ajouter des équipes.")
+    notify("Veuillez sélectionner une catégorie et un format avant d'ajouter des équipes.")
     return
   }
   modalIndex.value = i
@@ -60,29 +71,29 @@ const selectExisting = (equipe) => {
 const valider_ajout_competition = async () => {
   // --- 1) VALIDATIONS DES CHAMPS OBLIGATOIRES ---
   if (!nomCompetition.value.trim()) {
-    alert("Le nom de la compétition est obligatoire.");
+    notify("Le nom de la compétition est obligatoire.");
     return;
   }
   if (!typeCompetition.value) {
-    alert("Veuillez choisir le type de compétition (Tournoi ou Championnat).");
+    notify("Veuillez choisir le type de compétition.");
     return;
   }
   if (!categorie.value) {
-    alert("Veuillez sélectionner une catégorie.");
+    notify("Veuillez sélectionner une catégorie.");
     return;
   }
   if (!format.value) {
-    alert("Veuillez sélectionner un format de jeu.");
+    notify("Veuillez sélectionner un format de jeu.");
     return;
   }
   if (categorie.value === 'MIXTE' && !mixite.value) {
-    alert("Pour une compétition MIXTE, veuillez préciser la répartition imposée.");
+    notify("Pour une compétition MIXTE, veuillez préciser la répartition imposée.");
     return;
   }
 
   // --- 2) VALIDATION DES DATES ---
   if (!dateDebut.value || !dateFin?.value || dateDebut.value === "" || dateFin.value === "") {
-    alert("Les dates de début et de fin sont obligatoires.");
+    notify("Les dates de début et de fin sont obligatoires.");
     return;
   }
 
@@ -90,26 +101,24 @@ const valider_ajout_competition = async () => {
   const fin = new Date(dateFin.value);
 
   if (fin < debut) {
-    alert("La date de fin ne peut pas être antérieure à la date de début.");
+    notify("La date de fin ne peut pas être antérieure à la date de début.");
     return;
   }
 
   // --- 3) VALIDATION DES ÉQUIPES ---
   const equipesSelectionnees = equipes.value.slice(0, nombreEquipe.value);
 
-  // On ne valide que s'il y a des slots d'équipes affichés (nombreEquipe > 0)
   if (nombreEquipe.value > 0) {
     for (let i = 0; i < equipesSelectionnees.length; i++) {
       const e = equipesSelectionnees[i];
       if (!e.idEquipe) {
-        alert(`L'équipe n°${i + 1} n'a pas été sélectionnée.`);
+        notify(`L'équipe n°${i + 1} n'a pas été sélectionnée.`);
         return;
       }
 
-      // Vérification des doublons
       for (let k = 0; k < equipesSelectionnees.length; k++) {
         if (k !== i && equipesSelectionnees[k].idEquipe === e.idEquipe) {
-          alert(`L'équipe "${e.nomEquipe}" est sélectionnée plusieurs fois.`);
+          notify(`L'équipe "${e.nomEquipe}" est sélectionnée plusieurs fois.`);
           return;
         }
       }
@@ -160,15 +169,25 @@ const valider_ajout_competition = async () => {
       );
     }
 
-    alert("Compétition créée avec succès !");
-    router.push("/Competition");
+    notify("Compétition créée avec succès !", "success");
+    setTimeout(() => { router.push("/Competition"); }, 1500)
+
   } catch (e) {
-    alert("Erreur : " + e.message);
+    notify("Erreur : " + e.message);
   }
 };
 </script>
+
 <template>
   <main v-if="auth.isAdmin" class="page-ajout">
+
+    <Transition name="toast">
+      <div v-if="showToast" :class="['toast-notification', toastType]">
+        <span class="toast-icon">{{ toastType === 'success' ? '✔' : '✖' }}</span>
+        <span class="toast-text">{{ toastMessage }}</span>
+      </div>
+    </Transition>
+
     <h2>Ajouter une compétition</h2>
     <p id="sous-titre">Configurez les paramètres et engagez les équipes.</p>
 
@@ -250,10 +269,45 @@ const valider_ajout_competition = async () => {
 </template>
 
 <style scoped>
+/* --- STYLE DU TOAST (AJOUTÉ) --- */
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.toast-notification.success { background-color: #2ecc71; }
+.toast-notification.error { background-color: #e74c3c; }
+
+.toast-icon {
+  background: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+.success .toast-icon { color: #2ecc71; }
+.error .toast-icon { color: #e74c3c; }
+
+.toast-enter-active, .toast-leave-active { transition: all 0.4s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 40px); }
+
+/* --- TES STYLES EXISTANTS --- */
 .page-ajout { padding: 2rem; }
 .form-block { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
-
-/* Sélecteurs arrondis */
 .select-genre, .select-nb {
   padding: 0.6rem;
   border-radius: 8px;
@@ -263,8 +317,6 @@ const valider_ajout_competition = async () => {
   max-width: 400px;
 }
 .select-nb { margin-right: 90%; width: auto; min-width: 180px; }
-
-/* Grid stable pour les cartes */
 .joueurs-flex{
   display: flex;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -273,15 +325,12 @@ const valider_ajout_competition = async () => {
   justify-self: center;
   margin-top: 1.5rem;
 }
-
 .joueur-wrapper {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
   width: 260px;
 }
-
-/* Bloc Mixité */
 .selection-categorie {
   display: flex;
   flex-direction: column;
@@ -291,8 +340,6 @@ const valider_ajout_competition = async () => {
   border-left: 4px solid #1e88e5;
   border-radius: 4px;
 }
-
-/* Design des cartes */
 .competition-card {
   background: white;
   border-radius: 12px;
@@ -303,8 +350,6 @@ const valider_ajout_competition = async () => {
 .competition-img { width: 100%; height: 130px; object-fit: cover; }
 .competition-info { padding: 1rem; text-align: center; }
 .empty-card { border: 2px dashed #ccc; box-shadow: none; background: #fafafa; }
-
-/* Boutons */
 .select-btn {
   padding: 0.6rem;
   border: none;
@@ -326,11 +371,8 @@ const valider_ajout_competition = async () => {
   font-weight: bold;
   font-size: 1.1rem;
 }
-
-/* Dates */
 .dates-row { display: flex; gap: 2rem; max-width: 850px; }
 .date-item { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-
 #sous-titre { font-size: 0.9rem; color: gray; text-align: center; margin-bottom: 2rem; }
 h2 { text-align: center; font-size: 2rem; margin-bottom: 0rem; }
 </style>

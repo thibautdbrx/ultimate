@@ -71,6 +71,7 @@ public class ActionMatchService {
         action.setJoueur(joueur);
         action.setType(type);
         action.setDateAction(LocalDateTime.now());
+        action.setDatePause(match.getDatePause());
 
         return actionMatchRepository.save(action);
     }

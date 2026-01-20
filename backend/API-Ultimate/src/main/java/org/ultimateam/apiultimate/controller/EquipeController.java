@@ -92,6 +92,6 @@ public class EquipeController {
 
 
     @GetMapping("/open")
-    public List<Equipe> openEquipe() {return equipeService.getNotFull();}
+    public List<Equipe> openEquipe(@RequestParam Long idJoueur) {return equipeService.getNotFull(idJoueur);}
 
 }
