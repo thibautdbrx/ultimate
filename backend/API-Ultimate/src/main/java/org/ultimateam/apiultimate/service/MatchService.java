@@ -78,6 +78,8 @@ public class MatchService {
         return matchRepository.findMatchesByEquipe(joueur.getEquipe().getIdEquipe());
     }
 
+    public List<Match> getMatchesByTerrain(long idTerrain) { return matchRepository.findByTerrain_Id_terrain(idTerrain); }
+
 
     // --------------------- MATCH CREATION ---------------------
     public Match creerMatch(MatchDTO matchDTO) {

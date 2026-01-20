@@ -77,7 +77,9 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/api/templates/**",
                                         "/swagger-ui/**",
-                                        "/api/match/**").permitAll()
+                                        "/api/match/**",
+                                        "/api/terrain/**",
+                                        "/api/action-match/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,
                                         "/api/equipe/**",
                                         "/api/competition/**",

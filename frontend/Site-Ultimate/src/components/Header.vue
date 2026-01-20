@@ -24,6 +24,7 @@ const clickhome = () => {
       <RouterLink v-if="auth.isAdmin" to="/requestadmin" class="nav-link">Demande joueurs</RouterLink>
       <RouterLink to="/" class="nav-link">Accueil</RouterLink>
       <RouterLink to="/Matchs" class="nav-link">Matchs</RouterLink>
+      <RouterLink to="/Terrains" class="nav-link">Terrains</RouterLink>
       <RouterLink to="/Equipe" class="nav-link">Equipe</RouterLink>
       <RouterLink to="/Competition" class="nav-link">Compétition</RouterLink>
       <RouterLink v-if="auth.isVisiteur" to="/mon-compte" class="nav-link">Mon compte</RouterLink>
@@ -40,10 +41,13 @@ const clickhome = () => {
 .header {
   background-color: white;
   padding: 16px 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
   display: flex;
   justify-content: space-between;
-  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;}
+
+  position: relative; 
+  z-index: 1000;
+}
 nav {
   display: flex;
   gap: 1.5rem;
