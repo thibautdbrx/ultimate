@@ -1,178 +1,120 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import {stringifyQuery, useRoute, useRouter} from 'vue-router'
-
-import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
-import CardMatch from "@/components/card_match.vue"
-import CarteEquipe from "@/components/card_equipe.vue"
-import ImageFond from "@/assets/img/img_equipe.jpg"
-import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
-
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from "@/stores/auth";
-const auth = useAuthStore();
 
+// Imports des sous-composants
+import CompetitionTeams from "@/components/competition_detail/CompetitionTeams.vue"
+import CompetitionMatches from "@/components/competition_detail/CompetitionMatches.vue"
+import CompetitionClassement from "@/components/competition_detail/CompetitionClassement.vue"
+import CompetitionTerrains from "@/components/competition_detail/CompetitionTerrains.vue"
+
+// Imports des Overlays
+import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
+import SelectionTerrainOverlay from "@/components/SelectionTerrainOverlay.vue"
+
+const auth = useAuthStore();
 const route = useRoute()
 const router = useRouter()
-
-const classement = ref([])
 const competitionId = route.params.id
+
+// --- STATE ---
 const competition = ref(null)
 const matches = ref([])
 const teams = ref([])
+const classement = ref([])
+
 const loading = ref(true)
 const error = ref(null)
-const modalShow_1 =ref(false)
 const editMode = ref(false)
 
+// Modales
+const modalShow_Teams = ref(false)
+const modalShow_Terrains = ref(false)
+
+// Toast & Confirm
 const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("error")
-
-const notify = (msg, type = "error") => {
-  toastMessage.value = msg
-  toastType.value = type
-  showToast.value = true
-  setTimeout(() => { showToast.value = false }, 3500)
-}
-
-
 const showConfirm = ref(false)
 const confirmMsg = ref("")
 const pendingAction = ref(null)
 
+// --- COMPUTED HELPERS ---
+const allowEdit = computed(() => matches.value.length === 0)
+const hasMatches = computed(() => matches.value.length > 0)
+const nbTeams = computed(() => teams.value.length)
+
+const competitionDejaCommencee = computed(() => {
+  if (!competition.value?.dateDebut) return false
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const debut = new Date(competition.value.dateDebut); debut.setHours(0, 0, 0, 0)
+  return debut < today
+})
+
+const canGenerate = computed(() => {
+  const hasEnoughTeams = teams.value.length >= 2
+  const hasTerrain = competition.value?.terrains?.length >= 1
+  return hasEnoughTeams && hasTerrain
+})
+
+const format_bien_aff = computed(() => (competition.value?.format || "").toUpperCase());
+
+// --- NOTIFICATIONS ---
+const notify = (msg, type = "error") => {
+  toastMessage.value = msg; toastType.value = type; showToast.value = true
+  setTimeout(() => { showToast.value = false }, 3500)
+}
+
 const askConfirmation = (message, action) => {
-  confirmMsg.value = message
-  pendingAction.value = action
-  showConfirm.value = true
+  confirmMsg.value = message; pendingAction.value = action; showConfirm.value = true
 }
+const confirmYes = () => { if (pendingAction.value) pendingAction.value(); showConfirm.value = false; pendingAction.value = null }
 
-const confirmYes = () => {
-  if (pendingAction.value) pendingAction.value()
-  showConfirm.value = false
-  pendingAction.value = null
-}
-
-async function fetchTeams() {
-  const res = await fetch(`/api/participation/competition/${competitionId}`)
-  if (!res.ok) throw new Error("Erreur HTTP équipes")
-  teams.value = await res.json()
-}
-
-async function fetchCompetitionInfo() {
-  const res = await fetch(`/api/competition/${competitionId}`)
-  if (res.ok) {
-    competition.value = await res.json()
-    GENRE_API_MAP[competition.genre] ?? ""
-  }
-}
-
-async function fetchMatches() {
-  const res = await fetch(`/api/competition/${competitionId}/matchs`)
-  if (!res.ok) throw new Error("Erreur HTTP matchs")
-  matches.value = await res.json()
-}
-
-async function fetchClassement() {
-  const res = await fetch(`/api/classement/competition/${competitionId}`)
-  if (!res.ok) throw new Error("Erreur HTTP classement")
-  classement.value = await res.json()
-}
-
-const classementTrie = computed(() => {
-  return [...classement.value].sort((a, b) => a.rang - b.rang)
-})
-
-const GENRE_API_MAP = {
-  HOMME: "MALE",
-  FEMMME: "FEMALE",
-  MIXTE: "MIXTE",
-  MALE: "MALE",
-  FEMALE: "FEMALE"
-}
-
-const genreApi = computed(() => {
-  return GENRE_API_MAP[competition.value?.genre] ?? ""
-})
-
-onMounted(async () => {
+// --- API FETCHING ---
+async function fetchData() {
+  loading.value = true
   try {
-    loading.value = true
-    await fetchTeams()
-    await fetchMatches()
-    await fetchCompetitionInfo()
-    await fetchClassement()
+    const [resTeams, resMatches, resInfo, resClass] = await Promise.all([
+      fetch(`/api/participation/competition/${competitionId}`),
+      fetch(`/api/competition/${competitionId}/matchs`),
+      fetch(`/api/competition/${competitionId}`),
+      fetch(`/api/classement/competition/${competitionId}`)
+    ])
+
+    if (resTeams.ok) teams.value = await resTeams.json()
+    if (resMatches.ok) matches.value = await resMatches.json()
+    if (resInfo.ok) competition.value = await resInfo.json()
+    if (resClass.ok) classement.value = await resClass.json()
+
   } catch (err) {
-    console.error(err)
-    error.value = "Erreur de chargement."
+    console.error(err); error.value = "Erreur de chargement des données."
   } finally {
     loading.value = false
   }
-})
+}
 
-const selectExisting = async (equipe) => {
+onMounted(fetchData)
+
+// --- ACTIONS ÉQUIPES ---
+const addTeam = async (equipe) => {
   try {
     const res = await fetch(`/api/participation`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        "idEquipe": equipe.idEquipe,
-        "idCompetition": competitionId
-      })
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ "idEquipe": equipe.idEquipe, "idCompetition": competitionId })
     })
+    if (!res.ok) throw new Error("Erreur ajout")
 
-    if (!res.ok) {
-      throw new Error("Erreur lors de l'ajout de l'équie à la competition")
-    }
-
-    teams.value.push({
-      idEquipe: equipe.idEquipe,
-      nomEquipe: equipe.nomEquipe,
-      description: equipe.descriptionEquipe,
-      genre: equipe.genre
-    })
-    notify("Équipe ajoutée avec succès", "success")
-    modalShow_1.value = false
-
-  } catch (err) {
-    console.error(err)
-    notify("Impossible d’ajouter l'équipe.")
-  }
+    teams.value.push({ ...equipe }) // On ajoute localement pour éviter un re-fetch
+    notify("Équipe ajoutée", "success")
+    modalShow_Teams.value = false
+  } catch (err) { notify("Impossible d’ajouter l'équipe.") }
 }
 
-const allowEdit = computed(() => matches.value.length === 0)
-const hasMatches = computed(() => matches.value.length > 0)
-
-const finishedMatches = computed(() => {
-  return matches.value.filter(m => m.status === "FINISHED")
-})
-
-const upcomingMatches = computed(() => {
-  return matches.value.filter(m => m.status !== "FINISHED")
-})
-
-const nbTeams = computed(() => teams.value.length)
-
-function toggleEditMode() {
-  editMode.value = !editMode.value
-}
-
-function goToEquipe(id, nom) {
-  router.push({ name: 'Equipe-details', params: { id, nom } })
-}
-
-const openModal_1 = () => {
-  if (competitionDejaCommencee.value) {
-    notify("La compétition a déjà commencé.", "error")
-    return
-  }
-  modalShow_1.value = true
-}
-
-const supprimerEquipe = async (index, id) => {
-  askConfirmation(`Supprimer ${teams.value[index].nomEquipe} ?`, async () => {
-    const suppJ = await fetch(`/api/participation`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+const removeTeam = (index, id) => {
+  askConfirmation(`Supprimer cette équipe ?`, async () => {
+    await fetch(`/api/participation`, {
+      method: "DELETE", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idEquipe: id, idCompetition: competitionId })
     });
     teams.value.splice(index, 1)
@@ -180,55 +122,66 @@ const supprimerEquipe = async (index, id) => {
   })
 }
 
-const format_bien_aff = computed(() => {
-  return (competition.value?.format || "").toUpperCase();
-});
+// --- ACTIONS TERRAINS ---
+const addTerrain = async (terrain) => {
+  try {
+    const res = await fetch(`/api/competition/${competitionId}/terrain/${terrain.idTerrain}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }
+    })
+    if (!res.ok) throw new Error("Erreur ajout terrain")
 
-const formatDate = (isoString) => {
-  if (!isoString) return ''
-  return new Date(isoString).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+    if(!competition.value.terrains) competition.value.terrains = []
+    competition.value.terrains.push(terrain)
+    modalShow_Terrains.value = false
+    notify("Terrain ajouté !", "success")
+  } catch (err) { notify("Impossible d'ajouter le terrain.") }
+}
+
+const removeTerrain = (index, idTerrain) => {
+  askConfirmation("Retirer ce terrain ?", async () => {
+    const res = await fetch(`/api/competition/${competitionId}/terrain/${idTerrain}`, { method: "DELETE" })
+    if (!res.ok) return notify("Impossible de supprimer")
+    competition.value.terrains.splice(index, 1)
+    notify("Terrain supprimé", "success")
   })
 }
 
+// --- ACTIONS MATCHS ---
 const GenererMatch = async () => {
-  const message = "⚠️ Attention :\n\n" +
-      "Une fois les matchs générés, vous ne pourrez PLUS modifier la compétition " +
-      "(ajout/suppression d'équipes impossible).\n\n" +
-      "Voulez-vous continuer ?"
-
-  askConfirmation(message, async () => {
+  if (!canGenerate.value){
+    return askConfirmation("⚠️ Impossible : Il faut au moins 2 équipes et 1 terrain.")
+  }
+  askConfirmation("Une fois générés, les équipes ne sont plus modifiables.\nContinuer ?", async () => {
     try {
-      const idCompetition = route.params.id;
-      const response = await fetch(`/api/competition/${idCompetition}/create`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`/api/competition/${competitionId}/create`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
       });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la génération des matchs");
-      }
-
-      notify("Matchs générés avec succès !", "success");
-      setTimeout(() => { router.push(`/Competitions/${competitionId}`) }, 1500)
-
-    } catch (error) {
-      console.error(error);
-      notify("Une erreur est survenue lors de la génération")
-    }
+      if (!res.ok) throw new Error("Erreur génération");
+      notify("Matchs générés !", "success");
+      // Petit reload pour afficher les matchs
+      setTimeout(() => { window.location.reload() }, 1000)
+    } catch (error) { notify("Erreur lors de la génération") }
   })
 };
 
-const competitionDejaCommencee = computed(() => {
-  if (!competition.value?.dateDebut) return false
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const debut = new Date(competition.value.dateDebut)
-  debut.setHours(0, 0, 0, 0)
-  return debut < today
-})
+const supprimerMatch = async () => {
+  // Placeholder car la fonction manquait dans votre code original
+  askConfirmation("Voulez-vous vraiment supprimer tous les matchs ?", async () => {
+    // Logique API à mettre ici
+    notify("Fonctionnalité en cours de développement", "error")
+  })
+}
+
+// --- NAVIGATION ---
+const goToEquipe = (t) => { router.push({ name: 'Equipe-details', params: { id: t.idEquipe, nom: t.nomEquipe } }) }
+const openTeamsModal = () => {
+  if (competitionDejaCommencee.value) return notify("Compétition commencée.", "error")
+  modalShow_Teams.value = true
+}
+const openTerrainsModal = () => {
+  if (competitionDejaCommencee.value) return notify("Compétition commencée.", "error")
+  modalShow_Terrains.value = true
+}
 </script>
 
 <template>
@@ -253,23 +206,19 @@ const competitionDejaCommencee = computed(() => {
     </Transition>
 
     <div class="competition-details">
-
       <div v-if="loading">Chargement...</div>
       <div v-if="error" class="state-msg error">{{ error }}</div>
 
       <div v-if="competition">
 
         <h2>
-          {{ competition.nomCompetition }} —
-          {{ format_bien_aff }} —
-          {{ competition.genre }} —
-          {{ nbTeams }} équipes
+          {{ competition.nomCompetition }} — {{ format_bien_aff }} — {{ competition.genre }} — {{ nbTeams }} équipes
         </h2>
 
         <div v-if="allowEdit && !loading" class="no-matches">
-          <p>Aucun match n’a encore été généré pour cette compétition.</p>
+          <p class="info-msg">Aucun match n’a encore été généré.</p>
 
-          <button v-if="auth.isAdmin" class="btn-primary" @click="toggleEditMode">
+          <button v-if="auth.isAdmin" class="btn-primary" @click="editMode = !editMode">
             {{ editMode ? "Quitter la modification" : "Modifier" }}
           </button>
 
@@ -278,105 +227,52 @@ const competitionDejaCommencee = computed(() => {
           </button>
         </div>
 
-        <section class="equipes-section">
-          <h3>Équipes engagées</h3>
+        <button v-if="auth.isAdmin && !allowEdit" class="btn-primary" @click="supprimerMatch">
+          Supprimer tous les matchs
+        </button>
 
-          <div v-if="allowEdit && editMode" class="edit-actions">
+        <CompetitionTeams
+            :teams="teams"
+            :edit-mode="editMode"
+            :is-started="competitionDejaCommencee"
+            @open-add="openTeamsModal"
+            @delete-team="({index, id}) => removeTeam(index, id)"
+            @go-to-team="goToEquipe"
+        />
 
-            <button
-                v-if="!competitionDejaCommencee"
-                class="btn-primary"
-                @click="openModal_1()"
-            >
-              Ajouter une équipe
-            </button>
+        <CompetitionMatches
+            :matches="matches"
+        />
 
-            <p v-else class="competition-deja-commencee">
-              La compétition a déjà commencé, il n’est plus possible d’ajouter des équipes.
-            </p>
+        <CompetitionClassement
+            :classement="classement"
+            :has-matches="hasMatches"
+            @go-to-team="goToEquipe"
+        />
 
-          </div>
+        <CompetitionTerrains
+            :terrains="competition.terrains"
+            :edit-mode="editMode"
+            @open-add="openTerrainsModal"
+            @delete-terrain="({index, id}) => removeTerrain(index, id)"
+        />
 
-          <div class="teams-grid">
-            <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
+        <SelectEquipe
+            :show="modalShow_Teams"
+            :genre="competition.genre"
+            :all="false"
+            :equipe_utilise="teams"
+            @close="modalShow_Teams = false"
+            @select="addTeam"
+        />
 
-              <button
-                  v-if="allowEdit && editMode && !competitionDejaCommencee"
-                  class="btn-delete"
-                  @click="supprimerEquipe(i, t.idEquipe)"
-              >
-                Supprimer
-              </button>
-
-              <CarteEquipe
-                  :equipe="t"
-                  :image="ImageFond"
-                  :licencie="false"
-                  @click="goToEquipe(t.idEquipe, t.nomEquipe)"
-              />
-            </div>
-
-            <SelectEquipe
-                :show="modalShow_1"
-                :genre="competition.genre"
-                :all="false"
-                :equipe_utilise="teams"
-                @close="modalShow_1 = false"
-                @select="selectExisting"
-            />
-          </div>
-        </section>
-
-        <div v-if="hasMatches" class="prochain_matches">
-
-          <h3>Matchs prochains</h3>
-          <SliderCardHorizontal v-if="upcomingMatches.length > 0">
-            <div v-for="match in upcomingMatches" :key="match.idMatch">
-              <CardMatch
-                  :title="formatDate(match.dateMatch)"
-                  :match ="match"
-
-              />
-            </div>
-          </SliderCardHorizontal>
-
-          <h3>Matchs finis</h3>
-          <SliderCardHorizontal v-if="finishedMatches.length > 0">
-            <div v-for="match in finishedMatches" :key="match.idMatch" @click="goToMatch(match.idMatch)">
-              <CardMatch
-                  :title="formatDate(match.dateMatch)"
-                  :match = "match"
-              />
-            </div>
-          </SliderCardHorizontal>
-        </div>
-
-        <section class="classement-section">
-          <h3>Classement du tournoi</h3>
-
-          <p v-if="!hasMatches" class="classement-info">
-            Le classement sera mis à jour automatiquement dès que les matchs auront été générés et joués.
-          </p>
-
-          <ul v-else-if="classementTrie.length" class="classement-list">
-            <li
-                v-for="c in classementTrie"
-                :key="c.idClassement.idEquipe"
-                :class="['classement-item', `rang-${c.rang}`]"
-            >
-              <span class="rang">{{ c.rang }}</span>
-
-              <span
-                  class="equipe"
-                  @click="goToEquipe(c.equipe.idEquipe, c.equipe.nomEquipe)"
-              >
-                  {{ c.equipe.nomEquipe }}
-              </span>
-
-              <span class="score">{{ c.score }} pts</span>
-            </li>
-          </ul>
-        </section>
+        <SelectionTerrainOverlay
+            :show="modalShow_Terrains"
+            :terrain_utilise="competition.terrains"
+            @close="modalShow_Terrains = false"
+            @select="addTerrain"
+            @nvt="router.push('/Terrains')"
+        />
 
       </div>
     </div>
@@ -409,45 +305,7 @@ h2 {
   margin-bottom: 2rem;
 }
 
-.teams-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-  width: 100%;
-  margin: 2rem 0;
-}
-
-.team-card-wrapper {
-  flex: 0 1 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.btn-delete {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* 3. LE SLIDER */
-.prochain_matches {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  width: 100%;
-
-  /* --- MODIFICATIONS POUR CENTRER --- */
-  max-width: 1200px;       /* 1. On remet la limite de largeur (comme tes h2) */
-  margin: 1rem auto 0 auto;/* 2. 'auto' à gauche et à droite centre le bloc */
-  box-sizing: border-box;  /* 4. Pour que le padding ne dépasse pas les 100% */
-}
-
-.btn-primary{
+.btn-primary {
   background-color: #333;
   color: white;
   padding: 0.5rem 1rem;
@@ -456,102 +314,142 @@ h2 {
   cursor: pointer;
   text-decoration: none;
 }
-.competition-deja-commencee {
-  color: #d32f2f;
-  font-size: 0.9rem;
-  text-align: center;
-}
 
-.classement-section {
-  margin-top: 3rem;
-  display: flex;
-  flex-direction: column;
-
-}
-
-.classement-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.classement-item {
-  display: grid;
-  grid-template-columns: 40px 1fr 80px;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 10px;
-  background: #f4f4f4;
-  font-weight: 500;
-}
-
-.classement-item .rang {
-  font-weight: bold;
-  text-align: center;
-}
-
-.classement-item .equipe {
-  cursor: pointer;
-}
-
-.classement-item .score {
-  text-align: right;
-  font-weight: bold;
-}
-
-
-.rang-1 {
-  background: linear-gradient(90deg, #ffd700, #fff4b0);
-}
-
-.rang-2 {
-  background: linear-gradient(90deg, #c0c0c0, #eeeeee);
-}
-
-.rang-3 {
-  background: linear-gradient(90deg, #cd7f32, #f1d1b3);
-}
-
-.classement-info {
-  text-align: center;
+.info-msg {
   font-size: 0.95rem;
   color: #666;
   margin-top: 1rem;
   font-style: italic;
 }
 
+/* TOAST & CONFIRM STYLES */
+
 .toast-notification {
-  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-  color: white; padding: 12px 24px; border-radius: 50px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); z-index: 10000;
-  display: flex; align-items: center; gap: 12px; font-weight: 600;
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
 }
-.toast-notification.success { background-color: #2ecc71; }
-.toast-notification.error { background-color: #e74c3c; }
-.toast-icon { background: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
-.success .toast-icon { color: #2ecc71; }
-.error .toast-icon { color: #e74c3c; }
-.toast-enter-active, .toast-leave-active { transition: all 0.4s ease; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 40px); }
+
+.toast-notification.success {
+  background-color: #2ecc71;
+}
+
+.toast-notification.error {
+  background-color: #e74c3c;
+}
+
+.toast-icon {
+  background: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.success .toast-icon {
+  color: #2ecc71;
+}
+
+.error .toast-icon {
+  color: #e74c3c;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.4s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 40px);
+}
 
 .confirm-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 11000;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 11000;
 }
+
 .confirm-box {
-  background: white; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2); text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
 }
-.confirm-box p { font-weight: 600; font-size: 1rem; margin-bottom: 1.5rem; color: #333; line-height: 1.5; }
-.confirm-btns { display: flex; gap: 1rem; justify-content: center; }
-.btn-no, .btn-yes { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-.btn-no { background: #eee; color: #666; }
-.btn-yes { background: #1e88e5; color: white; }
-.btn-no:hover { background: #ddd; }
-.btn-yes:hover { background: #1565c0; transform: scale(1.05); }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 
+.confirm-box p {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  line-height: 1.5;
+}
 
+.confirm-btns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-no,
+.btn-yes {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-no {
+  background: #eee;
+  color: #666;
+}
+
+.btn-yes {
+  background: #1e88e5;
+  color: white;
+}
+
+.btn-no:hover {
+  background: #ddd;
+}
+
+.btn-yes:hover {
+  background: #1565c0;
+  transform: scale(1.05);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
