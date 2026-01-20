@@ -39,15 +39,15 @@ public class ActionMatchService {
 
 
 
-    public ActionMatch addPoint(long id_match, long id_equipe, MatchPointDTO matchPointDTO) {
-        return addAction(id_match, id_equipe, matchPointDTO.getIdJoueur(), ActionTypeDTO.POINT);
+    public ActionMatch addPoint(long id_match, long id_equipe, MatchPointDTO matchPointDTO, LocalDateTime datePause) {
+        return addAction(id_match, id_equipe, matchPointDTO.getIdJoueur(), ActionTypeDTO.POINT, datePause);
     }
 
-    public ActionMatch addFaute(long id_match, long id_equipe, MatchFauteDTO matchFauteDTO) {
-        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE);
+    public ActionMatch addFaute(long id_match, long id_equipe, MatchFauteDTO matchFauteDTO, LocalDateTime datePause) {
+        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE, datePause);
     }
 
-    public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type) {
+    public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type, LocalDateTime datePause) {
         Match match = matchRepository.findById(id_match).orElse(null);
         Equipe equipe = equipeService.getById(id_equipe);
         Joueur joueur = joueurService.getById(id_joueur);
@@ -67,6 +67,7 @@ public class ActionMatchService {
         }
 
         ActionMatch action = new ActionMatch();
+        action.setDatePause(datePause);
         action.setMatch(match);
         action.setJoueur(joueur);
         action.setType(type);

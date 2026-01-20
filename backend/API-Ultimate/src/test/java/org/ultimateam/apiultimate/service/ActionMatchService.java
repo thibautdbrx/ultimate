@@ -17,6 +17,7 @@ import org.ultimateam.apiultimate.model.Match;
 import org.ultimateam.apiultimate.repository.ActionMatchRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -77,7 +78,7 @@ class ActionMatchServiceTest {
         when(actionMatchRepository.save(any(ActionMatch.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        ActionMatch result = actionMatchService.addPoint(1L, 10L, dto);
+        ActionMatch result = actionMatchService.addPoint(1L, 10L, dto, LocalDateTime.now());
 
         // Assert
         assertNotNull(result);
@@ -98,7 +99,7 @@ class ActionMatchServiceTest {
 
         // Act & Assert
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
-            actionMatchService.addAction(1L, 10L, 100L, ActionTypeDTO.POINT);
+            actionMatchService.addAction(1L, 10L, 100L, ActionTypeDTO.POINT, LocalDateTime.now());
         });
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
     }
@@ -116,7 +117,7 @@ class ActionMatchServiceTest {
         // Act & Assert
         // verifyJoueurInMatch doit lever une exception
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
-            actionMatchService.addAction(1L, 10L, 999L, ActionTypeDTO.POINT);
+            actionMatchService.addAction(1L, 10L, 999L, ActionTypeDTO.POINT, LocalDateTime.now());
         });
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         assertEquals("Le joueur ne fait partie d'aucune des deux équipes de ce match", ex.getReason());
@@ -134,7 +135,7 @@ class ActionMatchServiceTest {
 
         // Act & Assert
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
-            actionMatchService.addAction(1L, 30L, 100L, ActionTypeDTO.POINT);
+            actionMatchService.addAction(1L, 30L, 100L, ActionTypeDTO.POINT, LocalDateTime.now());
         });
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
         assertEquals("Cette équipe ne fait pas partie du match", ex.getReason());
