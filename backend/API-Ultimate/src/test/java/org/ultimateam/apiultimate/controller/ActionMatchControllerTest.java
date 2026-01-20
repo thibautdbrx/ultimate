@@ -79,24 +79,27 @@ class ActionMatchControllerTest {
 
     @Test
     void addPoint_ShouldUseRequestParams() throws Exception {
-        // Ta méthode addPoint utilise @RequestParam pour le DTO
-        when(actionMatchService.addPoint(eq(1L), eq(2L), any(MatchPointDTO.class))).thenReturn(new ActionMatch());
+        // CORRECTION : Ajout de any(java.time.LocalDateTime.class) car le controller appelle LocalDateTime.now()
+        when(actionMatchService.addPoint(eq(1L), eq(2L), any(MatchPointDTO.class), any(java.time.LocalDateTime.class)))
+                .thenReturn(new ActionMatch());
 
         mockMvc.perform(post("/api/action-match/1/equipe/2/point")
-                        .param("idJoueurPoint", "10") // Exemple de champ dans MatchPointDTO
+                        .param("idJoueurPoint", "10")
                         .param("idJoueurSert", "11"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void addFaute_ShouldUseRequestBody() throws Exception {
-        // Ta méthode addFaute utilise @RequestBody
+        // CORRECTION : Ajout de any(java.time.LocalDateTime.class) pour correspondre au 4ème paramètre
         MatchFauteDTO dto = new MatchFauteDTO();
-        when(actionMatchService.addFaute(eq(1L), eq(2L), any(MatchFauteDTO.class))).thenReturn(new ActionMatch());
+        when(actionMatchService.addFaute(eq(1L), eq(2L), any(MatchFauteDTO.class), any(java.time.LocalDateTime.class)))
+                .thenReturn(new ActionMatch());
 
         mockMvc.perform(post("/api/action-match/1/equipe/2/faute")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
     }
+
 }
