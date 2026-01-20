@@ -11,24 +11,46 @@ import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
 
-
 const route = useRoute()
 const router = useRouter()
 
 const classement = ref([])
-
-
 const competitionId = route.params.id
-
 const competition = ref(null)
 const matches = ref([])
 const teams = ref([])
-
 const loading = ref(true)
 const error = ref(null)
-
 const modalShow_1 =ref(false)
 const editMode = ref(false)
+
+const showToast = ref(false)
+const toastMessage = ref("")
+const toastType = ref("error")
+
+const notify = (msg, type = "error") => {
+  toastMessage.value = msg
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 3500)
+}
+
+
+const showConfirm = ref(false)
+const confirmMsg = ref("")
+const pendingAction = ref(null)
+
+const askConfirmation = (message, action) => {
+  confirmMsg.value = message
+  pendingAction.value = action
+  showConfirm.value = true
+}
+
+const confirmYes = () => {
+  if (pendingAction.value) pendingAction.value()
+  showConfirm.value = false
+  pendingAction.value = null
+}
 
 async function fetchTeams() {
   const res = await fetch(`/api/participation/competition/${competitionId}`)
@@ -42,14 +64,12 @@ async function fetchCompetitionInfo() {
     competition.value = await res.json()
     GENRE_API_MAP[competition.genre] ?? ""
   }
-
 }
 
 async function fetchMatches() {
   const res = await fetch(`/api/competition/${competitionId}/matchs`)
   if (!res.ok) throw new Error("Erreur HTTP matchs")
   matches.value = await res.json()
-  //console.log(matches.value)
 }
 
 async function fetchClassement() {
@@ -61,8 +81,6 @@ async function fetchClassement() {
 const classementTrie = computed(() => {
   return [...classement.value].sort((a, b) => a.rang - b.rang)
 })
-
-
 
 const GENRE_API_MAP = {
   HOMME: "MALE",
@@ -76,17 +94,13 @@ const genreApi = computed(() => {
   return GENRE_API_MAP[competition.value?.genre] ?? ""
 })
 
-
 onMounted(async () => {
   try {
     loading.value = true
-
     await fetchTeams()
     await fetchMatches()
     await fetchCompetitionInfo()
     await fetchClassement()
-
-
   } catch (err) {
     console.error(err)
     error.value = "Erreur de chargement."
@@ -95,63 +109,45 @@ onMounted(async () => {
   }
 })
 
-
-
 const selectExisting = async (equipe) => {
   try {
-    // 1. Appeler l’API pour assicier equipe au tournois
-      const res = await fetch(`/api/participation`, {
+    const res = await fetch(`/api/participation`, {
       method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          "idEquipe": equipe.idEquipe,
-          "idCompetition": competitionId
-        })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        "idEquipe": equipe.idEquipe,
+        "idCompetition": competitionId
+      })
     })
 
     if (!res.ok) {
       throw new Error("Erreur lors de l'ajout de l'équie à la competition")
     }
 
-    // 2. Ajouter le joueur dans la liste locale
     teams.value.push({
       idEquipe: equipe.idEquipe,
       nomEquipe: equipe.nomEquipe,
       description: equipe.descriptionEquipe,
       genre: equipe.genre
     })
-    alert("équipe bien ajouté dans la base de donnée")
-    // 3. Fermer la modale
+    notify("Équipe ajoutée avec succès", "success")
     modalShow_1.value = false
 
   } catch (err) {
     console.error(err)
-    alert("Impossible d’ajouter le joueur à l’équipe.")
+    notify("Impossible d’ajouter l'équipe.")
   }
 }
 
-
 const allowEdit = computed(() => matches.value.length === 0)
-
 const hasMatches = computed(() => matches.value.length > 0)
 
 const finishedMatches = computed(() => {
-
-  //const now = new Date()
-  return matches.value.filter(m =>
-      //m.status === "FINISHED" || new Date(m.dateFin) <= now
-      m.status === "FINISHED"
-
-  )
+  return matches.value.filter(m => m.status === "FINISHED")
 })
 
 const upcomingMatches = computed(() => {
-  //const now = new Date()
-  return matches.value.filter(m =>
-      //m.status !== "FINISHED" || new Date(m.dateFin) <= now
-      m.status !== "FINISHED"
-
-  )
+  return matches.value.filter(m => m.status !== "FINISHED")
 })
 
 const nbTeams = computed(() => teams.value.length)
@@ -160,34 +156,28 @@ function toggleEditMode() {
   editMode.value = !editMode.value
 }
 
-
 function goToEquipe(id, nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
 }
 
 const openModal_1 = () => {
   if (competitionDejaCommencee.value) {
-    alert("La compétition a déjà commencé.")
+    notify("La compétition a déjà commencé.", "error")
     return
   }
   modalShow_1.value = true
 }
 
 const supprimerEquipe = async (index, id) => {
-  if (confirm(`Supprimer ${teams.value[index].nomEquipe} ?`)) {
-    console.log(teams.value[index].nomEquipe + " supprimé de la bdd askip")
+  askConfirmation(`Supprimer ${teams.value[index].nomEquipe} ?`, async () => {
     const suppJ = await fetch(`/api/participation`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        idEquipe: id,
-        idCompetition: competitionId
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idEquipe: id, idCompetition: competitionId })
     });
     teams.value.splice(index, 1)
-  }
+    notify("Équipe supprimée", "success")
+  })
 }
 
 const format_bien_aff = computed(() => {
@@ -204,66 +194,64 @@ const formatDate = (isoString) => {
 }
 
 const GenererMatch = async () => {
-  const confirmation = window.confirm(
-      "⚠️ Attention :\n\n" +
+  const message = "⚠️ Attention :\n\n" +
       "Une fois les matchs générés, vous ne pourrez PLUS modifier la compétition " +
       "(ajout/suppression d'équipes impossible).\n\n" +
       "Voulez-vous continuer ?"
-  );
 
-  if (!confirmation) {
-    return; // l'utilisateur annule
-  }
+  askConfirmation(message, async () => {
+    try {
+      const idCompetition = route.params.id;
+      const response = await fetch(`/api/competition/${idCompetition}/create`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
 
-  try {
-    const idCompetition = route.params.id; // à récupérer dynamiquement
+      if (!response.ok) {
+        throw new Error("Erreur lors de la génération des matchs");
+      }
 
-    const response = await fetch(
-        `/api/competition/${idCompetition}/create`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-    );
+      notify("Matchs générés avec succès !", "success");
+      setTimeout(() => { router.push(`/Competitions/${competitionId}`) }, 1500)
 
-    if (!response.ok) {
-      throw new Error("Erreur lors de la génération des matchs");
+    } catch (error) {
+      console.error(error);
+      notify("Une erreur est survenue lors de la génération")
     }
-
-    const data = await response.json();
-    console.log("Matchs générés :", data);
-
-    alert("Les matchs ont été générés avec succès !");
-
-    // window.location.reload();
-  } catch (error) {
-    console.error(error);
-    alert("Une erreur est survenue lors de la génération des matchs");
-  }
-  router.push(`/Competitions/${competitionId}`)
+  })
 };
 
 const competitionDejaCommencee = computed(() => {
   if (!competition.value?.dateDebut) return false
-
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-
   const debut = new Date(competition.value.dateDebut)
   debut.setHours(0, 0, 0, 0)
-
   return debut < today
 })
-
-
-
-
 </script>
 
 <template>
   <main>
+    <Transition name="toast">
+      <div v-if="showToast" :class="['toast-notification', toastType]">
+        <span class="toast-icon">{{ toastType === 'success' ? '✔' : '✖' }}</span>
+        <span class="toast-text">{{ toastMessage }}</span>
+      </div>
+    </Transition>
+
+    <Transition name="fade">
+      <div v-if="showConfirm" class="confirm-overlay">
+        <div class="confirm-box">
+          <p style="white-space: pre-line;">{{ confirmMsg }}</p>
+          <div class="confirm-btns">
+            <button class="btn-no" @click="showConfirm = false">Annuler</button>
+            <button class="btn-yes" @click="confirmYes">Confirmer</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <div class="competition-details">
 
       <div v-if="loading">Chargement...</div>
@@ -278,7 +266,6 @@ const competitionDejaCommencee = computed(() => {
           {{ nbTeams }} équipes
         </h2>
 
-        <!--  ÉDITION ACTIVÉE -->
         <div v-if="allowEdit && !loading" class="no-matches">
           <p>Aucun match n’a encore été généré pour cette compétition.</p>
 
@@ -291,11 +278,9 @@ const competitionDejaCommencee = computed(() => {
           </button>
         </div>
 
-        <!-- ÉQUIPES TOUJOURS AFFICHÉES -->
         <section class="equipes-section">
           <h3>Équipes engagées</h3>
 
-          <!-- Bouton d'ajout uniquement en mode edition -->
           <div v-if="allowEdit && editMode" class="edit-actions">
 
             <button
@@ -306,10 +291,7 @@ const competitionDejaCommencee = computed(() => {
               Ajouter une équipe
             </button>
 
-            <p
-                v-else
-                class="competition-deja-commencee"
-            >
+            <p v-else class="competition-deja-commencee">
               La compétition a déjà commencé, il n’est plus possible d’ajouter des équipes.
             </p>
 
@@ -318,7 +300,6 @@ const competitionDejaCommencee = computed(() => {
           <div class="teams-grid">
             <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
 
-              <!-- Bouton supprimer affiché uniquement en édition -->
               <button
                   v-if="allowEdit && editMode && !competitionDejaCommencee"
                   class="btn-delete"
@@ -335,19 +316,17 @@ const competitionDejaCommencee = computed(() => {
               />
             </div>
 
-
-          <SelectEquipe
-              :show="modalShow_1"
-              :genre="competition.genre"
-              :all="false"
-              :equipe_utilise="teams"
-              @close="modalShow_1 = false"
-              @select="selectExisting"
-          />
+            <SelectEquipe
+                :show="modalShow_1"
+                :genre="competition.genre"
+                :all="false"
+                :equipe_utilise="teams"
+                @close="modalShow_1 = false"
+                @select="selectExisting"
+            />
           </div>
         </section>
 
-        <!-- AFFICHAGE DES MATCHS UNIQUEMENT S'IL Y EN A -->
         <div v-if="hasMatches" class="prochain_matches">
 
           <h3>Matchs prochains</h3>
@@ -398,7 +377,6 @@ const competitionDejaCommencee = computed(() => {
             </li>
           </ul>
         </section>
-
 
       </div>
     </div>
@@ -542,6 +520,38 @@ h2 {
   margin-top: 1rem;
   font-style: italic;
 }
+
+.toast-notification {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  color: white; padding: 12px 24px; border-radius: 50px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); z-index: 10000;
+  display: flex; align-items: center; gap: 12px; font-weight: 600;
+}
+.toast-notification.success { background-color: #2ecc71; }
+.toast-notification.error { background-color: #e74c3c; }
+.toast-icon { background: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+.success .toast-icon { color: #2ecc71; }
+.error .toast-icon { color: #e74c3c; }
+.toast-enter-active, .toast-leave-active { transition: all 0.4s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 40px); }
+
+.confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 11000;
+}
+.confirm-box {
+  background: white; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2); text-align: center;
+}
+.confirm-box p { font-weight: 600; font-size: 1rem; margin-bottom: 1.5rem; color: #333; line-height: 1.5; }
+.confirm-btns { display: flex; gap: 1rem; justify-content: center; }
+.btn-no, .btn-yes { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.btn-no { background: #eee; color: #666; }
+.btn-yes { background: #1e88e5; color: white; }
+.btn-no:hover { background: #ddd; }
+.btn-yes:hover { background: #1565c0; transform: scale(1.05); }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 
 </style>

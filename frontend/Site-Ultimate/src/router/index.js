@@ -18,6 +18,7 @@ import Fausse_pub from '../views/fausse_pub.vue'
 import RequestJoueur from "@/views/RequestJoueur.vue";
 import RequestAdmin from "@/views/RequestAdmin.vue";
 import Terrains from '@/views/Terrains.vue';
+import MonCompte from "@/views/MonCompte.vue";
 
 
 
@@ -40,7 +41,7 @@ const routes = [
     {path : '/request', component: RequestJoueur},
     {path : '/requestadmin', component: RequestAdmin},
     { path: '/Terrains', component:Terrains},
-
+    {path : '/mon-compte', component: MonCompte},
     { path: '/:pathMatch(.*)*', component: page_introuvable }
 
 ]

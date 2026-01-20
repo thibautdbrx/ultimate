@@ -51,7 +51,6 @@ async function fetchMatchs() {
 
 onMounted(fetchMatchs)
 
-// recharge automatique quand on change le filtre
 watch(filtre, fetchMatchs, { immediate: true })
 </script>
 
@@ -76,7 +75,12 @@ watch(filtre, fetchMatchs, { immediate: true })
     </div>
 
     <div v-if="loading" class="state-msg">Chargement...</div>
+
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
+
+    <div v-else-if="matchs.length === 0" class="state-msg info">
+      Aucun match trouvé pour cette catégorie.
+    </div>
 
     <div v-else class="competition-list">
       <div
@@ -126,10 +130,24 @@ watch(filtre, fetchMatchs, { immediate: true })
 .state-msg {
   margin-top: 2rem;
   text-align: center;
+  font-size: 1.1rem;
+  color: #555;
 }
 
 .state-msg.error {
-  color: red;
+  color: #e74c3c;
+}
+
+/* Style optionnel pour le message "Aucun match" */
+.state-msg.info {
+  color: #7f8c8d;
+  font-style: italic;
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+  max-width: 600px;
+  margin: 2rem auto;
 }
 
 .competition-list {

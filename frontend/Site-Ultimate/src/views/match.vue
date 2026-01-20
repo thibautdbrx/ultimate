@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
@@ -27,6 +27,7 @@ const auth = useAuthStore();
 
 // --- Récupération de l'id du match ---
 const route = useRoute();
+const router = useRouter();
 const matchId = Number(route.params.id);
 
 // State
@@ -86,6 +87,10 @@ const loadWeather = async (lat, lon) => {
   }
 };
 
+// Fonction pour aller vers la page de la compétition
+function goToCompetition(id) {
+  router.push({ name: 'Competition-details', params: { id } });
+}
 
 
 
@@ -148,7 +153,7 @@ const calculDuree = computed(() => {
     const datePause = match.value.datePause;
     duree = Date.parse(match.value.datePause) - Date.parse(dateDebut) - pause;
   }
-  
+
   return formatDuree(duree);
 });
 
@@ -193,7 +198,7 @@ const loadPlayers = async () => {
 
   try {
     const [res1, res2] = await Promise.all([
-      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`), // Récupère l'équipe 1 
+      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`), // Récupère l'équipe 1
       fetch(`/api/joueur/equipe/${match.value.equipe2.idEquipe}`) // Récupère l'équipe 2
     ]);
 
@@ -228,7 +233,7 @@ const loadActions = async () => {
 
     actions.value = await res1.json();
 
-  
+
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -269,14 +274,14 @@ const couleurEquipe2 = computed(() => {
 // ajoute 1 point à l'équipe "numEquipe", marqué par le joueur "idJoueur"
 const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
-  const matchId = match.value.idMatch; 
+  const matchId = match.value.idMatch;
 
   const point = {
     point: combien,
     idJoueur:idJoueur
   }
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
@@ -297,9 +302,9 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 // ajout d'une faute pour le joueur idJoueur de l'équipe numEquipe
 const AjoutFaute = async (numEquipe, idJoueur) => {
 
-  const matchId = match.value.idMatch; 
+  const matchId = match.value.idMatch;
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, { 
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
@@ -333,7 +338,7 @@ const operationMatch = async (operation) => {
   await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
   await loadPlayers();
   await loadActions();
-} 
+}
 
 
 // ----------------------
@@ -350,7 +355,7 @@ onMounted(async () => {
     maintenant.value = Date.now(); // mise à jour de la variable chaque secondes. Ce qui appelera la fonction calculDuree et calculDureePause chaque secondes
   }, 1000);
 
-  
+
 });
 
 onUnmounted(() => {
@@ -368,7 +373,11 @@ onUnmounted(() => {
 
       <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{ calculDuree }}</p>
 
-      <h1>
+      <h1
+          @click="goToCompetition(match.idCompetition.idCompetition)"
+          class="lien-competition"
+          title="Voir la compétition"
+      >
         {{match.idCompetition.nomCompetition}}
       </h1>
 
@@ -377,11 +386,11 @@ onUnmounted(() => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <p class="points">{{ match.scoreEquipe1 }}</p> 
+            <p class="points">{{ match.scoreEquipe1 }}</p>
           </div>
 
             <div class="actions">
-           
+
               <p v-if="loadingActions">Chargement…</p>
 
               <div v-for="i in actions">
@@ -389,9 +398,9 @@ onUnmounted(() => {
                 {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
-            
+
             </div>
-          
+
         </div>
 
         <div class="vs">VS</div>
@@ -399,12 +408,12 @@ onUnmounted(() => {
         <div class="score">
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
-          <div class="affichagePoint">      
-            <p class="points">{{ match.scoreEquipe2 }}</p>       
+          <div class="affichagePoint">
+            <p class="points">{{ match.scoreEquipe2 }}</p>
           </div>
 
           <div class="actions">
-           
+
             <p v-if="loadingActions">Chargement…</p>
 
             <div v-for="i in actions">
@@ -412,9 +421,9 @@ onUnmounted(() => {
                 {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
-            
+
           </div>
-          
+
         </div>
       </div>
 
@@ -437,7 +446,7 @@ onUnmounted(() => {
         <h3 class="subtitle">{{ match.equipe1.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
-        
+
         <div class="joueurDiv" v-for="j in joueursEquipe1">
 
           <div class="boutons">
@@ -445,7 +454,7 @@ onUnmounted(() => {
             <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
           </div>
           <Card_joueur
-              
+
               :key="j.idJoueur"
               :nom="j.nomJoueur"
               :prenom="j.prenomJoueur"
@@ -459,9 +468,9 @@ onUnmounted(() => {
             <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
           </template>
         </div>
-        
+
         </div>
-      
+
       </div>
 
       <!-- COLONNE MILIEU -->
@@ -510,7 +519,7 @@ onUnmounted(() => {
         <h3 class="subtitle">{{ match.equipe2.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
-        
+
         <div class="joueurDiv" v-for="j in joueursEquipe2">
 
         <div class="boutons">
@@ -518,7 +527,7 @@ onUnmounted(() => {
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
         </div>
         <Card_joueur
-            
+
             :key="j.idJoueur"
             :nom="j.nomJoueur"
             :prenom="j.prenomJoueur"
@@ -532,12 +541,12 @@ onUnmounted(() => {
             <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
           </template>
         </div>
-        
-        
+
+
         </div>
 
-      
-     
+
+
       </div>
 
     </div>
@@ -559,14 +568,14 @@ onUnmounted(() => {
 .score-box {
   display: flex;
   justify-content: center;
- 
+
   gap: 5rem;
   margin: 2rem 0;
 }
 
 .score {
   text-align: center;
-  width: 260px;  
+  width: 260px;
   margin-top: 0;
 }
 
@@ -841,6 +850,14 @@ color: gray}
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   margin-bottom: 1.5rem;
   z-index: 0;
+.lien-competition {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.lien-competition:hover {
+  color: #3498db; /* Un bleu pour indiquer le lien, ou la couleur de ton thème */
+  text-decoration: underline;
 }
 
 

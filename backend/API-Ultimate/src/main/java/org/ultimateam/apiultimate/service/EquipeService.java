@@ -9,8 +9,10 @@ import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.model.JoueurRequest;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
+import org.ultimateam.apiultimate.repository.JoueurRequestRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,16 +24,18 @@ public class EquipeService {
     private final EquipeRepository equipeRepository;
     private final JoueurRepository joueurRepository;
     private final ClassementService classementService;
+    private final JoueurRequestRepository joueurRequestRepository;
 
     /**
      * Constructeur pour l'injection de la dépendance EquipeRepository.
      *
      * @param equipeRepository Le repository pour l'accès aux données des équipes.
      */
-    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository, ClassementService classementService) {
+    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository, ClassementService classementService, JoueurRequestRepository joueurRequestRepository) {
         this.equipeRepository = equipeRepository;
         this.joueurRepository = joueurRepository;
         this.classementService = classementService;
+        this.joueurRequestRepository = joueurRequestRepository;
     }
 
     /**
@@ -141,10 +145,21 @@ public class EquipeService {
         return equipeRepository.findAllByGenre(genre);
     }
 
-    public List<Equipe> getNotFull(){
+    public List<Equipe> getNotFull(Long idJoueur){
+        List<Equipe> equipes;
+        Joueur joueur = joueurRepository.findById(idJoueur).orElse(null);
+        if (joueur == null) {
+            equipes = Collections.emptyList();
+        }
+        else {
+            List<JoueurRequest> joueursRequests = joueurRequestRepository.getByJoueur(joueur);
+            equipes = equipeRepository.findAllById(joueursRequests.stream().map(JoueurRequest::getEquipe).map(Equipe::getIdEquipe).collect(Collectors.toList()));
+        }
         List<Equipe> all = equipeRepository.findAll();
         return all.stream()
                 .filter(e -> !e.isFull())
+                .filter(e -> !equipes.contains(e))
                 .collect(Collectors.toList());
+
     }
 }
