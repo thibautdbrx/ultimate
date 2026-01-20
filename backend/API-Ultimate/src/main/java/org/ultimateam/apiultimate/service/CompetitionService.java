@@ -205,12 +205,15 @@ public class CompetitionService {
         }
 
         List<Match> matchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
-        if (matchs == null || matchs.isEmpty() || matchs.size() ==0)competition.setCommencer(false);
 
-        else {
+        competition.setCommencer(false);
+
+        if (matchs != null && !matchs.isEmpty()) {
             for (Match match : matchs) {
-                if (match.getStatus() != Match.Status.WAITING)
+                if (match.getStatus() != Match.Status.WAITING){
                     competition.setCommencer(true);
+                    break;
+                }
             }
         }
 
