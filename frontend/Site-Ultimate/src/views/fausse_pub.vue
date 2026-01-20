@@ -191,6 +191,8 @@ main {
   align-items: center;
   text-align: center;
   padding: 50px;
+
+  cursor: url("@/assets/img/curseur.cur"), pointer;
 }
 
 .emoji.spinning {
