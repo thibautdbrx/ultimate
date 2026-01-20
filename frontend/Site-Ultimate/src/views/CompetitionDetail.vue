@@ -1,27 +1,18 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-<<<<<<< HEAD
-import { stringifyQuery, useRoute, useRouter } from 'vue-router'
-
-import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
-import CardMatch from "@/components/card_match.vue"
-import CarteEquipe from "@/components/card_equipe.vue"
-import ImageFond from "@/assets/img/img_equipe.jpg"
-import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
-
-import api from '@/services/api' // Ajout de l'import api
-=======
 import { useRoute, useRouter } from 'vue-router'
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
+
+// --- SERVICES & STORES ---
+import api from '@/services/api'
 import { useAuthStore } from "@/stores/auth";
 
-// Imports des sous-composants
+// --- SOUS-COMPOSANTS ---
 import CompetitionTeams from "@/components/competition_detail/CompetitionTeams.vue"
 import CompetitionMatches from "@/components/competition_detail/CompetitionMatches.vue"
 import CompetitionClassement from "@/components/competition_detail/CompetitionClassement.vue"
 import CompetitionTerrains from "@/components/competition_detail/CompetitionTerrains.vue"
 
-// Imports des Overlays
+// --- OVERLAYS ---
 import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 import SelectionTerrainOverlay from "@/components/SelectionTerrainOverlay.vue"
 
@@ -38,31 +29,16 @@ const classement = ref([])
 
 const loading = ref(true)
 const error = ref(null)
-<<<<<<< HEAD
-const modalShow_1 = ref(false)
-=======
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
 const editMode = ref(false)
 
 // Modales
 const modalShow_Teams = ref(false)
 const modalShow_Terrains = ref(false)
 
-// Toast & Confirm
+// Toast & Confirm State
 const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("error")
-<<<<<<< HEAD
-
-const notify = (msg, type = "error") => {
-  toastMessage.value = msg
-  toastType.value = type
-  showToast.value = true
-  setTimeout(() => { showToast.value = false }, 3500)
-}
-
-=======
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
 const showConfirm = ref(false)
 const confirmMsg = ref("")
 const pendingAction = ref(null)
@@ -87,82 +63,47 @@ const canGenerate = computed(() => {
 
 const format_bien_aff = computed(() => (competition.value?.format || "").toUpperCase());
 
-// --- NOTIFICATIONS ---
+// --- NOTIFICATIONS & CONFIRMATION ---
 const notify = (msg, type = "error") => {
-  toastMessage.value = msg; toastType.value = type; showToast.value = true
+  toastMessage.value = msg;
+  toastType.value = type;
+  showToast.value = true
   setTimeout(() => { showToast.value = false }, 3500)
 }
 
 const askConfirmation = (message, action) => {
-  confirmMsg.value = message; pendingAction.value = action; showConfirm.value = true
+  confirmMsg.value = message;
+  pendingAction.value = action;
+  showConfirm.value = true
 }
-const confirmYes = () => { if (pendingAction.value) pendingAction.value(); showConfirm.value = false; pendingAction.value = null }
 
-<<<<<<< HEAD
 const confirmYes = () => {
   if (pendingAction.value) pendingAction.value()
   showConfirm.value = false
   pendingAction.value = null
 }
 
-async function fetchTeams() {
-  const res = await api.get(`/participation/competition/${competitionId}`)
-  teams.value = res.data
-}
-
-async function fetchCompetitionInfo() {
-  const res = await api.get(`/competition/${competitionId}`)
-  competition.value = res.data
-  GENRE_API_MAP[competition.genre] ?? ""
-}
-
-async function fetchMatches() {
-  const res = await api.get(`/competition/${competitionId}/matchs`)
-  matches.value = res.data
-}
-
-async function fetchClassement() {
-  const res = await api.get(`/classement/competition/${competitionId}`)
-  classement.value = res.data
-}
-
-const classementTrie = computed(() => {
-  return [...classement.value].sort((a, b) => a.rang - b.rang)
-})
-
-const GENRE_API_MAP = {
-  HOMME: "MALE",
-  FEMMME: "FEMALE",
-  MIXTE: "MIXTE",
-  MALE: "MALE",
-  FEMALE: "FEMALE"
-}
-
-const genreApi = computed(() => {
-  return GENRE_API_MAP[competition.value?.genre] ?? ""
-})
-
-onMounted(async () => {
-=======
 // --- API FETCHING ---
 async function fetchData() {
   loading.value = true
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
   try {
+    // Utilisation de Promise.all avec Axios (api.get)
     const [resTeams, resMatches, resInfo, resClass] = await Promise.all([
-      fetch(`/api/participation/competition/${competitionId}`),
-      fetch(`/api/competition/${competitionId}/matchs`),
-      fetch(`/api/competition/${competitionId}`),
-      fetch(`/api/classement/competition/${competitionId}`)
+      api.get(`/participation/competition/${competitionId}`),
+      api.get(`/competition/${competitionId}/matchs`),
+      api.get(`/competition/${competitionId}`),
+      api.get(`/classement/competition/${competitionId}`)
     ])
 
-    if (resTeams.ok) teams.value = await resTeams.json()
-    if (resMatches.ok) matches.value = await resMatches.json()
-    if (resInfo.ok) competition.value = await resInfo.json()
-    if (resClass.ok) classement.value = await resClass.json()
+    // Axios renvoie les données dans .data
+    teams.value = resTeams.data
+    matches.value = resMatches.data
+    competition.value = resInfo.data
+    classement.value = resClass.data
 
   } catch (err) {
-    console.error(err); error.value = "Erreur de chargement des données."
+    console.error(err);
+    error.value = "Erreur de chargement des données."
   } finally {
     loading.value = false
   }
@@ -173,66 +114,33 @@ onMounted(fetchData)
 // --- ACTIONS ÉQUIPES ---
 const addTeam = async (equipe) => {
   try {
-<<<<<<< HEAD
     await api.post(`/participation`, {
       "idEquipe": equipe.idEquipe,
       "idCompetition": competitionId
-=======
-    const res = await fetch(`/api/participation`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ "idEquipe": equipe.idEquipe, "idCompetition": competitionId })
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
     })
-    if (!res.ok) throw new Error("Erreur ajout")
 
-<<<<<<< HEAD
+    // On ajoute localement pour éviter un re-fetch complet
     teams.value.push({
       idEquipe: equipe.idEquipe,
       nomEquipe: equipe.nomEquipe,
       description: equipe.descriptionEquipe,
       genre: equipe.genre
     })
+
     notify("Équipe ajoutée avec succès", "success")
-    modalShow_1.value = false
+    modalShow_Teams.value = false
 
   } catch (err) {
     console.error(err)
-    notify("Impossible d’ajouter l'équipe.")
+    const msg = err.response?.data?.message || "Impossible d’ajouter l'équipe."
+    notify(msg)
   }
 }
 
-const allowEdit = computed(() => matches.value.length === 0)
-const hasMatches = computed(() => matches.value.length > 0)
-
-const finishedMatches = computed(() => {
-  return matches.value.filter(m => m.status === "FINISHED")
-})
-
-const upcomingMatches = computed(() => {
-  return matches.value.filter(m => m.status !== "FINISHED")
-})
-
-const nbTeams = computed(() => teams.value.length)
-
-function toggleEditMode() {
-  editMode.value = !editMode.value
-}
-
-function goToEquipe(id, nom) {
-  router.push({ name: 'Equipe-details', params: { id, nom } })
-}
-
-const openModal_1 = () => {
-  if (competitionDejaCommencee.value) {
-    notify("La compétition a déjà commencé.", "error")
-    return
-  }
-  modalShow_1.value = true
-}
-
-const supprimerEquipe = async (index, id) => {
-  askConfirmation(`Supprimer ${teams.value[index].nomEquipe} ?`, async () => {
+const removeTeam = (index, id) => {
+  askConfirmation(`Supprimer cette équipe ?`, async () => {
     try {
+      // Axios delete avec body nécessite une config { data: ... }
       await api.delete(`/participation`, {
         data: { idEquipe: id, idCompetition: competitionId }
       });
@@ -242,46 +150,32 @@ const supprimerEquipe = async (index, id) => {
       console.error(err);
       notify("Erreur lors de la suppression");
     }
-=======
-    teams.value.push({ ...equipe }) // On ajoute localement pour éviter un re-fetch
-    notify("Équipe ajoutée", "success")
-    modalShow_Teams.value = false
-  } catch (err) { notify("Impossible d’ajouter l'équipe.") }
-}
-
-const removeTeam = (index, id) => {
-  askConfirmation(`Supprimer cette équipe ?`, async () => {
-    await fetch(`/api/participation`, {
-      method: "DELETE", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idEquipe: id, idCompetition: competitionId })
-    });
-    teams.value.splice(index, 1)
-    notify("Équipe supprimée", "success")
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
   })
 }
 
 // --- ACTIONS TERRAINS ---
 const addTerrain = async (terrain) => {
   try {
-    const res = await fetch(`/api/competition/${competitionId}/terrain/${terrain.idTerrain}`, {
-      method: "POST", headers: { "Content-Type": "application/json" }
-    })
-    if (!res.ok) throw new Error("Erreur ajout terrain")
+    await api.post(`/competition/${competitionId}/terrain/${terrain.idTerrain}`)
 
     if(!competition.value.terrains) competition.value.terrains = []
     competition.value.terrains.push(terrain)
     modalShow_Terrains.value = false
     notify("Terrain ajouté !", "success")
-  } catch (err) { notify("Impossible d'ajouter le terrain.") }
+  } catch (err) {
+    notify("Impossible d'ajouter le terrain.")
+  }
 }
 
 const removeTerrain = (index, idTerrain) => {
   askConfirmation("Retirer ce terrain ?", async () => {
-    const res = await fetch(`/api/competition/${competitionId}/terrain/${idTerrain}`, { method: "DELETE" })
-    if (!res.ok) return notify("Impossible de supprimer")
-    competition.value.terrains.splice(index, 1)
-    notify("Terrain supprimé", "success")
+    try {
+      await api.delete(`/competition/${competitionId}/terrain/${idTerrain}`)
+      competition.value.terrains.splice(index, 1)
+      notify("Terrain supprimé", "success")
+    } catch (err) {
+      notify("Impossible de supprimer")
+    }
   })
 }
 
@@ -292,44 +186,39 @@ const GenererMatch = async () => {
   }
   askConfirmation("Une fois générés, les équipes ne sont plus modifiables.\nContinuer ?", async () => {
     try {
-<<<<<<< HEAD
-      const idCompetition = route.params.id;
-      await api.put(`/competition/${idCompetition}/create`);
+      await api.put(`/competition/${competitionId}/create`);
 
       notify("Matchs générés avec succès !", "success");
-      setTimeout(() => { router.push(`/Competitions/${competitionId}`) }, 1500)
+      // Petit délai pour laisser l'utilisateur lire le toast avant reload
+      setTimeout(() => { window.location.reload() }, 1500)
 
     } catch (error) {
       console.error(error);
       notify("Une erreur est survenue lors de la génération")
     }
-=======
-      const res = await fetch(`/api/competition/${competitionId}/create`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error("Erreur génération");
-      notify("Matchs générés !", "success");
-      // Petit reload pour afficher les matchs
-      setTimeout(() => { window.location.reload() }, 1000)
-    } catch (error) { notify("Erreur lors de la génération") }
->>>>>>> fa0950fa46854e8e644aa11aa1febff24bc73576
   })
 };
 
 const supprimerMatch = async () => {
-  // Placeholder car la fonction manquait dans votre code original
   askConfirmation("Voulez-vous vraiment supprimer tous les matchs ?", async () => {
-    // Logique API à mettre ici
+    // Logique API à implémenter si besoin, ou message d'erreur
     notify("Fonctionnalité en cours de développement", "error")
   })
 }
 
 // --- NAVIGATION ---
-const goToEquipe = (t) => { router.push({ name: 'Equipe-details', params: { id: t.idEquipe, nom: t.nomEquipe } }) }
+const goToEquipe = (t) => {
+  // Gère le cas où t est l'objet complet ou juste l'ID selon d'où vient l'event
+  const id = t.idEquipe || t
+  const nom = t.nomEquipe || "Equipe"
+  router.push({ name: 'Equipe-details', params: { id, nom } })
+}
+
 const openTeamsModal = () => {
   if (competitionDejaCommencee.value) return notify("Compétition commencée.", "error")
   modalShow_Teams.value = true
 }
+
 const openTerrainsModal = () => {
   if (competitionDejaCommencee.value) return notify("Compétition commencée.", "error")
   modalShow_Terrains.value = true
@@ -430,6 +319,7 @@ const openTerrainsModal = () => {
     </div>
   </main>
 </template>
+
 <style scoped>
 .competition-details {
   display: flex;
