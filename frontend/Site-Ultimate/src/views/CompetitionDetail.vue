@@ -36,6 +36,17 @@ const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("error")
 
+const hasEnoughTeams = computed(() => teams.value.length >= 2);
+const nbteam = computed(() => teams.value.length );
+
+const hasTerrain = computed(() => {
+  return competition.value?.terrains?.length >= 1;
+});
+
+const canGenerate = computed(() => {
+  return hasEnoughTeams.value && hasTerrain.value;
+});
+
 const notify = (msg, type = "error") => {
   toastMessage.value = msg
   toastType.value = type
@@ -209,6 +220,12 @@ const formatDate = (isoString) => {
 }
 
 const GenererMatch = async () => {
+
+  if (!canGenerate.value){
+    const message = " Désolé \n\n" +"Afin de generer des matchs et les poules il est necessaire d'avoir engagé au moins 2 équipes et selectionné un terrain"
+    askConfirmation(message)
+    return;
+  }
   const message = "⚠️ Attention :\n\n" +
       "Une fois les matchs générés, vous ne pourrez PLUS modifier la compétition " +
       "(ajout/suppression d'équipes impossible).\n\n" +
@@ -348,16 +365,21 @@ function nouveau_push_router(){
         </h2>
 
         <div v-if="allowEdit && !loading" class="no-matches">
-          <p>Aucun match n’a encore été généré pour cette compétition.</p>
+          <p class="info-msg">Aucun match n’a encore été généré pour cette compétition.</p>
 
           <button v-if="auth.isAdmin" class="btn-primary" @click="toggleEditMode">
             {{ editMode ? "Quitter la modification" : "Modifier" }}
           </button>
 
+
+
           <button v-if="auth.isAdmin || auth.isArbitre" class="btn-primary" @click="GenererMatch">
             Générer les poules et créer les matchs
           </button>
         </div>
+        <button v-if="auth.isAdmin && !allowEdit" class="btn-primary" @click="supprimerMatch">
+          {{"supprimer tous les matchs" }}
+        </button>
 
         <section class="equipes-section">
           <h3>Équipes engagées</h3>
@@ -374,6 +396,7 @@ function nouveau_push_router(){
               La compétition a déjà commencé, il n’est plus possible d’ajouter des équipes.
             </p>
           </div>
+          <p v-if="nbteam===0" class="info-msg">Aucune équipe n'a été selectionnée pour le moment</p>
 
           <div class="teams-grid">
             <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
@@ -568,7 +591,10 @@ h2 {
   margin-top: 3rem;
   display: flex;
   flex-direction: column;
+}
 
+.equipes-section{
+  margin-top: 3rem;
 }
 
 .classement-list {
