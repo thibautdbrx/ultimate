@@ -106,6 +106,7 @@ const loadMatch = async () => {
 
 };
 
+// Converti un objet duréePause en un temps en ms
 function ConversionPause(pause) {
   if (!pause) {
     pause = 0;
@@ -155,10 +156,18 @@ const calculDureePause = computed(() => {
   return formatDuree(dureePause)
 });
 
-// Passage d'une date à un temps pour une action
+// Passage d'une date à un temps pour une action en prenant en compte la durée de pause avant cette action
 function calculTempsAction(dateAction, tempsPause=0) {
   const date = Date.parse(dateAction);
   const dateDebut = Date.parse(match.value.dateDebut);
+
+  let pause;
+
+  if (!tempsPause) {
+    pause = 0;
+  } else {
+    pause = ConversionPause(tempsPause);
+  }
 
   return formatDuree(date - dateDebut - tempsPause)
 }
@@ -376,7 +385,7 @@ onUnmounted(() => {
 
               <div v-for="i in actions">
                <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
-                {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                {{ calculTempsAction(i.dateAction, i.datePause) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
             
