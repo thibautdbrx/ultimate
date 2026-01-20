@@ -842,14 +842,16 @@ color: gray}
 
 /* CARTE */
 .map-container {
-  height: 250px; 
+  height: 250px;
   width: 100%;
   border-radius: 12px;
-  overflow: hidden; 
+  overflow: hidden;
   border: 1px solid #ddd;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
   z-index: 0;
+}
+
 .lien-competition {
   cursor: pointer;
   transition: color 0.2s ease;

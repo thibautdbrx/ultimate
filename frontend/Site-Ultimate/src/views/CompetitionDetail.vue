@@ -31,6 +31,7 @@ const error = ref(null)
 const modalShow_1 =ref(false)
 const editMode = ref(false)
 
+// --- SYSTÈME DE TOAST (Notification) ---
 const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("error")
@@ -42,7 +43,7 @@ const notify = (msg, type = "error") => {
   setTimeout(() => { showToast.value = false }, 3500)
 }
 
-
+// --- SYSTÈME DE CONFIRMATION ---
 const showConfirm = ref(false)
 const confirmMsg = ref("")
 const pendingAction = ref(null)
@@ -78,7 +79,6 @@ async function fetchMatches() {
   const res = await fetch(`/api/competition/${competitionId}/matchs`)
   if (!res.ok) throw new Error("Erreur HTTP matchs")
   matches.value = await res.json()
-  //console.log(matches.value)
 }
 
 async function fetchClassement() {
@@ -90,7 +90,6 @@ async function fetchClassement() {
 const classementTrie = computed(() => {
   return [...classement.value].sort((a, b) => a.rang - b.rang)
 })
-
 
 
 const GENRE_API_MAP = {
@@ -109,13 +108,10 @@ const genreApi = computed(() => {
 onMounted(async () => {
   try {
     loading.value = true
-
     await fetchTeams()
     await fetchMatches()
     await fetchCompetitionInfo()
     await fetchClassement()
-
-
   } catch (err) {
     console.error(err)
     error.value = "Erreur de chargement."
@@ -123,7 +119,6 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
 
 
 const selectExisting = async (equipe) => {
@@ -141,7 +136,6 @@ const selectExisting = async (equipe) => {
       throw new Error("Erreur lors de l'ajout de l'équie à la competition")
     }
 
-    // 2. Ajouter le joueur dans la liste locale
     teams.value.push({
       idEquipe: equipe.idEquipe,
       nomEquipe: equipe.nomEquipe,
@@ -255,69 +249,60 @@ const competitionDejaCommencee = computed(() => {
 })
 
 
-
-
+// --- LOGIQUE TERRAINS (Simple) ---
 
 const modalTerrainShow = ref(false)
 
 const openTerrainModal = () => {
-  // On réutilise la logique pour empêcher la modif si c'est commencé
   if (competitionDejaCommencee.value) {
-    alert("La compétition a déjà commencé.")
+    notify("La compétition a déjà commencé.")
     return
   }
   modalTerrainShow.value = true
 }
+
+// Suppression simple d'un terrain
 const supprimerTerrain = async (index, idTerrain) => {
-  // 1. Confirmation
-  if (!confirm("Retirer ce terrain de la compétition ?")) {
-    return
-  }
+  askConfirmation("Retirer ce terrain de la compétition ?", async () => {
+    try {
+      // CORRECTION: Pas de Content-Type pour un DELETE sans body
+      const res = await fetch(`/api/competition/${competitionId}/terrain/${idTerrain}`, {
+        method: "DELETE"
+      })
 
-  try {
-    // 2. Appel API avec l'ID
-    const res = await fetch(`/api/competition/${competitionId}/terrain/${idTerrain}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" }
-    })
+      if (!res.ok) throw new Error("Erreur suppression terrain")
 
-    if (!res.ok) throw new Error("Erreur suppression terrain")
+      // Mise à jour locale
+      competition.value.terrains.splice(index, 1)
+      notify("Terrain supprimé", "success")
 
-    // 3. Mise à jour locale avec l'INDEEEEX
-    competition.value.terrains.splice(index, 1)
-
-    console.log("Terrain supprimé")
-
-  } catch (err) {
-    console.error(err)
-    alert("Impossible de supprimer le terrain.")
-  }
+    } catch (err) {
+      console.error(err)
+      notify("Impossible de supprimer le terrain")
+    }
+  })
 }
-
 
 
 const selectTerrain = async (terrain) => {
   try {
-
-    const res = await fetch(`/api/competition/${competitionId}/terrain/${terrain.id_terrain}`, {
-      method: "POST", // ou PUT selon ton API
+    console.log(terrain.idTerrain)
+    const res = await fetch(`/api/competition/${competitionId}/terrain/${terrain.idTerrain}`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" }
     })
 
     if (!res.ok) throw new Error("Erreur ajout terrain")
 
-    // Mise à jour locale
     if(!competition.value.terrains) competition.value.terrains = []
-
     competition.value.terrains.push(terrain)
 
-    // Fermer modal
     modalTerrainShow.value = false
-    alert("Terrain ajouté !")
+    notify("Terrain ajouté !", "success")
 
   } catch (err) {
     console.error(err)
-    alert("Impossible d'ajouter le terrain.")
+    notify("Impossible d'ajouter le terrain.")
   }
 }
 
@@ -378,7 +363,6 @@ function nouveau_push_router(){
           <h3>Équipes engagées</h3>
 
           <div v-if="allowEdit && editMode" class="edit-actions">
-
             <button
                 v-if="!competitionDejaCommencee"
                 class="btn-primary"
@@ -386,16 +370,13 @@ function nouveau_push_router(){
             >
               Ajouter une équipe
             </button>
-
             <p v-else class="competition-deja-commencee">
               La compétition a déjà commencé, il n’est plus possible d’ajouter des équipes.
             </p>
-
           </div>
 
           <div class="teams-grid">
             <div v-for="(t,i) in teams" :key="t.idEquipe" class="team-card-wrapper">
-
               <button
                   v-if="allowEdit && editMode && !competitionDejaCommencee"
                   class="btn-delete"
@@ -403,7 +384,6 @@ function nouveau_push_router(){
               >
                 Supprimer
               </button>
-
               <CarteEquipe
                   :equipe="t"
                   :image="ImageFond"
@@ -411,7 +391,6 @@ function nouveau_push_router(){
                   @click="goToEquipe(t.idEquipe, t.nomEquipe)"
               />
             </div>
-
             <SelectEquipe
                 :show="modalShow_1"
                 :genre="competition.genre"
@@ -424,36 +403,26 @@ function nouveau_push_router(){
         </section>
 
         <div v-if="hasMatches" class="prochain_matches">
-
           <h3>Matchs prochains</h3>
           <SliderCardHorizontal v-if="upcomingMatches.length > 0">
             <div v-for="match in upcomingMatches" :key="match.idMatch">
-              <CardMatch
-                  :title="formatDate(match.dateMatch)"
-                  :match ="match"
-
-              />
+              <CardMatch :title="formatDate(match.dateMatch)" :match ="match" />
             </div>
           </SliderCardHorizontal>
 
           <h3>Matchs finis</h3>
           <SliderCardHorizontal v-if="finishedMatches.length > 0">
             <div v-for="match in finishedMatches" :key="match.idMatch" @click="goToMatch(match.idMatch)">
-              <CardMatch
-                  :title="formatDate(match.dateMatch)"
-                  :match = "match"
-              />
+              <CardMatch :title="formatDate(match.dateMatch)" :match = "match" />
             </div>
           </SliderCardHorizontal>
         </div>
 
         <section class="classement-section">
           <h3>Classement du tournoi</h3>
-
-          <p v-if="!hasMatches" class="classement-info">
+          <p v-if="!hasMatches" class="info-msg">
             Le classement sera mis à jour automatiquement dès que les matchs auront été générés et joués.
           </p>
-
           <ul v-else-if="classementTrie.length" class="classement-list">
             <li
                 v-for="c in classementTrie"
@@ -461,14 +430,9 @@ function nouveau_push_router(){
                 :class="['classement-item', `rang-${c.rang}`]"
             >
               <span class="rang">{{ c.rang }}</span>
-
-              <span
-                  class="equipe"
-                  @click="goToEquipe(c.equipe.idEquipe, c.equipe.nomEquipe)"
-              >
+              <span class="equipe" @click="goToEquipe(c.equipe.idEquipe, c.equipe.nomEquipe)">
                   {{ c.equipe.nomEquipe }}
               </span>
-
               <span class="score">{{ c.score }} pts</span>
             </li>
           </ul>
@@ -479,10 +443,7 @@ function nouveau_push_router(){
           <h3>Terrains sélectionnés</h3>
 
           <div v-if="allowEdit && editMode" class="edit-actions">
-            <button
-                class="btn-primary"
-                @click="openTerrainModal"
-            >
+            <button class="btn-primary" @click="openTerrainModal">
               Ajouter un terrain
             </button>
           </div>
@@ -490,16 +451,17 @@ function nouveau_push_router(){
           <ul v-if="competition.terrains && competition.terrains.length > 0" class="terrain-list">
             <li
                 v-for="(terrain, i) in competition.terrains"
-                :key="terrain.id_terrain"
+                :key="terrain.idTerrain"
                 class="terrain-wrapper"
             >
               <button
                   v-if="allowEdit && editMode"
                   class="btn-delete"
-                  @click="supprimerTerrain(i, terrain.id_terrain)"
+                  @click="supprimerTerrain(i, terrain.idTerrain)"
               >
                 Supprimer
               </button>
+
               <div class="terrain-card-display">
                 <span class="terrain-nom">{{ terrain.nom }}</span>
                 <span class="terrain-ville">{{ terrain.ville }}</span>
@@ -507,7 +469,7 @@ function nouveau_push_router(){
             </li>
           </ul>
 
-          <div v-else class="no-data-msg">
+          <div v-else class="info-msg">
             <p>Aucun terrain n'a été sélectionné pour cette compétition.</p>
           </div>
 
@@ -582,11 +544,9 @@ h2 {
   flex-direction: column;
   gap: 2rem;
   width: 100%;
-
-  /* --- MODIFICATIONS POUR CENTRER --- */
-  max-width: 1200px;       /* 1. On remet la limite de largeur (comme tes h2) */
-  margin: 1rem auto 0 auto;/* 2. 'auto' à gauche et à droite centre le bloc */
-  box-sizing: border-box;  /* 4. Pour que le padding ne dépasse pas les 100% */
+  max-width: 1200px;
+  margin: 1rem auto 0 auto;
+  box-sizing: border-box;
 }
 
 .btn-primary{
@@ -655,26 +615,28 @@ h2 {
   background: linear-gradient(90deg, #cd7f32, #f1d1b3);
 }
 
-.classement-info {
+.info-msg {
   text-align: center;
   font-size: 0.95rem;
   color: #666;
   margin-top: 1rem;
   font-style: italic;
 }
+
 /* --- STYLE TERRAINS --- */
 .terrain-section {
   margin-top: 3rem;
   width: 100%;
-  /* Le width 100% permet au h3 de prendre toute la largeur et de s'aligner à gauche par défaut */
 }
 
-/* Espacement pour le bouton d'ajout (similaire à teams) */
 .edit-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
   margin: 1rem 0;
+  flex-wrap: wrap;
 }
 
-/* Grille identique à .teams-grid */
 .terrain-list {
   display: flex;
   flex-wrap: wrap;
@@ -685,7 +647,6 @@ h2 {
   margin: 2rem 0;
 }
 
-/* Wrapper identique à .team-card-wrapper */
 .terrain-wrapper {
   flex: 0 1 220px;
   display: flex;
@@ -693,7 +654,6 @@ h2 {
   gap: 1rem;
 }
 
-/* Le visuel de la carte (boite blanche) */
 .terrain-card-display {
   background: white;
   border: 1px solid #ddd;
@@ -723,16 +683,8 @@ h2 {
   font-weight: 500;
 }
 
-.no-data-msg {
-  text-align: center;
-  color: #666;
-  font-style: italic;
-  margin-top: 1rem;
-  border: 1px dashed #ccc;
-  padding: 2rem;
-  border-radius: 8px;
-}
 
+/* --- TOAST & CONFIRM --- */
 .toast-notification {
   position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
   color: white; padding: 12px 24px; border-radius: 50px;
@@ -764,6 +716,4 @@ h2 {
 .btn-yes:hover { background: #1565c0; transform: scale(1.05); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-
-
 </style>

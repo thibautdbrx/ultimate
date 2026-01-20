@@ -52,7 +52,7 @@ watch(
 
 // ID des terrains déjà sélectionnés dans la compétition
 const usedIds = computed(() =>
-    new Set((props.terrain_utilise ?? []).map(t => t.id_terrain))
+    new Set((props.terrain_utilise ?? []).map(t => t.idTerrain))
 )
 
 // Filtrage (Exclusion des déjà pris + Recherche texte)
@@ -60,7 +60,7 @@ const filtered = computed(() => {
   const searchLower = search.value.toLowerCase()
 
   return terrains.value
-      .filter(t => !usedIds.value.has(t.id_terrain)) // On cache ceux déjà présents
+      .filter(t => !usedIds.value.has(t.idTerrain)) // On cache ceux déjà présents
       .filter(t =>
           searchLower === "" ||
           t.nom.toLowerCase().includes(searchLower) ||
@@ -98,7 +98,7 @@ const filtered = computed(() => {
         <div
             v-else
             v-for="t in filtered"
-            :key="t.id_terrain"
+            :key="t.idTerrain"
             @click="emit('select', t)"
             class="terrain-card selectable"
         >
