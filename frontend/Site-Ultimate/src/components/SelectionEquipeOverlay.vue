@@ -157,7 +157,7 @@ const filtered = computed(() => {
   transition: 0.2s;
 }
 .selectable:hover {
-  transform: scale(1.03);
+  transform: translateY(-3px);
 }
 .create-btn, .close-btn {
   margin-top: 1rem;

@@ -242,6 +242,7 @@ const valider_ajout_competition = async () => {
     </div>
 
     <SelectEquipe :show="modalShow_1" :genre="genreFilter" @close="modalShow_1 = false" @select="selectExisting" />
+    <p id="sous-titre">les terrains devrons être selectionnés une fois la compétiton crée.</p>
 
     <div class="en_bas">
       <button class="valider_ajout" @click="valider_ajout_competition">Créer la compétition</button>
