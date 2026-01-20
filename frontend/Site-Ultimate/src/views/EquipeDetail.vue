@@ -6,6 +6,7 @@ import UserIcon from "@/assets/icons/avatar.svg"
 import champ_input from "@/components/champs_input.vue"
 import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
 
+import api from '@/services/api' // Ajout de l'import api
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
 
@@ -30,7 +31,7 @@ const notify = (msg, type = "error") => {
 // --- LOGIQUE MODALE DE CONFIRMATION (NOUVEAU) ---
 const showConfirm = ref(false)
 const confirmMsg = ref("")
-const pendingAction = ref(null) // Stocke la fonction à exécuter si on valide
+const pendingAction = ref(null)
 
 const askConfirmation = (message, action) => {
   confirmMsg.value = message
@@ -61,14 +62,15 @@ const genre = ref("")
 
 onMounted(async () => {
   try {
-    const resEquipe = await fetch(`/api/equipe/${equipeId}`)
-    if (!resEquipe.ok) throw new Error("Erreur API équipe")
-    equipe.value = await resEquipe.json()
+    // Remplacement des fetch par api.get
+    const resEquipe = await api.get(`/equipe/${equipeId}`)
+    equipe.value = resEquipe.data
     nomEquipe.value = equipe.value.nomEquipe
     genre.value = equipe.value.genre
-    const resJoueurs = await fetch(`/api/joueur/equipe/${equipeId}`)
-    if (!resJoueurs.ok) throw new Error("Erreur API joueurs")
-    joueurs.value = await resJoueurs.json()
+
+    const resJoueurs = await api.get(`/joueur/equipe/${equipeId}`)
+    joueurs.value = resJoueurs.data
+
     await get_indispo()
     loading.value = false
 
@@ -83,19 +85,20 @@ onMounted(async () => {
 
 const supprimerJoueur = (index) => {
   askConfirmation(`Supprimer ${joueurs.value[index].nomJoueur} de l'équipe ?`, async () => {
-    await fetch(`/api/joueur/${joueurs.value[index].idJoueur}/equipe/${equipeId}`, {
-      method: "DELETE",
-    });
-    joueurs.value.splice(index, 1)
-    notify("Joueur supprimé", "success")
+    try {
+      await api.delete(`/joueur/${joueurs.value[index].idJoueur}/equipe/${equipeId}`);
+      joueurs.value.splice(index, 1)
+      notify("Joueur supprimé", "success")
+    } catch (err) {
+      notify("Erreur lors de la suppression")
+    }
   })
 }
 
 const get_indispo = async () => {
   try {
-    const res = await fetch(`/api/indisponibilite/equipe/${equipeId}`)
-    if (!res.ok) throw new Error("Erreur API indisponibilités")
-    indispos.value = await res.json()
+    const res = await api.get(`/indisponibilite/equipe/${equipeId}`)
+    indispos.value = res.data
   } catch (err) {
     console.error(err)
   }
@@ -110,13 +113,12 @@ const ajouterIndispo = async () => {
   const dateFinFormatted = formatDateTimeSafe(dateFin.value)
   if (!dateDebutFormatted || !dateFinFormatted) return
   try {
-    const res = await fetch(`/api/indisponibilite`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idEquipe: equipeId, dateDebut: dateDebutFormatted, dateFin: dateFinFormatted })
+    const res = await api.post(`/indisponibilite`, {
+      idEquipe: equipeId,
+      dateDebut: dateDebutFormatted,
+      dateFin: dateFinFormatted
     })
-    if (!res.ok) throw new Error()
-    const newIndispo = await res.json()
+    const newIndispo = res.data
     indispos.value.push(newIndispo)
     dateDebut.value = ""; dateFin.value = ""
     notify("Indisponibilité ajoutée", "success")
@@ -128,8 +130,7 @@ const ajouterIndispo = async () => {
 const supprimerIndispo = (id, index) => {
   askConfirmation("Supprimer cette indisponibilité ?", async () => {
     try {
-      const res = await fetch(`/api/indisponibilite/${id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error()
+      await api.delete(`/indisponibilite/${id}`)
       indispos.value.splice(index, 1)
       notify("Indisponibilité supprimée", "success")
     } catch (err) {
@@ -141,12 +142,10 @@ const supprimerIndispo = (id, index) => {
 const valider_titre_desc = () => {
   askConfirmation("Changer le nom ou la description de l'équipe ?", async () => {
     try {
-      const modif_nom = await fetch(`/api/equipe/${equipeId}/name`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nom: nomEquipe.value, description: descriptionEquipe.value })
+      await api.patch(`/equipe/${equipeId}/name`, {
+        nom: nomEquipe.value,
+        description: descriptionEquipe.value
       });
-      if (!modif_nom.ok) throw new Error()
       equipe.value.nomEquipe = nomEquipe.value;
       equipe.value.descriptionEquipe = descriptionEquipe.value;
       notify("Modifications enregistrées", "success")
@@ -157,7 +156,7 @@ const valider_titre_desc = () => {
 }
 
 const openModal_1 = () => {
-  modalIndex.value = joueurs.length
+  modalIndex.value = joueurs.value.length
   modalShow_1.value = true
 }
 
@@ -166,18 +165,17 @@ const toggleindispoMode = () => indispoMode.value = !indispoMode.value
 
 const selectExisting = async (joueur) => {
   try {
-    const res = await fetch(`/api/joueur/${joueur.idJoueur}/equipe/${equipeId}`, { method: "PATCH" })
-    if (res.status === 401) {
-      notify("L'équipe est déjà complète !", "error")
-      modalShow_1.value = false
-      return
-    }
-    if (!res.ok) throw new Error()
+    await api.patch(`/joueur/${joueur.idJoueur}/equipe/${equipeId}`)
     joueurs.value.push({ ...joueur })
     notify("Joueur ajouté", "success")
     modalShow_1.value = false
   } catch (err) {
-    notify("Impossible d'ajouter le joueur")
+    if (err.response && err.response.status === 401) {
+      notify("L'équipe est déjà complète !", "error")
+    } else {
+      notify("Impossible d'ajouter le joueur")
+    }
+    modalShow_1.value = false
   }
 }
 

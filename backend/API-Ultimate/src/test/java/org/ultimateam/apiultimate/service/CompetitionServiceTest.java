@@ -95,16 +95,16 @@ class CompetitionServiceTest {
         when(equipeService.getById(100L)).thenReturn(equipe);
 
         // Simuler le résultat du scheduler
-        ScheduleResult mockResult = new ScheduleResult(new ArrayList<>(), new ArrayList<>());
+        //ScheduleResult mockResult = new ScheduleResult(new ArrayList<>(), new ArrayList<>());
         Match m = new Match();
         m.setTerrain(terrain); // Le match DOIT avoir un terrain sinon le service plante
         m.setEquipe1(equipe);
         m.setEquipe2(equipe);
-        mockResult.addMatch(m);
+        //mockResult.addMatch(m);
 
         // On utilise any() pour les arguments complexes du scheduler
-        when(scheduler.generateSchedule(anyList(), anyList(), any(), any(), eq(true), anyList()))
-                .thenReturn(mockResult); // ATTENTION : Ajout du dernier paramètre (indispos terrains)
+        //when(scheduler.generateSchedule(anyList(), anyList(), any(), any(), eq(true), anyList()))
+        //        .thenReturn(mockResult); // ATTENTION : Ajout du dernier paramètre (indispos terrains)
 
         // Act
         List<Match> result = competitionService.genererCompetition(1L);

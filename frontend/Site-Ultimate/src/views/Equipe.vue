@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
 import CarteEquipe from "@/components/card_equipe.vue"
 import {useAuthStore} from "@/stores/auth.js";
-const auth = useAuthStore();
+import api from '@/services/api' // Ajout de l'import api
 
+const auth = useAuthStore();
 const router = useRouter()
 
 const equipes = ref([])
@@ -25,13 +26,11 @@ onMounted(() => {
   isAdmin.value = role === 'ADMIN'
   isArbitre.value = role === 'ARBITRE'
 
-  fetch('/api/equipe')
+  // Remplacement de fetch par api.get
+  api.get('/equipe')
       .then(res => {
-        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
-        return res.json()
-      })
-      .then(data => {
-        equipes.value = data
+        // Axios parse le JSON automatiquement dans res.data
+        equipes.value = res.data
         loading.value = false
       })
       .catch(err => {

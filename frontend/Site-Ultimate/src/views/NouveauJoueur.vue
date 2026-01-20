@@ -3,6 +3,7 @@ import { ref } from "vue"
 import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth";
+import api from '@/services/api' // Ajout de l'import api
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -36,28 +37,15 @@ const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = auth.token;
-  const headers = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  // Axios gère automatiquement le Content-Type pour FormData
+  // Le token est géré par l'intercepteur de api.js
+  const uploadRes = await api.post(`/files/upload`, formData);
 
-  const uploadRes = await fetch(`/api/files/upload`, {
-    method: "POST",
-    headers: headers,
-    body: formData
-  });
-
-  if (!uploadRes.ok) {
-    throw new Error("Erreur lors de l'upload de l'image.");
-  }
-
-  const uploadData = await uploadRes.json();
-  return uploadData.url;
+  return uploadRes.data.url;
 }
 
 const validerCreation = async () => {
-  // --- MODIFICATION ICI : AJOUT DE LA VALIDATION DU GENRE ---
+  // --- VALIDATION ---
   if (!joueur.value.nomJoueur.trim() || !joueur.value.prenomJoueur.trim()) {
     notify("Le nom et prénom sont obligatoires.")
     return
@@ -82,18 +70,8 @@ const validerCreation = async () => {
       photoJoueur: photoUrl
     };
 
-    const res = await fetch("/api/joueur", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(joueurPayload)
-    });
-
-    if (!res.ok) {
-      notify("Erreur serveur : impossible de créer le joueur.")
-      return
-    }
+    // Utilisation de api.post au lieu de fetch
+    await api.post("/joueur", joueurPayload);
 
     notify("Joueur créé avec succès !", "success");
 
@@ -103,7 +81,7 @@ const validerCreation = async () => {
 
   } catch (error) {
     console.error(error);
-    notify("Impossible de créer le joueur : " + error.message);
+    notify("Impossible de créer le joueur : " + (error.response?.data?.message || error.message));
   }
 }
 </script>

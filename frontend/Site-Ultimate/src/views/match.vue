@@ -18,6 +18,7 @@ import resume from "@/assets/img/matchIcon/resume.png";
 
 import curseur from "@/assets/img/curseur.cur"
 
+import api from '@/services/api' // Ajout de l'import api
 import { useAuthStore } from "@/stores/auth";
 import PUB from "@/components/PUB.vue";
 const auth = useAuthStore();
@@ -60,7 +61,9 @@ const WEATHER_ERROR_FALLBACK = {
 const weather = ref(null); // --- METEO : Stockage des infos météo
 
 
-// --- METEO : Fonction de récupération ---
+// --- METEO : Fonction de récupération (Axios direct ici car c'est une API externe sans token) ---
+import axios from 'axios';
+
 const loadWeather = async (lat, lon) => {
   if (lat === null || lat === undefined || lon === null || lon === undefined) {
     console.warn("Coordonnées manquantes, pas de météo.");
@@ -69,10 +72,8 @@ const loadWeather = async (lat, lon) => {
 
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Erreur météo");
-    weather.value = await res.json();
-    //console.log("Météo reçue :", weather.value);
+    const res = await axios.get(url);
+    weather.value = res.data;
 
   } catch (e) {
     console.error("Impossible de charger la météo", e);
@@ -88,10 +89,8 @@ const loadWeather = async (lat, lon) => {
 // ----------------------
 const loadMatch = async () => {
   try {
-    const res = await fetch(`/api/match/${matchId}`);
-    if (!res.ok) throw new Error("Erreur API match : " + res.status);
-
-    match.value = await res.json();
+    const res = await api.get(`/match/${matchId}`);
+    match.value = res.data;
     etatMatch = match.value.status;
 
     //loadWeather(match.value.terrain.latitude, 2.3488);
@@ -102,8 +101,6 @@ const loadMatch = async () => {
   } finally {
     loadingMatch.value = false;
   }
-
-
 };
 
 // Converti un objet duréePause en un temps en ms
@@ -119,7 +116,6 @@ function ConversionPause(pause) {
   return pause;
 }
 
-// Calcul la durée du match en prenant en compte l'état et les pauses
 const calculDuree = computed(() => {
   const dateDebut = match.value.dateDebut;
   if (!dateDebut) return 0;
@@ -139,11 +135,10 @@ const calculDuree = computed(() => {
     const datePause = match.value.datePause;
     duree = Date.parse(match.value.datePause) - Date.parse(dateDebut) - pause;
   }
-  
+
   return formatDuree(duree);
 });
 
-// Calcul la durée de la pause quand le match est en pause
 const calculDureePause = computed(() => {
   const debut = match.value.datePause;
 
@@ -156,7 +151,6 @@ const calculDureePause = computed(() => {
   return formatDuree(dureePause)
 });
 
-// Passage d'une date à un temps pour une action en prenant en compte la durée de pause avant cette action
 function calculTempsAction(dateAction, tempsPause=0) {
   const date = Date.parse(dateAction);
   const dateDebut = Date.parse(match.value.dateDebut);
@@ -172,7 +166,6 @@ function calculTempsAction(dateAction, tempsPause=0) {
   return formatDuree(date - dateDebut - tempsPause)
 }
 
-// Convertie un temps en ms en un temps sous format heures:minutes:secondes
 function formatDuree(ms) {
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
@@ -192,16 +185,12 @@ const loadPlayers = async () => {
 
   try {
     const [res1, res2] = await Promise.all([
-      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`), // Récupère l'équipe 1 
-      fetch(`/api/joueur/equipe/${match.value.equipe2.idEquipe}`) // Récupère l'équipe 2
+      api.get(`/joueur/equipe/${match.value.equipe1.idEquipe}`),
+      api.get(`/joueur/equipe/${match.value.equipe2.idEquipe}`)
     ]);
 
-    if (!res1.ok || !res2.ok)
-      throw new Error("Erreur API joueurs");
-
-    joueursEquipe1.value = await res1.json();
-    joueursEquipe2.value = await res2.json();
-
+    joueursEquipe1.value = res1.data;
+    joueursEquipe2.value = res2.data;
 
   } catch (err) {
     error.value = err.message;
@@ -218,16 +207,9 @@ const loadActions = async () => {
   if (!match.value) return;
 
   try {
-    const [res1] = await Promise.all([
-      fetch(`/api/action-match/match/${matchId}`)
-    ]);
+    const res = await api.get(`/action-match/match/${matchId}`);
+    actions.value = res.data;
 
-    if (!res1.ok)
-      throw new Error("Erreur API joueurs");
-
-    actions.value = await res1.json();
-
-  
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -235,11 +217,7 @@ const loadActions = async () => {
   }
 };
 
-// ----------------------
-// LOGIQUE COULEURS (Pour déterminer la couleur d'affichage des noms des équipes)
-// ----------------------
-
-// Couleur de l'équipe 1
+// ... (Gardé tel quel : LOGIQUE COULEURS) ...
 const couleurEquipe1 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir"; // noir tant que le match n'est pas terminé
@@ -252,7 +230,6 @@ const couleurEquipe1 = computed(() => {
   return "or"; // or sinon (correspond à une égalité)
 });
 
-// Couleur de l'équipe 2 (même fonctionnement)
 const couleurEquipe2 = computed(() => {
   if (!match.value) return "noir";
   if (match.value.status !== "FINISHED") return "noir";
@@ -268,71 +245,52 @@ const couleurEquipe2 = computed(() => {
 // ajoute 1 point à l'équipe "numEquipe", marqué par le joueur "idJoueur"
 const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
-  const matchId = match.value.idMatch; 
+  const matchId = match.value.idMatch;
 
   const point = {
     point: combien,
     idJoueur:idJoueur
   }
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(point)
-  });
+  try {
+    await api.patch(`/match/${matchId}/equipe/${numEquipe}/point`, point);
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Erreur API:", errorText);
-    throw new Error("Erreur lors de l'ajout de point.");
+    await loadMatch();
+    await loadPlayers();
+    await loadActions();
+  } catch (err) {
+    console.error("Erreur lors de l'ajout de point", err);
   }
-
-  await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
-  await loadPlayers();
-  await loadActions();
 }
+
 // ajout d'une faute pour le joueur idJoueur de l'équipe numEquipe
 const AjoutFaute = async (numEquipe, idJoueur) => {
 
-  const matchId = match.value.idMatch; 
+  const matchId = match.value.idMatch;
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, { 
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({idJoueur : idJoueur})
-  });
+  try {
+    await api.patch(`/match/${matchId}/equipe/${numEquipe}/faute`, { idJoueur : idJoueur });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Erreur API:", errorText);
-    throw new Error("Erreur lors de l'ajout de point.");
+    await loadMatch();
+    await loadPlayers();
+    await loadActions();
+  } catch (err) {
+    console.error("Erreur lors de l'ajout de faute", err);
   }
-
-  await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
-  await loadPlayers();
-  await loadActions();
 }
 
 // appel d'une opération sur le match (Resume, Start, Pause ou End)
 const operationMatch = async (operation) => {
-  const res = await fetch(`/api/match/${matchId}/${operation}`, {
-    method: "PUT"
-  })
+  try {
+    await api.put(`/match/${matchId}/${operation}`);
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Erreur API:", errorText);
-    throw new Error(`Erreur lors du ${operation} du match.`);
+    await loadMatch();
+    await loadPlayers();
+    await loadActions();
+  } catch (err) {
+    console.error(`Erreur lors du ${operation} du match.`, err);
   }
-
-  await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
-  await loadPlayers();
-  await loadActions();
-} 
+}
 
 
 // ----------------------
@@ -355,8 +313,6 @@ onMounted(async () => {
 onUnmounted(() => {
   clearInterval(interval); // Supprime la mise à jour de la variable quand la page est fermée
 });
-
-
 </script>
 
 <template>

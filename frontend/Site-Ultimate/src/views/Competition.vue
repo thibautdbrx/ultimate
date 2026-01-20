@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageTournoi from "../assets/img/img_tournois.jpg"
 import ImageChampionnat from "../assets/img/img_championnat.png"
+import api from '@/services/api' // Ajout de l'import api
 
 const router = useRouter()
 
@@ -12,10 +13,11 @@ const error = ref(null)
 
 const filtre = ref('all') // 'all', 'tournoi', 'championnat'
 
+// Mise à jour des endpoints pour correspondre au baseURL de ton api.js
 const endpoints = {
-  all: '/api/competition',
-  tournoi: '/api/competition/tournoi',
-  championnat: '/api/competition/championnat'
+  all: '/competition',
+  tournoi: '/competition/tournoi',
+  championnat: '/competition/championnat'
 }
 
 function goToCompetition(id) {
@@ -29,9 +31,10 @@ async function fetchCompetitions() {
   error.value = null
 
   try {
-    const res = await fetch(endpoints[filtre.value])
-    if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`)
-    competitions.value = await res.json()
+    // Remplacement de fetch par api.get
+    const res = await api.get(endpoints[filtre.value])
+    // Axios parse automatiquement le JSON dans res.data
+    competitions.value = res.data
   } catch (err) {
     console.error(err)
     error.value = "Impossible de charger les compétitions."

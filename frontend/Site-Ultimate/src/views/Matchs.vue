@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import CarteMatch from '@/components/card_match.vue'
+import api from '@/services/api' // Import de l'instance Axios
 import {useAuthStore} from "@/stores/auth.js";
 
 const router = useRouter()
@@ -14,11 +15,11 @@ const auth = useAuthStore();
 const filtre = ref(route.query.filtre || 'all')
 
 const endpoints = {
-  all: '/api/match',
-  started: '/api/match/started',
-  notstarted: '/api/match/notstarted',
-  finished: '/api/match/finished',
-  joueur: '/api/match/equipe/:'
+  all: '/match',
+  started: '/match/started',
+  notstarted: '/match/notstarted',
+  finished: '/match/finished',
+  joueur: '/match/equipe/:'
 }
 
 function goToMatch(id) {
@@ -39,11 +40,15 @@ async function fetchMatchs() {
   error.value = null
 
   try {
-    const response = await fetch(endpoints[filtre.value])
-    if (!response.ok) throw new Error('Erreur lors du chargement des matchs')
-    matchs.value = await response.json()
+    // Remplacement de fetch par api.get
+    // On utilise les URLs relatives car baseURL est '/api'
+    const response = await api.get(endpoints[filtre.value])
+
+    // Axios met les données directement dans .data
+    matchs.value = response.data
   } catch (e) {
-    error.value = e.message
+    // Gestion de l'erreur via Axios
+    error.value = e.response?.data?.message || e.message
   } finally {
     loading.value = false
   }

@@ -6,7 +6,7 @@ import CadenaIcon from "@/assets/icons/cadena.svg"
 import EmailIcon from "@/assets/icons/email.svg"
 import AvatarIcon from "@/assets/icons/avatar.svg"
 import InscriptionBoutton from "@/components/InscriptionBoutton.vue";
-import axios from "axios";
+import api from '@/services/api' // Ajout de l'import api
 
 // --- LOGIQUE TOAST ---
 const showToast = ref(false)
@@ -25,43 +25,33 @@ const password = ref('')
 const nom = ref('')
 const prenom = ref('')
 const sexe = ref('')
-const errorMessage = ref('') // Ajouté pour éviter l'erreur dans le template
+const errorMessage = ref('')
 const router = useRouter()
 
 const submitForminscription = async () => {
   try {
-    const response = await fetch('http://localhost:8080/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prenom: prenom.value,
-        nom: nom.value,
-        email: email.value,
-        password: password.value,
-        genre: sexe.value
-      })
+    const response = await api.post('/auth/register', {
+      prenom: prenom.value,
+      nom: nom.value,
+      email: email.value,
+      password: password.value,
+      genre: sexe.value
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      notify(`Erreur : ${error.message}`, "error"); // Remplacement de l'alert
-      return;
-    }
-
-    const data = await response.json();
+    const data = response.data;
     console.log("ROLE_VISITEUR");
     document.cookie = `token=${data.token}; path=/; max-age=10800; SameSite=Lax`;
 
-    notify("Compte créé avec succès !", "success"); // Remplacement de l'alert
+    notify("Compte créé avec succès !", "success");
 
-    // Petite pause pour laisser le temps de voir le toast avant la redirection
     setTimeout(async () => {
       await router.back();
     }, 1500);
 
   } catch (err) {
     console.error(err);
-    notify("Erreur lors de la création du compte."); // Remplacement de l'alert
+    const message = err.response?.data?.message || "Erreur lors de la création du compte.";
+    notify(`Erreur : ${message}`, "error");
   }
 };
 </script>

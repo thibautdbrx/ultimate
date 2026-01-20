@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import {stringifyQuery, useRoute, useRouter} from 'vue-router'
+import { stringifyQuery, useRoute, useRouter } from 'vue-router'
 
 import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
 import CardMatch from "@/components/card_match.vue"
@@ -8,6 +8,7 @@ import CarteEquipe from "@/components/card_equipe.vue"
 import ImageFond from "@/assets/img/img_equipe.jpg"
 import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 
+import api from '@/services/api' // Ajout de l'import api
 import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
 
@@ -21,7 +22,7 @@ const matches = ref([])
 const teams = ref([])
 const loading = ref(true)
 const error = ref(null)
-const modalShow_1 =ref(false)
+const modalShow_1 = ref(false)
 const editMode = ref(false)
 
 const showToast = ref(false)
@@ -34,7 +35,6 @@ const notify = (msg, type = "error") => {
   showToast.value = true
   setTimeout(() => { showToast.value = false }, 3500)
 }
-
 
 const showConfirm = ref(false)
 const confirmMsg = ref("")
@@ -53,29 +53,24 @@ const confirmYes = () => {
 }
 
 async function fetchTeams() {
-  const res = await fetch(`/api/participation/competition/${competitionId}`)
-  if (!res.ok) throw new Error("Erreur HTTP équipes")
-  teams.value = await res.json()
+  const res = await api.get(`/participation/competition/${competitionId}`)
+  teams.value = res.data
 }
 
 async function fetchCompetitionInfo() {
-  const res = await fetch(`/api/competition/${competitionId}`)
-  if (res.ok) {
-    competition.value = await res.json()
-    GENRE_API_MAP[competition.genre] ?? ""
-  }
+  const res = await api.get(`/competition/${competitionId}`)
+  competition.value = res.data
+  GENRE_API_MAP[competition.genre] ?? ""
 }
 
 async function fetchMatches() {
-  const res = await fetch(`/api/competition/${competitionId}/matchs`)
-  if (!res.ok) throw new Error("Erreur HTTP matchs")
-  matches.value = await res.json()
+  const res = await api.get(`/competition/${competitionId}/matchs`)
+  matches.value = res.data
 }
 
 async function fetchClassement() {
-  const res = await fetch(`/api/classement/competition/${competitionId}`)
-  if (!res.ok) throw new Error("Erreur HTTP classement")
-  classement.value = await res.json()
+  const res = await api.get(`/classement/competition/${competitionId}`)
+  classement.value = res.data
 }
 
 const classementTrie = computed(() => {
@@ -111,18 +106,10 @@ onMounted(async () => {
 
 const selectExisting = async (equipe) => {
   try {
-    const res = await fetch(`/api/participation`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        "idEquipe": equipe.idEquipe,
-        "idCompetition": competitionId
-      })
+    await api.post(`/participation`, {
+      "idEquipe": equipe.idEquipe,
+      "idCompetition": competitionId
     })
-
-    if (!res.ok) {
-      throw new Error("Erreur lors de l'ajout de l'équie à la competition")
-    }
 
     teams.value.push({
       idEquipe: equipe.idEquipe,
@@ -170,13 +157,16 @@ const openModal_1 = () => {
 
 const supprimerEquipe = async (index, id) => {
   askConfirmation(`Supprimer ${teams.value[index].nomEquipe} ?`, async () => {
-    const suppJ = await fetch(`/api/participation`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idEquipe: id, idCompetition: competitionId })
-    });
-    teams.value.splice(index, 1)
-    notify("Équipe supprimée", "success")
+    try {
+      await api.delete(`/participation`, {
+        data: { idEquipe: id, idCompetition: competitionId }
+      });
+      teams.value.splice(index, 1)
+      notify("Équipe supprimée", "success")
+    } catch (err) {
+      console.error(err);
+      notify("Erreur lors de la suppression");
+    }
   })
 }
 
@@ -202,14 +192,7 @@ const GenererMatch = async () => {
   askConfirmation(message, async () => {
     try {
       const idCompetition = route.params.id;
-      const response = await fetch(`/api/competition/${idCompetition}/create`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la génération des matchs");
-      }
+      await api.put(`/competition/${idCompetition}/create`);
 
       notify("Matchs générés avec succès !", "success");
       setTimeout(() => { router.push(`/Competitions/${competitionId}`) }, 1500)

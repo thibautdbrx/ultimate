@@ -7,6 +7,7 @@ import TrophyIcon from '@/assets/icons/trophy.svg'
 import CalendarIcon from '@/assets/icons/calendar.svg'
 import { useAuthStore } from "@/stores/auth";
 
+import api from '@/services/api' // Ajout de l'import api
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
 import CardInfo from '../components/Card_info.vue'
 import CardMatch from '../components/card_match.vue'
@@ -37,37 +38,36 @@ const formatDate = (isoString) => {
 
 onMounted(async () => {
   try {
-    //console.log(auth.role)
+    // Remplacement des fetch par api.get
+    // Les données sont directement accessibles dans .data
+
     // Matchs en direct
-    const liveRes = await fetch(`/api/match/started`)
-    const liveData = await liveRes.json()
-    stats.value.live = liveData.length
+    const liveRes = await api.get(`match/started`)
+    stats.value.live = liveRes.data.length
 
     // Matchs à venir
-    const upcomingRes = await fetch(`/api/match/notstarted`)
-    const upcomingData = await upcomingRes.json()
-    stats.value.upcoming = upcomingData.length
+    const upcomingRes = await api.get(`match/notstarted`)
+    stats.value.upcoming = upcomingRes.data.length
 
     // Compétitions
-    const compRes = await fetch(`/api/competition`)
-    compData = await compRes.json()
+    const compRes = await api.get(`competition`)
+    compData = compRes.data
     stats.value.competitions = compData.length
 
+    // Récupérer tous les matchs pour les derniers résultats
+    const matchsRes = await api.get('match')
+    const matchsData = matchsRes.data
 
-
-    // récupérer les matchs
-    const matchsRes = await fetch('/api/match')
-    const matchsData = await matchsRes.json()
-    const isMatchJoue = (match) => { //le filtre
+    const isMatchJoue = (match) => {
       return match.status === "FINISHED"
     }
+
     const matchs = matchsData
-        .filter(isMatchJoue) //la on applique le  filtre
-        .sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut)) // récents en premier
+        .filter(isMatchJoue)
+        .sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut))
 
-// garder les 5 derniers
+    // Garder les 5 derniers
     derniersMatchs.value = matchs.slice(0, 5)
-
 
   } catch (err) {
     errorMsg.value = "Impossible de récupérer les matchs."
@@ -75,7 +75,8 @@ onMounted(async () => {
   }
 })
 
-function getCompetitionName(MatchInfo) { //je capte pas pourquoi on recupere pas l'id ais le match ici
+function getCompetitionName(MatchInfo) {
+  // compData étant maintenant le tableau direct issu de res.data
   const comp = compData.find(c => c.idCompetition === MatchInfo.idCompetition)
   return comp ? comp.nomCompetition : ''
 }

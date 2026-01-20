@@ -6,12 +6,13 @@ import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import AjoutJoueurOverlay from "@/components/AjoutJoueurOverlay.vue";
+import api from '@/services/api' // Import de l'instance Axios
 import { useAuthStore } from "@/stores/auth";
 
 // --- ÉTATS NOTIFICATIONS ---
 const showToast = ref(false)
 const toastMessage = ref("")
-const toastType = ref("error") // 'success' ou 'error'
+const toastType = ref("error")
 
 const notify = (msg, type = "error") => {
   toastMessage.value = msg
@@ -24,9 +25,9 @@ const nomEquipe = ref("")
 const descriptionEquipe = ref("")
 const nombreJoueurs = ref(0)
 
-const categorie = ref("") // OPEN, MIXTE, FEMME
-const format = ref("")    // 5v5, 7v7
-const mixite = ref("")    // H3F2, H2F3, etc
+const categorie = ref("")
+const format = ref("")
+const mixite = ref("")
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -146,26 +147,15 @@ const valider_ajout_equipe = async () => {
       nbJoueur: formatTexte,
     };
 
-    const resEquipe = await fetch("/api/equipe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(equipePayload)
-    });
-
-    if (!resEquipe.ok) {
-      const err = await resEquipe.json();
-      notify("Erreur : " + err.message);
-      return;
-    }
-
-    const equipeCree = await resEquipe.json();
+    // Remplacement fetch par api.post
+    const resEquipe = await api.post("/equipe", equipePayload);
+    const equipeCree = resEquipe.data;
 
     // --- 4) AFFECTATION DES JOUEURS ---
     if (joueursRemplis.length > 0) {
+      // Remplacement fetch par api.patch dans le Promise.all
       await Promise.all(joueursRemplis.map(j =>
-          fetch(`/api/joueur/${j.id}/equipe/${equipeCree.idEquipe}`, {
-            method: "PATCH"
-          })
+          api.patch(`/joueur/${j.id}/equipe/${equipeCree.idEquipe}`)
       ));
     }
 
@@ -173,7 +163,8 @@ const valider_ajout_equipe = async () => {
     setTimeout(() => router.push("/Equipe"), 1500);
 
   } catch (e) {
-    notify("Impossible de contacter le serveur");
+    const errorMsg = e.response?.data?.message || "Impossible de contacter le serveur";
+    notify(errorMsg);
   }
 };
 </script>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, computed} from "vue"
 import CardJoueur from "@/components/card_joueur.vue";
+import api from '@/services/api' // Ajout de l'import api
 
 const props = defineProps({
   show: Boolean,
@@ -27,40 +28,37 @@ const notify = (msg, type = "error") => {
 
 async function loadJoueurs() {
   try {
-    let res
-    if (props.id_equipe === "None")
-      res = await fetch("/api/joueur/solo/")
-    else
-      res = await fetch(`/api/joueur/solo/?idEquipe=${props.id_equipe}`)
-
-    // --- CORRECTION CRASH ICI ---
-    if (res.status === 401) {
-      joueurs.value = [] // On vide la liste pour que .filter() ne plante pas
-      notify("L'équipe est déjà complète !", "error")
-      return
+    let response
+    if (props.id_equipe === "None") {
+      response = await api.get("/joueur/solo/")
+    } else {
+      response = await api.get("/joueur/solo/", {
+        params: { idEquipe: props.id_equipe }
+      })
     }
 
-    if (!res.ok) {
-      joueurs.value = []
-      notify("Erreur lors du chargement des joueurs.")
-      return
-    }
-
-    const data = await res.json()
-    // Sécurité : on s'assure que c'est un tableau
+    // Axios met les données directement dans response.data
+    const data = response.data
     joueurs.value = Array.isArray(data) ? data : []
 
   } catch (e) {
     console.error(e)
     joueurs.value = []
-    notify("Impossible de contacter le serveur.")
+
+    // Gestion spécifique de l'erreur 401 (Equipe complète) via Axios
+    if (e.response && e.response.status === 401) {
+      notify("L'équipe est déjà complète !", "error")
+    } else {
+      notify("Impossible de contacter le serveur.")
+    }
   }
 }
 
 onMounted(async () => {
   loadJoueurs()
 })
-//pour rafraichir les jouerus quand on ouvre l'overlay
+
+// pour rafraichir les joueurs quand on ouvre l'overlay
 watch(() => props.show, async (v) => {
   if (v) {
     await loadJoueurs()
@@ -68,7 +66,6 @@ watch(() => props.show, async (v) => {
 })
 
 const filtered = computed(() =>
-    // Le ? permet d'éviter le crash si joueurs.value est null par accident
     (joueurs.value || []).filter(j =>
         (j.nomJoueur + " " + j.prenomJoueur)
             .toLowerCase()

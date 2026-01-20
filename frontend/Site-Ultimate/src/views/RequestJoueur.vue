@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
 import CarteEquipe from "@/components/card_equipe.vue"
+import api from '@/services/api' // Import de l'instance Axios
 import { useAuthStore } from "@/stores/auth.js"
 
 const auth = useAuthStore()
@@ -48,9 +49,10 @@ onMounted(async () => {
 
   try {
     loading.value = true
-    const resJoueur = await fetch(`/api/joueur/${currentJoueurId}`)
-    if (!resJoueur.ok) throw new Error("Impossible de récupérer le profil")
-    const joueur = await resJoueur.json()
+
+    // Remplacement fetch par api.get
+    const resJoueur = await api.get(`/joueur/${currentJoueurId}`)
+    const joueur = resJoueur.data
 
     if (joueur.equipe) {
       existingTeam.value = joueur.equipe
@@ -58,9 +60,12 @@ onMounted(async () => {
       return
     }
 
-    const resEquipes = await fetch(`/api/equipe/open?idJoueur=${currentJoueurId}`)
-    if (!resEquipes.ok) throw new Error(`Erreur HTTP: ${resEquipes.status}`)
-    equipes.value = await resEquipes.json()
+    // Remplacement fetch par api.get avec params
+    const resEquipes = await api.get('/equipe/open', {
+      params: { idJoueur: currentJoueurId }
+    })
+    equipes.value = resEquipes.data
+
   } catch (err) {
     error.value = err.message
   } finally {
@@ -70,31 +75,18 @@ onMounted(async () => {
 
 async function postuler(equipeId) {
   let currentJoueurId = auth.joueurId || getJoueurIdFromCookie()
-  let token = auth.token
-  if (!token) {
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('token='))
-    if(cookie) token = cookie.split('=')[1]
-  }
 
-  if (!currentJoueurId || !token) {
+  // Le token est géré automatiquement par l'intercepteur de api.js
+  if (!currentJoueurId) {
     triggerToast("Erreur d'authentification.")
     return
   }
 
   submittingId.value = equipeId
   try {
-    const response = await fetch(`/api/joueur/request/${currentJoueurId}/equipe/${equipeId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    })
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      throw new Error(err.message || "Erreur lors de la demande.")
-    }
+    // Remplacement fetch par api.post
+    // Plus besoin de headers 'Content-Type' ou 'Authorization' manuels
+    await api.post(`/joueur/request/${currentJoueurId}/equipe/${equipeId}`)
 
     equipes.value = equipes.value.filter(e => e.idEquipe !== equipeId)
 
@@ -103,7 +95,8 @@ async function postuler(equipeId) {
 
   } catch (err) {
     console.error(err)
-    triggerToast("Erreur : " + err.message)
+    const msg = err.response?.data?.message || err.message
+    triggerToast("Erreur : " + msg)
   } finally {
     submittingId.value = null
   }

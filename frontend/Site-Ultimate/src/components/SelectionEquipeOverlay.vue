@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed} from "vue"
 import CardEquipe from "@/components/card_equipe.vue"
+import api from '@/services/api' // Import de l'instance Axios
 
 const props = defineProps({
   show: Boolean,
@@ -18,7 +19,7 @@ const props = defineProps({
     type: Object,
     required: false,
     default: null,
-    }
+  }
 })
 
 const emit = defineEmits(["close", "select", "nvj"])
@@ -33,8 +34,13 @@ async function loadEquipes() {
   equipes.value = []
 
   try {
-    const res = await fetch(`/api/equipe/genre?genre=${props.genre}`)
-    equipes.value = await res.json()
+    // Utilisation de api.get avec l'objet params pour plus de propreté
+    const res = await api.get('/equipe/genre', {
+      params: { genre: props.genre }
+    })
+
+    // Axios parse automatiquement le JSON dans res.data
+    equipes.value = res.data
   } catch (e) {
     console.error(e)
   } finally {
@@ -56,13 +62,12 @@ watch(
     { immediate: true }
 )
 
-
 // ID des équipes déjà utilisées
 const usedIds = computed(() =>
     new Set((props.equipe_utilise ?? []).map(eu => eu.idEquipe))
 )
 
-// equipes filtrées
+// Equipes filtrées
 const filtered = computed(() => {
   const searchLower = search.value.toLowerCase()
 
@@ -73,10 +78,6 @@ const filtered = computed(() => {
           e.nomEquipe.toLowerCase().includes(searchLower) // filtre par texte si besoin
       )
 })
-
-
-
-
 </script>
 
 <template>
@@ -103,9 +104,9 @@ const filtered = computed(() => {
 
         <div v-else
              v-for="e in filtered"
-            :key="e.idEquipe"
-            @click="emit('select', e)"
-            class="selectable"
+             :key="e.idEquipe"
+             @click="emit('select', e)"
+             class="selectable"
         >
           <CardEquipe
               :equipe="e"
@@ -136,8 +137,6 @@ const filtered = computed(() => {
   max-height: 90vh;
   overflow-y: auto;
 }
-
-
 
 .search-input {
   width: 100%;
@@ -189,5 +188,4 @@ const filtered = computed(() => {
   border:none;
   border-radius: 0.5rem;
 }
-
 </style>

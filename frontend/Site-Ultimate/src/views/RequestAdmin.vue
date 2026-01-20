@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import api from '@/services/api' // Import de l'instance Axios
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -28,13 +29,11 @@ function triggerToast(message) {
 async function loadRequests() {
   try {
     loading.value = true
-    const res = await fetch('/api/joueur/requests', {
-      headers: { Authorization: `Bearer ${auth.token}` }
-    })
-    if (!res.ok) throw new Error('Erreur chargement demandes')
-    requests.value = await res.json()
+    // Utilisation de api.get (le Bearer token est géré par l'intercepteur)
+    const res = await api.get('/joueur/requests')
+    requests.value = res.data
   } catch (e) {
-    error.value = e.message
+    error.value = e.response?.data?.message || e.message
   } finally {
     loading.value = false
   }
@@ -65,18 +64,15 @@ async function executeAction() {
 
   try {
     const endpoint = action === 'accepter' ? 'accept' : 'refuse'
-    const res = await fetch(`/api/joueur/request/${r.joueur.idJoueur}/equipe/${r.equipe.idEquipe}/${endpoint}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${auth.token}` }
-    })
 
-    if (res.ok) {
-      triggerToast(action === 'accepter' ? "Joueur accepté !" : "Demande refusée.")
-      await loadRequests()
-    } else {
-      throw new Error("Erreur serveur")
-    }
+    // Remplacement du fetch par api.patch
+    await api.patch(`/joueur/request/${r.joueur.idJoueur}/equipe/${r.equipe.idEquipe}/${endpoint}`)
+
+    triggerToast(action === 'accepter' ? "Joueur accepté !" : "Demande refusée.")
+    await loadRequests()
+
   } catch (e) {
+    console.error(e)
     triggerToast("Erreur lors de l'opération")
   }
 }
@@ -157,99 +153,35 @@ async function executeAction() {
 </template>
 
 <style scoped>
-/* --- MISE EN PAGE & TABLEAU --- */
-.admin-requests {
-  padding: 2rem;
-  max-width: 1200px; /* Plus large */
-  margin: 0 auto;
-}
 
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 1rem;
-}
-
-.table-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  overflow: hidden;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  background: #fcfcfc;
-  padding: 1.2rem;
-  text-align: left;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #888;
-}
-
-td {
-  padding: 1.2rem;
-  border-bottom: 1px solid #f5f5f5;
-  vertical-align: middle;
-}
-
+.admin-requests { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 2px solid #eee; padding-bottom: 1rem; }
+.table-container { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #fcfcfc; padding: 1.2rem; text-align: left; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+td { padding: 1.2rem; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
 .joueur-cell { display: flex; align-items: center; gap: 1rem; }
-.avatar-mini {
-  width: 35px; height: 35px; background: #e0e7ff; color: #4f46e5;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;
-}
+.avatar-mini { width: 35px; height: 35px; background: #e0e7ff; color: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 .name { font-weight: 600; color: #2c3e50; }
 .badge-genre { font-size: 0.8rem; background: #eee; padding: 2px 8px; border-radius: 4px; }
 .team-name { color: #2563eb; font-weight: 500; }
-
 .actions { display: flex; gap: 1rem; justify-content: flex-end; }
-
-.btn-icon {
-  width: 38px; height: 38px; border-radius: 10px; border: none;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; color: white;
-}
+.btn-icon { width: 38px; height: 38px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: white; }
 .btn-icon.accept { background: #10b981; }
 .btn-icon.refuse { background: #ef4444; }
 .btn-icon:hover { transform: scale(1.1); filter: brightness(1.1); }
-
-/* --- MODALE DE CONFIRMATION --- */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center; z-index: 11000;
-  backdrop-filter: blur(3px);
-}
-.modal-content {
-  background: white; width: 400px; border-radius: 16px; overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 11000; backdrop-filter: blur(3px); }
+.modal-content { background: white; width: 400px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
 .modal-header { padding: 1.2rem; color: white; font-weight: bold; text-align: center; }
 .modal-header.accepter { background: #10b981; }
 .modal-header.refuser { background: #ef4444; }
 .modal-body { padding: 2rem; text-align: center; line-height: 1.5; color: #444; }
 .modal-footer { padding: 1.2rem; display: flex; gap: 1rem; background: #f9f9f9; }
-
 button { flex: 1; padding: 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
 .btn-cancel { background: #ddd; }
 .btn-confirm.accepter { background: #10b981; color: white; }
 .btn-confirm.refuser { background: #ef4444; color: white; }
-
-/* --- ANIMATIONS MODALE --- */
 .modal-enter-active, .modal-leave-active { transition: opacity 0.3s; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
-
-/* --- TOAST --- */
-.toast-notification {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-  background-color: #2ecc71; color: white; padding: 12px 24px;
-  border-radius: 50px; z-index: 12000; display: flex; align-items: center; gap: 12px;
-}
+.toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #2ecc71; color: white; padding: 12px 24px; border-radius: 50px; z-index: 12000; display: flex; align-items: center; gap: 12px; }
 </style>

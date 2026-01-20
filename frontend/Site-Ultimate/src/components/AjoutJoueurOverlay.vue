@@ -2,6 +2,7 @@
 import { ref } from "vue"
 import JoueurCardForm from "@/components/JoueurCardForm.vue"
 import { useAuthStore } from "@/stores/auth";
+import api from '@/services/api' // Import de l'instance Axios
 
 const emit = defineEmits(["close", "created"])
 
@@ -32,24 +33,10 @@ const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = auth.token;
-  const headers = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  // Avec Axios, plus besoin de gérer le token ou le Content-Type manuellement ici
+  const uploadRes = await api.post(`/files/upload`, formData);
 
-  const uploadRes = await fetch(`/api/files/upload`, {
-    method: "POST",
-    headers: headers,
-    body: formData
-  });
-
-  if (!uploadRes.ok) {
-    throw new Error("Erreur lors de l'upload de l'image.");
-  }
-
-  const uploadData = await uploadRes.json();
-  return uploadData.url;
+  return uploadRes.data.url;
 }
 
 const validerCreation = async () => {
@@ -78,18 +65,8 @@ const validerCreation = async () => {
       photoJoueur: photoUrl
     };
 
-    const res = await fetch("/api/joueur", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(joueurPayload)
-    });
-
-    if (!res.ok) {
-      notify("Erreur : impossible de créer le joueur.")
-      return
-    }
+    // Remplacement du fetch par api.post
+    await api.post("/joueur", joueurPayload);
 
     // --- SUCCÈS ---
     notify("Joueur créé avec succès !", "success");
@@ -101,7 +78,7 @@ const validerCreation = async () => {
 
   } catch (error) {
     console.error(error);
-    notify("Impossible de créer le joueur : " + error.message);
+    notify("Impossible de créer le joueur : " + (error.response?.data?.message || error.message));
   }
 }
 </script>

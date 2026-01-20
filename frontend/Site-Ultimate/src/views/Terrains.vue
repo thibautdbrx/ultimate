@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue'
 import "leaflet/dist/leaflet.css"
 import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet"
+import axios from 'axios' // Import nécessaire pour l'appel externe
 
 // Import des composants
 import weather_card from "@/components/weather_card.vue"
 import PUB from "@/components/PUB.vue"
-import CarteMatch from "@/components/card_match.vue" 
+import CarteMatch from "@/components/card_match.vue"
+import api from '@/services/api' // Import de l'instance Axios
 import { useAuthStore } from "@/stores/auth"
 
 const auth = useAuthStore()
@@ -37,7 +39,7 @@ const newTerrain = ref({
 const submitting = ref(false)
 
 // ==================
-//      LOGIQUE 
+//      LOGIQUE
 // ==================
 
 const formatDate = (isoString) => {
@@ -50,16 +52,15 @@ const formatDate = (isoString) => {
   })
 }
 
-// Météo
+// Météo (API Externe : utilisation de axios pour remplacer fetch)
 const loadWeather = async (lat, lon) => {
-  weather.value = null; 
+  weather.value = null;
   if (lat === null || lat === undefined || lon === null || lon === undefined) return;
 
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Erreur météo");
-    weather.value = await res.json();
+    const res = await axios.get(url);
+    weather.value = res.data;
   } catch (e) {
     console.error("Impossible de charger la météo", e);
   }
@@ -68,14 +69,12 @@ const loadWeather = async (lat, lon) => {
 // Matchs des terrains
 const loadTerrainMatches = async (idTerrain) => {
   loadingMatches.value = true;
-  terrainMatches.value = []; 
+  terrainMatches.value = [];
 
   try {
-    const res = await fetch(`/api/match/terrains/${idTerrain}`);
-    if (!res.ok) throw new Error("Erreur lors du chargement des matchs");
-    
-    terrainMatches.value = await res.json();
-    terrainMatches.value.sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut)); 
+    const res = await api.get(`/match/terrains/${idTerrain}`);
+    terrainMatches.value = res.data;
+    terrainMatches.value.sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut));
   }
   catch (e) { console.error(e); }
   finally {loadingMatches.value = false;}
@@ -85,9 +84,8 @@ const loadTerrainMatches = async (idTerrain) => {
 async function fetchTerrains() {
   loading.value = true
   try {
-    const response = await fetch('/api/terrain')
-    if (!response.ok) throw new Error('Impossible de charger les terrains')
-    terrains.value = await response.json()
+    const response = await api.get('/terrain')
+    terrains.value = response.data
   } catch (e) {
     error.value = e.message
   } finally {
@@ -97,14 +95,14 @@ async function fetchTerrains() {
 
 function selectTerrain(terrain) {
   selectedTerrain.value = terrain
-    isAdding.value = false; 
+  isAdding.value = false;
   loadWeather(terrain.latitude, terrain.longitude)
   loadTerrainMatches(terrain.id_terrain)
 }
 
 
 function startAdding() {
-  selectedTerrain.value = null; 
+  selectedTerrain.value = null;
   isAdding.value = true;
   newTerrain.value = { nom: '', ville: '', latitude: null, longitude: null };
 }
@@ -119,14 +117,7 @@ function closeDetail() {
 async function createTerrain() {
   submitting.value = true
   try {
-    const res = await fetch('/api/terrain', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTerrain.value)
-    })
-    
-    if (!res.ok) throw new Error("Erreur lors de la création")
-    
+    await api.post('/terrain', newTerrain.value)
     await fetchTerrains()
     isAdding.value = false
     alert("Terrain ajouté avec succès !")

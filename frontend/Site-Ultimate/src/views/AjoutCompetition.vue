@@ -5,6 +5,7 @@ import champs_input from "@/components/champs_input.vue"
 import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import imgEquipeDefault from "@/assets/img/img_equipe.jpg"
+import api from '@/services/api' // Import de l'instance Axios
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
@@ -140,21 +141,12 @@ const valider_ajout_competition = async () => {
     };
 
     const endpoint = typeCompetition.value === "TOURNOI"
-        ? "/api/competition/tournoi"
-        : "/api/competition/championnat";
+        ? "/competition/tournoi"
+        : "/competition/championnat";
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message);
-    }
-
-    const competitionCree = await res.json();
+    // Remplacement fetch par api.post
+    const res = await api.post(endpoint, payload);
+    const competitionCree = res.data;
     const idComp = competitionCree.idCompetition;
 
     // Ajout des participations
@@ -162,9 +154,7 @@ const valider_ajout_competition = async () => {
     if (equipesRemplies.length > 0) {
       await Promise.all(
           equipesRemplies.map(e =>
-              fetch(`/api/participation/equipe/${e.idEquipe}/competition/${idComp}`, {
-                method: "POST"
-              })
+              api.post(`/participation/equipe/${e.idEquipe}/competition/${idComp}`)
           )
       );
     }
@@ -173,7 +163,8 @@ const valider_ajout_competition = async () => {
     setTimeout(() => { router.push("/Competition"); }, 1500)
 
   } catch (e) {
-    notify("Erreur : " + e.message);
+    const errorMsg = e.response?.data?.message || e.message;
+    notify("Erreur : " + errorMsg);
   }
 };
 </script>
