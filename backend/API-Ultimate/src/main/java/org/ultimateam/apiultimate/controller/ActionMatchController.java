@@ -70,11 +70,11 @@ public class ActionMatchController {
 
     @PostMapping("/{idMatch}/equipe/{idEquipe}/point")
     public ActionMatch addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestParam MatchPointDTO matchPointDTO) {
-        return actionMatchService.addPoint(idMatch, idEquipe, matchPointDTO, java.time.LocalDateTime.now());
+        return actionMatchService.addPoint(idMatch, idEquipe, matchPointDTO);
     }
 
     @PostMapping("/{idMatch}/equipe/{idEquipe}/faute")
     public ActionMatch addFaute(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchFauteDTO matchFauteDTO) {
-        return actionMatchService.addFaute(idMatch, idEquipe, matchFauteDTO, java.time.LocalDateTime.now());
+        return actionMatchService.addFaute(idMatch, idEquipe, matchFauteDTO);
     }
 }
