@@ -1,0 +1,40 @@
+package org.ultimateam.apiultimate.model;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+public class IndisponibiliteTerrain {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_terrain")
+    private Terrain terrain;
+
+    @JsonProperty("dateDebut")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime dateDebutIndisponibilite;
+
+    @JsonProperty("dateFin")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime dateFinIndisponibilite;
+
+
+    public IndisponibiliteTerrain(LocalDateTime dateDebut, LocalDateTime dateFin, Terrain terrain, String motif) {
+        this.dateDebutIndisponibilite = dateDebut;
+        this.dateFinIndisponibilite = dateFin;
+        this.terrain = terrain;
+    }
+}

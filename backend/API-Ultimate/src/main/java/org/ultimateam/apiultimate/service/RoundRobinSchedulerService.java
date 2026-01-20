@@ -1,15 +1,11 @@
 package org.ultimateam.apiultimate.service;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.ScheduleResult;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Indisponibilite;
-import org.ultimateam.apiultimate.model.Match;
-import org.ultimateam.apiultimate.model.Terrain;
+import org.ultimateam.apiultimate.model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,15 +25,16 @@ public class RoundRobinSchedulerService {
     private static final int START_HOUR = 9;   // Début des matchs
     private static final int END_HOUR = 18;    // Fin des matchs
 
-    private static final int MATCH_DURATION_MIN = 90;  // Durée d'un match
-    private static final int BREAK_DURATION_MIN = 10;  // Pause entre deux matchs
-    private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_MIN;
+    private static final int MATCH_DURATION_MIN = 100;  // Durée d'un match
+    private static final int BREAK_DURATION_BETWEEN_MATCHES_MIN = 10;  // Pause entre deux matchs
+    private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_BETWEEN_MATCHES_MIN;
 
     /**
      * autoBlocks garde la liste des créneaux où chaque équipe est automatiquement bloquée
      * (parce qu'un match lui a déjà été attribué).
      */
     Map<Equipe, List<Interval>> autoBlocks = new HashMap<>();
+    Map<Terrain, List<Interval>> terrainAutoBlocks = new HashMap<>();
 
 
     /**
@@ -49,8 +46,10 @@ public class RoundRobinSchedulerService {
             LocalDate startDate,
             LocalDate endDate,
             boolean homeAndAway, // aller-retour ou non
-            List<Indisponibilite> indisponibilites
+            List<Indisponibilite> indisponibilites,
+            List<IndisponibiliteTerrain> indisponibilitesTerrains
     ) {
+        terrainAutoBlocks.clear();
         //autoBlocks.clear();
         // Objet qui contiendra les matchs + indisponibilités renvoyés
         ScheduleResult result =
@@ -95,13 +94,18 @@ public class RoundRobinSchedulerService {
 
                     if (matchIndex >= totalMatches) break;
 
+                    LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
+
+                    if (!isTerrainAvailable(terrain, dateMatch, indisponibilitesTerrains)) {
+                        continue; // Le terrain est occupé ou indisponible, on passe au suivant
+                    }
+
                     // On récupère la paire A vs B
                     Pair<Equipe, Equipe> pair = pairs.get(matchIndex);
                     Equipe A = pair.getLeft();
                     Equipe B = pair.getRight();
                     if (A == null || B == null) break;
 
-                    LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
 
                     //System.out.println(dateMatch);
 
@@ -126,6 +130,8 @@ public class RoundRobinSchedulerService {
                     blockEquipe(A, dateMatch, autoBlocks, result);
                     blockEquipe(B, dateMatch, autoBlocks, result);
 
+                    blockTerrain(terrain, dateMatch);
+
                     matchIndex++;
                 }
             }
@@ -141,9 +147,34 @@ public class RoundRobinSchedulerService {
         return result;
     }
 
+    private boolean isTerrainAvailable(Terrain terrain, LocalDateTime dateMatch, List<IndisponibiliteTerrain> declaredBlocks) {
+        LocalDateTime start = dateMatch;
+        LocalDateTime end = dateMatch.plusMinutes(SLOT_DURATION_MIN);
 
+        if (declaredBlocks != null) {
+            for (IndisponibiliteTerrain ind : declaredBlocks) {
+                if (ind.getTerrain().getIdTerrain().equals(terrain.getIdTerrain())) {
+                    boolean noOverlap = end.isBefore(ind.getDateDebutIndisponibilite()) ||
+                            start.isAfter(ind.getDateFinIndisponibilite());
 
+                    if (!noOverlap) return false;
+                }
+            }
+        }
 
+        List<Interval> blocks = terrainAutoBlocks.getOrDefault(terrain, new ArrayList<>());
+        for (Interval b : blocks) {
+            boolean noOverlap = end.isBefore(b.start()) || start.isAfter(b.end());
+            if (!noOverlap) return false;
+        }
+
+        return true;
+    }
+
+    private void blockTerrain(Terrain terrain, LocalDateTime dateMatch) {
+        terrainAutoBlocks.putIfAbsent(terrain, new ArrayList<>());
+        terrainAutoBlocks.get(terrain).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
+    }
 
 
     /**

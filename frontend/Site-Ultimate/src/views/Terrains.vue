@@ -97,14 +97,14 @@ async function fetchTerrains() {
 
 function selectTerrain(terrain) {
   selectedTerrain.value = terrain
-  isAdding.value = false; // CORRECTION: .value
+    isAdding.value = false; 
   loadWeather(terrain.latitude, terrain.longitude)
   loadTerrainMatches(terrain.id_terrain)
 }
 
-// CORRECTION: Renommé en startAdding pour correspondre au template
+
 function startAdding() {
-  selectedTerrain.value = null; // CORRECTION: selectedTerrain (variable) et non selectTerrain (fonction)
+  selectedTerrain.value = null; 
   isAdding.value = true;
   newTerrain.value = { nom: '', ville: '', latitude: null, longitude: null };
 }

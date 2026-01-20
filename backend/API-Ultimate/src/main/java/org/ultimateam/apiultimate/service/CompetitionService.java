@@ -1,6 +1,5 @@
 package org.ultimateam.apiultimate.service;
 
-import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,6 +22,7 @@ public class CompetitionService {
     private final IndisponibiliteRepository indisponibiliteRepository;
     private final ClassementRepository classementRepository;
     private final TerrainService terrainService;
+    private final IndisponibiliteTerrainRepository indisponibiliteTerrainRepository;
 
     public CompetitionService(
             CompetitionRepository competitionRepository,
@@ -32,7 +32,9 @@ public class CompetitionService {
             RoundRobinSchedulerService scheduler,
             IndisponibiliteRepository indisponibiliteRepository,
             ClassementRepository classementRepository,
-            TerrainService terrainService) {
+            TerrainService terrainService,
+            IndisponibiliteTerrainRepository indisponibiliteTerrainRepository) {
+
         this.competitionRepository = competitionRepository;
         this.matchRepository = matchRepository;
         this.participationRepository = participationRepository;
@@ -41,6 +43,7 @@ public class CompetitionService {
         this.indisponibiliteRepository = indisponibiliteRepository;
         this.classementRepository = classementRepository;
         this.terrainService = terrainService;
+        this.indisponibiliteTerrainRepository = indisponibiliteTerrainRepository;
     }
 
     public List<Competition> getAllCompetition() {
@@ -72,7 +75,7 @@ public class CompetitionService {
 
         List<Terrain> terrains = competition.getTerrains()
                 .stream()
-                .map(t -> terrainService.getById(t.getId_terrain()))
+                .map(t -> terrainService.getById(t.getIdTerrain()))
                 .toList();
         if (terrains.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Impossible de générer la compétition : aucun terrain trouvé");
@@ -92,12 +95,15 @@ public class CompetitionService {
             classementRepository.save(classement);
 
         }
+
+        List<IndisponibiliteTerrain> indispoTerrains = indisponibiliteTerrainRepository.findAll();
+
         ScheduleResult scheduleResult;
         if (Objects.equals(competition.getTypeCompetition(), "Tournoi")) {
-            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), true, indispo);
+            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), true, indispo, indispoTerrains);
         }
         else if (Objects.equals(competition.getTypeCompetition(), "Championnat")){
-            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), false, indispo);
+            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), false, indispo, indispoTerrains);
         }
         else{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pas une competition valide");
