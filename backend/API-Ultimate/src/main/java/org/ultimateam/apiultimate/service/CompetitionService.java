@@ -73,6 +73,10 @@ public class CompetitionService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
 
+
+
+
+
         List<Terrain> terrains = competition.getTerrains()
                 .stream()
                 .map(t -> terrainService.getById(t.getIdTerrain()))
@@ -120,6 +124,7 @@ public class CompetitionService {
 
         matchRepository.saveAll(matchs);
         indisponibiliteRepository.saveAll(indisponibilites);
+        indisponibiliteTerrainRepository.saveAll(indispoTerrains);
 
 
         return matchs;
@@ -155,4 +160,6 @@ public class CompetitionService {
 
         return competitionRepository.save(competition);
     }
+
+
 }

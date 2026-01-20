@@ -32,9 +32,10 @@ public class IndisponibiliteTerrain {
     private LocalDateTime dateFinIndisponibilite;
 
 
-    public IndisponibiliteTerrain(LocalDateTime dateDebut, LocalDateTime dateFin, Terrain terrain, String motif) {
+    public IndisponibiliteTerrain(LocalDateTime dateDebut, LocalDateTime dateFin, Terrain terrain) {
         this.dateDebutIndisponibilite = dateDebut;
         this.dateFinIndisponibilite = dateFin;
         this.terrain = terrain;
     }
+
 }

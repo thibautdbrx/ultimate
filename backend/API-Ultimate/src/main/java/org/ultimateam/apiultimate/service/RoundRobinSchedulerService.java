@@ -53,7 +53,7 @@ public class RoundRobinSchedulerService {
         //autoBlocks.clear();
         // Objet qui contiendra les matchs + indisponibilités renvoyés
         ScheduleResult result =
-                new ScheduleResult(new ArrayList<Match>(), indisponibilites);
+                new ScheduleResult(new ArrayList<Match>(), indisponibilites, indisponibilitesTerrains);
 
         if (equipes.size() < 2) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut au moins 2 équipes.");
@@ -130,7 +130,7 @@ public class RoundRobinSchedulerService {
                     blockEquipe(A, dateMatch, autoBlocks, result);
                     blockEquipe(B, dateMatch, autoBlocks, result);
 
-                    blockTerrain(terrain, dateMatch);
+                    blockTerrain(terrain, dateMatch, result);
 
                     matchIndex++;
                 }
@@ -153,27 +153,40 @@ public class RoundRobinSchedulerService {
 
         if (declaredBlocks != null) {
             for (IndisponibiliteTerrain ind : declaredBlocks) {
-                if (ind.getTerrain().getIdTerrain().equals(terrain.getIdTerrain())) {
-                    boolean noOverlap = end.isBefore(ind.getDateDebutIndisponibilite()) ||
-                            start.isAfter(ind.getDateFinIndisponibilite());
+                if (ind.getTerrain() != null &&
+                        java.util.Objects.equals(ind.getTerrain().getIdTerrain(), terrain.getIdTerrain())) {
 
-                    if (!noOverlap) return false;
+                    boolean isOverlapping = end.isBefore(ind.getDateDebutIndisponibilite());
+                    isOverlapping = isOverlapping || start.isAfter(ind.getDateFinIndisponibilite());
+                    System.out.println("Chevauchement :" + !isOverlapping + " \n date fin indispo : " + ind.getDateFinIndisponibilite() + "date debut match : " + start
+                    + "\n date debut indispo : " + ind.getDateDebutIndisponibilite() + "date fin match : " + end + "\n \n ");
+
+
+                    if (!isOverlapping) {
+                        System.out.println("Terrain " + terrain.getIdTerrain() + " bloqué par indispo le " + dateMatch);
+                        return false;
+                    }
                 }
             }
         }
 
+        // 2. Vérification des indisponibilités automatiques (Matchs qu'on vient de placer)
         List<Interval> blocks = terrainAutoBlocks.getOrDefault(terrain, new ArrayList<>());
         for (Interval b : blocks) {
-            boolean noOverlap = end.isBefore(b.start()) || start.isAfter(b.end());
-            if (!noOverlap) return false;
+            // Même logique de chevauchement
+            boolean isOverlapping = start.isBefore(b.end()) && end.isAfter(b.start());
+            if (isOverlapping) {
+                return false;
+            }
         }
 
         return true;
     }
 
-    private void blockTerrain(Terrain terrain, LocalDateTime dateMatch) {
+    private void blockTerrain(Terrain terrain, LocalDateTime dateMatch, ScheduleResult result) {
         terrainAutoBlocks.putIfAbsent(terrain, new ArrayList<>());
         terrainAutoBlocks.get(terrain).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
+        result.addIndisponibiliteTerrain(new IndisponibiliteTerrain(dateMatch,dateMatch.plusMinutes(SLOT_DURATION_MIN),terrain));
     }
 
 
