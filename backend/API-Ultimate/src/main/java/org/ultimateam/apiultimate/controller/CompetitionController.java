@@ -117,6 +117,20 @@ public class CompetitionController {
     @PostMapping("/championnat")
     public Championnat creerChampionnat(@RequestBody Championnat championnat) {return championnatService.saveChampionnat(championnat); }
 
+    @PutMapping("/{idCompetition}/commencer")
+    @Operation(
+            summary = "Synchroniser l'état de démarrage d'une compétition"
+    )
+    @Parameter(
+            name = "idCompetition",
+            description = "Identifiant unique de la compétition à vérifier",
+            required = true
+    )
+    public Competition checkCommencer(@PathVariable Long idCompetition) {
+        return competitionService.checkCommencer(idCompetition);
+    }
+
+
     @Operation(
             summary = "Retirer un terrain d'une compétition",
             description = "Supprime le lien entre un terrain et une compétition. Le terrain reste présent en base de données."

@@ -51,9 +51,7 @@ public abstract class Competition {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Terrain> terrains = new ArrayList<>();
 
-    /**
-    @OneToMany(mappedBy = "idCompetition", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Match> matchs = new ArrayList<>();*/
+    private boolean commencer = false; // true : competition non modifiable
 
     public Competition(Genre genre, Format format, LocalDate dateDebut, LocalDate dateFin,String nomCompetition, String descriptionCompetition) {
         this.genre = genre;

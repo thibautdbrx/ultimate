@@ -69,14 +69,14 @@ public class CompetitionService {
     }
 
 
-    public List<Match> genererCompetition(Long idCompeptition) {
+    public List<Match> genererCompetition(Long idCompetition) {
 
-        Competition competition = getCompetitionById(idCompeptition);
+        Competition competition = getCompetitionById(idCompetition);
         if (competition == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
 
-        nettoyerMatchsEtIndispos(idCompeptition);
+        nettoyerMatchsEtIndispos(idCompetition);
 
         List<Terrain> terrains = competition.getTerrains()
                 .stream()
@@ -86,7 +86,7 @@ public class CompetitionService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Impossible de générer la compétition : aucun terrain trouvé");
         }
 
-        List<Participation> participations = participationRepository.findById_idCompetition(idCompeptition);
+        List<Participation> participations = participationRepository.findById_idCompetition(idCompetition);
         List<Equipe> equipes = new ArrayList<>();
         List<Indisponibilite> indispo = new ArrayList<>();
 
@@ -166,20 +166,54 @@ public class CompetitionService {
      * Nettoie TOUT : Matchs, Indispos Terrains ET Indispos Équipes
      */
     private void nettoyerMatchsEtIndispos(Long idCompetition) {
-        List<Match> anciensMatchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
-
-        if (anciensMatchs.isEmpty()) return;
-
-        for (Match match : anciensMatchs) {
-            IndisponibiliteTerrain terrain = indisponibiliteTerrainRepository.findByMatch(match);
-            List<Indisponibilite> indisponibilites = indisponibiliteRepository.findByMatch(match);
-            if(terrain != null)
-                indisponibiliteTerrainRepository.delete(terrain);
-            if(!indisponibilites.isEmpty())
-                indisponibiliteRepository.deleteAll(indisponibilites);
+        Competition competition = getCompetitionById(idCompetition);
+        if (competition == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
 
-        matchRepository.deleteAll(anciensMatchs);
+        checkCommencer(idCompetition);
+
+        if(!competition.isCommencer()){
+
+            List<Match> anciensMatchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
+
+
+            if (anciensMatchs.isEmpty()) return;
+
+
+
+            for (Match match : anciensMatchs) {
+                IndisponibiliteTerrain terrain = indisponibiliteTerrainRepository.findByMatch(match);
+                List<Indisponibilite> indisponibilites = indisponibiliteRepository.findByMatch(match);
+                if(terrain != null)
+                    indisponibiliteTerrainRepository.delete(terrain);
+                if(!indisponibilites.isEmpty())
+                    indisponibiliteRepository.deleteAll(indisponibilites);
+            }
+
+            matchRepository.deleteAll(anciensMatchs);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Compétition déjà commencer");
+        }
+
+    }
+
+    public Competition checkCommencer(Long idCompetition) {
+        Competition competition = getCompetitionById(idCompetition);
+        if (competition == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
+        }
+
+        List<Match> matchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
+        if(matchs != null || !matchs.isEmpty())
+            for (Match match : matchs) {
+                if (match.getStatus() != Match.Status.WAITING)
+                    competition.setCommencer(true);
+            }
+        else{
+            competition.setCommencer(false);
+        }
+        return saveCompetition(competition);
     }
 
 }
