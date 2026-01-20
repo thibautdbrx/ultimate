@@ -501,6 +501,7 @@ onUnmounted(() => {
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
         </div>
+        
         <Card_joueur
             
             :key="j.idJoueur"
@@ -510,6 +511,8 @@ onUnmounted(() => {
             :photo="j.photoJoueur"
             background="#ffdddd"
         />
+
+        
 
         <div class="fautes droite">
           <template v-for="action in actions" :key="action.id">
@@ -715,7 +718,7 @@ color: gray}
   font-weight: 600;
   transition: background 0.2s ease, transform 0.15s ease;
 
-  border-radius: 50%;
+  border-radius: 42%;
   width: 2.5em;
   height: 2.5em;
 
@@ -728,9 +731,6 @@ color: gray}
 
 .boutonAction:hover {
   transform: translateY(-1px);
-  /* On utilise v-bind pour injecter l'URL de l'image importée */
-  /* Note : 'auto' est obligatoire en secours */
-  cursor: url("@/assets/img/curseur.cur"), pointer;
 }
 
 .boutonAction img {
