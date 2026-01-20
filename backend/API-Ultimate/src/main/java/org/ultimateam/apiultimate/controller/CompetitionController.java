@@ -117,7 +117,7 @@ public class CompetitionController {
     @PostMapping("/championnat")
     public Championnat creerChampionnat(@RequestBody Championnat championnat) {return championnatService.saveChampionnat(championnat); }
 
-    @PutMapping("/{idCompetition}/commencer")
+    @PutMapping("/{idCompetition}/checkCommencer")
     @Operation(
             summary = "Synchroniser l'état de démarrage d'une compétition"
     )
@@ -142,5 +142,17 @@ public class CompetitionController {
         return competitionService.retirerTerrainDeCompetition(idCompetition, idTerrain);
     }
 
+    @DeleteMapping("/{idCompetition}/clean")
+    @Operation(
+            summary = "Nettoyer tous les matchs et indisponibilités d'une compétition",
+            description = "Supprime tous les matchs et indisponibilités d'une compétition si elle n'a pas encore commencé."
+    )
+    @Parameter(
+            name = "idCompetition",
+            required = true
+    )
+    public void nettoyerMatchsEtIndispos(@PathVariable Long idCompetition) {
+        competitionService.nettoyerMatchsEtIndispos(idCompetition);
+    }
 
 }

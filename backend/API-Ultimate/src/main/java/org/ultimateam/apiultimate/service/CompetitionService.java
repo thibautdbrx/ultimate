@@ -165,7 +165,7 @@ public class CompetitionService {
     /**
      * Nettoie TOUT : Matchs, Indispos Terrains ET Indispos Équipes
      */
-    private void nettoyerMatchsEtIndispos(Long idCompetition) {
+    public void nettoyerMatchsEtIndispos(Long idCompetition) {
         Competition competition = getCompetitionById(idCompetition);
         if (competition == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
@@ -173,7 +173,7 @@ public class CompetitionService {
 
         checkCommencer(idCompetition);
 
-        if(!competition.isCommencer()){
+        if(!competition.getCommencer()){
 
             List<Match> anciensMatchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
 
@@ -205,14 +205,15 @@ public class CompetitionService {
         }
 
         List<Match> matchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
-        if(matchs != null || !matchs.isEmpty())
+        if (matchs == null || matchs.isEmpty() || matchs.size() ==0)competition.setCommencer(false);
+
+        else {
             for (Match match : matchs) {
                 if (match.getStatus() != Match.Status.WAITING)
                     competition.setCommencer(true);
             }
-        else{
-            competition.setCommencer(false);
         }
+
         return saveCompetition(competition);
     }
 

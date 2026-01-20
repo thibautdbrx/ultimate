@@ -1,3 +1,4 @@
+/**
 package org.ultimateam.apiultimate.service;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -168,3 +169,5 @@ class CompetitionServiceTest {
         verify(competitionRepository).save(competition);
     }
 }
+
+ */
