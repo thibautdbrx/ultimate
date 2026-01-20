@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
@@ -18,16 +18,12 @@ import resume from "@/assets/img/matchIcon/resume.png";
 
 import curseur from "@/assets/img/curseur.cur"
 
-import "leaflet/dist/leaflet.css"
-import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet"
-
 import { useAuthStore } from "@/stores/auth";
 import PUB from "@/components/PUB.vue";
 const auth = useAuthStore();
 
 // --- Récupération de l'id du match ---
 const route = useRoute();
-const router = useRouter();
 const matchId = Number(route.params.id);
 
 // State
@@ -44,9 +40,6 @@ let etatMatch = ref("WAITING");
 let duree = ref(null);
 
 const error = ref(null);
-
-const zoom = ref(7); // zoom pour la carte
-const center = ref([46.603354, 1.888334]);
 
 
 //------------------------
@@ -87,10 +80,6 @@ const loadWeather = async (lat, lon) => {
   }
 };
 
-// Fonction pour aller vers la page de la compétition
-function goToCompetition(id) {
-  router.push({ name: 'Competition-details', params: { id } });
-}
 
 
 
@@ -105,10 +94,6 @@ const loadMatch = async () => {
     match.value = await res.json();
     etatMatch = match.value.status;
 
-    if (match.value.terrain && match.value.terrain.latitude) {
-      center.value = [match.value.terrain.latitude, match.value.terrain.longitude];
-    }
-
     //loadWeather(match.value.terrain.latitude, 2.3488);
     loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
 
@@ -121,6 +106,7 @@ const loadMatch = async () => {
 
 };
 
+// Converti un objet duréePause en un temps en ms
 function ConversionPause(pause) {
   if (!pause) {
     pause = 0;
@@ -153,7 +139,7 @@ const calculDuree = computed(() => {
     const datePause = match.value.datePause;
     duree = Date.parse(match.value.datePause) - Date.parse(dateDebut) - pause;
   }
-
+  
   return formatDuree(duree);
 });
 
@@ -170,10 +156,18 @@ const calculDureePause = computed(() => {
   return formatDuree(dureePause)
 });
 
-// Passage d'une date à un temps pour une action
+// Passage d'une date à un temps pour une action en prenant en compte la durée de pause avant cette action
 function calculTempsAction(dateAction, tempsPause=0) {
   const date = Date.parse(dateAction);
   const dateDebut = Date.parse(match.value.dateDebut);
+
+  let pause;
+
+  if (!tempsPause) {
+    pause = 0;
+  } else {
+    pause = ConversionPause(tempsPause);
+  }
 
   return formatDuree(date - dateDebut - tempsPause)
 }
@@ -198,7 +192,7 @@ const loadPlayers = async () => {
 
   try {
     const [res1, res2] = await Promise.all([
-      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`), // Récupère l'équipe 1
+      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`), // Récupère l'équipe 1 
       fetch(`/api/joueur/equipe/${match.value.equipe2.idEquipe}`) // Récupère l'équipe 2
     ]);
 
@@ -233,7 +227,7 @@ const loadActions = async () => {
 
     actions.value = await res1.json();
 
-
+  
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -274,14 +268,14 @@ const couleurEquipe2 = computed(() => {
 // ajoute 1 point à l'équipe "numEquipe", marqué par le joueur "idJoueur"
 const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
-  const matchId = match.value.idMatch;
+  const matchId = match.value.idMatch; 
 
   const point = {
     point: combien,
     idJoueur:idJoueur
   }
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, {
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
@@ -302,9 +296,9 @@ const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 // ajout d'une faute pour le joueur idJoueur de l'équipe numEquipe
 const AjoutFaute = async (numEquipe, idJoueur) => {
 
-  const matchId = match.value.idMatch;
+  const matchId = match.value.idMatch; 
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, {
+  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, { 
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
@@ -338,7 +332,7 @@ const operationMatch = async (operation) => {
   await loadMatch(); // Recharge le match, les joueurs et les actions pour mettre à jour l'affichage
   await loadPlayers();
   await loadActions();
-}
+} 
 
 
 // ----------------------
@@ -355,7 +349,7 @@ onMounted(async () => {
     maintenant.value = Date.now(); // mise à jour de la variable chaque secondes. Ce qui appelera la fonction calculDuree et calculDureePause chaque secondes
   }, 1000);
 
-
+  
 });
 
 onUnmounted(() => {
@@ -373,11 +367,7 @@ onUnmounted(() => {
 
       <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{ calculDuree }}</p>
 
-      <h1
-          @click="goToCompetition(match.idCompetition.idCompetition)"
-          class="lien-competition"
-          title="Voir la compétition"
-      >
+      <h1>
         {{match.idCompetition.nomCompetition}}
       </h1>
 
@@ -386,21 +376,21 @@ onUnmounted(() => {
           <h2 :class="couleurEquipe1">{{ match.equipe1.nomEquipe }}</h2>
 
           <div class="affichagePoint">
-            <p class="points">{{ match.scoreEquipe1 }}</p>
+            <p class="points">{{ match.scoreEquipe1 }}</p> 
           </div>
 
             <div class="actions">
-
+           
               <p v-if="loadingActions">Chargement…</p>
 
               <div v-for="i in actions">
                <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
-                {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                {{ calculTempsAction(i.dateAction, i.datePause) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
-
+            
             </div>
-
+          
         </div>
 
         <div class="vs">VS</div>
@@ -408,12 +398,12 @@ onUnmounted(() => {
         <div class="score">
           <h2 :class="couleurEquipe2">{{ match.equipe2.nomEquipe }}</h2>
 
-          <div class="affichagePoint">
-            <p class="points">{{ match.scoreEquipe2 }}</p>
+          <div class="affichagePoint">      
+            <p class="points">{{ match.scoreEquipe2 }}</p>       
           </div>
 
           <div class="actions">
-
+           
             <p v-if="loadingActions">Chargement…</p>
 
             <div v-for="i in actions">
@@ -421,9 +411,9 @@ onUnmounted(() => {
                 {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
-
+            
           </div>
-
+          
         </div>
       </div>
 
@@ -446,7 +436,7 @@ onUnmounted(() => {
         <h3 class="subtitle">{{ match.equipe1.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
-
+        
         <div class="joueurDiv" v-for="j in joueursEquipe1">
 
           <div class="boutons">
@@ -454,7 +444,7 @@ onUnmounted(() => {
             <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
           </div>
           <Card_joueur
-
+              
               :key="j.idJoueur"
               :nom="j.nomJoueur"
               :prenom="j.prenomJoueur"
@@ -468,9 +458,9 @@ onUnmounted(() => {
             <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
           </template>
         </div>
-
+        
         </div>
-
+      
       </div>
 
       <!-- COLONNE MILIEU -->
@@ -487,18 +477,12 @@ onUnmounted(() => {
         <div class="Info">
           <div class="Nom-Terrain">
             <p>
-              {{ match.terrain.nom }}, {{ match.terrain.ville }}
+              {{ match.terrain.nom }}
             </p>
           </div>
-          <div class="map-container" v-if="match.terrain && match.terrain.latitude">
-            <l-map ref="map" v-model:zoom="zoom" :center="center" :use-global-leaflet="false">
-              <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"></l-tile-layer>
-              <l-marker :lat-lng="[match.terrain.latitude, match.terrain.longitude]">
-                <l-tooltip>{{ match.terrain.nom }}</l-tooltip>
-              </l-marker>
-            </l-map>
+          <div class="map-terrain">
+            <p>afficher la localisation du terrain...</p>
           </div>
-          
         </div>
 
         <div v-if="weather">
@@ -519,15 +503,16 @@ onUnmounted(() => {
         <h3 class="subtitle">{{ match.equipe2.nomEquipe }}</h3>
 
         <p v-if="loadingPlayers">Chargement…</p>
-
+        
         <div class="joueurDiv" v-for="j in joueursEquipe2">
 
         <div class="boutons">
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
         </div>
+        
         <Card_joueur
-
+            
             :key="j.idJoueur"
             :nom="j.nomJoueur"
             :prenom="j.prenomJoueur"
@@ -536,17 +521,19 @@ onUnmounted(() => {
             background="#ffdddd"
         />
 
+        
+
         <div class="fautes droite">
           <template v-for="action in actions" :key="action.id">
             <p v-if="action.type === 'FAUTE' && action.joueur.idJoueur === j.idJoueur" class="faute"></p>
           </template>
         </div>
-
-
+        
+        
         </div>
 
-
-
+      
+     
       </div>
 
     </div>
@@ -568,14 +555,14 @@ onUnmounted(() => {
 .score-box {
   display: flex;
   justify-content: center;
-
+ 
   gap: 5rem;
   margin: 2rem 0;
 }
 
 .score {
   text-align: center;
-  width: 260px;
+  width: 260px;  
   margin-top: 0;
 }
 
@@ -740,7 +727,7 @@ color: gray}
   font-weight: 600;
   transition: background 0.2s ease, transform 0.15s ease;
 
-  border-radius: 50%;
+  border-radius: 42%;
   width: 2.5em;
   height: 2.5em;
 
@@ -753,9 +740,7 @@ color: gray}
 
 .boutonAction:hover {
   transform: translateY(-1px);
-  /* On utilise v-bind pour injecter l'URL de l'image importée */
-  /* Note : 'auto' est obligatoire en secours */
-  cursor: url("@/assets/img/curseur.cur"), pointer;
+
 }
 
 .boutonAction img {
@@ -828,37 +813,8 @@ color: gray}
 }
 
 
-.Info {
-  margin-bottom: 2rem;
-  text-align: center;
-}
 
-.Nom-Terrain {
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
-  color: #2c3e50;
-}
 
-/* CARTE */
-.map-container {
-  height: 250px; 
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden; 
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  margin-bottom: 1.5rem;
-  z-index: 0;
-.lien-competition {
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.lien-competition:hover {
-  color: #3498db; /* Un bleu pour indiquer le lien, ou la couleur de ton thème */
-  text-decoration: underline;
-}
 
 
 
