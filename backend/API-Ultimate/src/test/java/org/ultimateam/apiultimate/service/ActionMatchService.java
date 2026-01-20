@@ -78,7 +78,7 @@ class ActionMatchServiceTest {
         when(actionMatchRepository.save(any(ActionMatch.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        ActionMatch result = actionMatchService.addPoint(1L, 10L, dto, LocalDateTime.now());
+        ActionMatch result = actionMatchService.addPoint(1L, 10L, dto);
 
         // Assert
         assertNotNull(result);

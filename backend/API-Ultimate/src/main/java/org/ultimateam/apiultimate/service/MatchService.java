@@ -159,7 +159,7 @@ public class MatchService {
             match.setScoreEquipe2(match.getScoreEquipe2() + dto.getPoint());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cette équipe ne fait pas partie du match");
 
-        actionMatchService.addPoint(id_match, id_equipe, dto, match.getDatePause());
+        actionMatchService.addPoint(id_match, id_equipe, dto);
 
         checkVictory(match);
         return save(match);
@@ -171,7 +171,7 @@ public class MatchService {
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
         if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
 
-        actionMatchService.addFaute(idMatch, idEquipe, fauteDTO, match.getDatePause());
+        actionMatchService.addFaute(idMatch, idEquipe, fauteDTO);
         return getById(idMatch);
     }
 
