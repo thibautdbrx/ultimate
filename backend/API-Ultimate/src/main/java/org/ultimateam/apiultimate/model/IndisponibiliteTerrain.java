@@ -1,6 +1,5 @@
 package org.ultimateam.apiultimate.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -10,23 +9,21 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Indisponibilite {
+public class IndisponibiliteTerrain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idIndisponibilite;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_equipe")
-    @JsonManagedReference
-    private Equipe equipe;
+    @JoinColumn(name = "id_terrain")
+    private Terrain terrain;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_match", nullable = true)
     private Match match;
 
@@ -38,14 +35,14 @@ public class Indisponibilite {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime dateFinIndisponibilite;
 
-    public Indisponibilite(LocalDateTime dateDebutIndisponibilite, LocalDateTime dateFinIndisponibilite, Equipe equipe, Match match) {
-        this.dateDebutIndisponibilite = dateDebutIndisponibilite;
-        this.dateFinIndisponibilite = dateFinIndisponibilite;
-        this.equipe = equipe;
+
+
+
+    public IndisponibiliteTerrain(LocalDateTime dateDebut, LocalDateTime dateFin, Terrain terrain, Match match) {
+        this.dateDebutIndisponibilite = dateDebut;
+        this.dateFinIndisponibilite = dateFin;
+        this.terrain = terrain;
         this.match = match;
     }
 
-    public Indisponibilite(LocalDateTime dateDebut, LocalDateTime dateFin, Equipe equipe){
-        this(dateDebut, dateFin, equipe, null);
-    }
 }

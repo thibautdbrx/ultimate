@@ -18,6 +18,7 @@ import org.ultimateam.apiultimate.repository.JoueurRepository;
 import org.ultimateam.apiultimate.repository.JoueurRequestRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class JoueurService {
@@ -182,6 +183,8 @@ public class JoueurService {
                         "Demande inexistante"
                 ));
         joueurRequestRepository.deleteById(id);
+        List<JoueurRequest> toDelet = joueurRequestRepository.findAll().stream().filter(req -> Objects.equals(req.getId().getIdJoueur(), joueurRequest.getId().getIdJoueur())).toList();
+        joueurRequestRepository.deleteAll(toDelet);
         return assignerEquipe(joueurRequest.getId().getIdJoueur(), joueurRequest.getId().getIdEquipe());
     }
 
