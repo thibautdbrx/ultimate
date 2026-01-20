@@ -23,6 +23,8 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
            OR m.equipe2.idEquipe = :idEquipe
     """)
         List<Match> findMatchesByEquipe(@Param("idEquipe") long idEquipe);
-    @Query("SELECT m FROM Match m WHERE m.terrain.id_terrain = :idTerrain")
+    @Query("SELECT m FROM Match m WHERE m.terrain.idTerrain = :idTerrain")
     List<Match> findByTerrain_Id_terrain(@Param("idTerrain") Long idTerrain);
+
+    List<Match>findByIdCompetition_IdCompetition(Long idCompetition);
 }
