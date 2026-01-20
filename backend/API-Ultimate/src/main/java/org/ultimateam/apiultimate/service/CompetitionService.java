@@ -7,6 +7,7 @@ import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +24,7 @@ public class CompetitionService {
     private final ClassementRepository classementRepository;
     private final TerrainService terrainService;
     private final IndisponibiliteTerrainRepository indisponibiliteTerrainRepository;
+    private final IndisponibiliteTerrainService indisponibiliteTerrainService;
 
     public CompetitionService(
             CompetitionRepository competitionRepository,
@@ -33,7 +35,7 @@ public class CompetitionService {
             IndisponibiliteRepository indisponibiliteRepository,
             ClassementRepository classementRepository,
             TerrainService terrainService,
-            IndisponibiliteTerrainRepository indisponibiliteTerrainRepository) {
+            IndisponibiliteTerrainRepository indisponibiliteTerrainRepository, IndisponibiliteTerrainService indisponibiliteTerrainService) {
 
         this.competitionRepository = competitionRepository;
         this.matchRepository = matchRepository;
@@ -44,6 +46,7 @@ public class CompetitionService {
         this.classementRepository = classementRepository;
         this.terrainService = terrainService;
         this.indisponibiliteTerrainRepository = indisponibiliteTerrainRepository;
+        this.indisponibiliteTerrainService = indisponibiliteTerrainService;
     }
 
     public List<Competition> getAllCompetition() {
@@ -73,9 +76,7 @@ public class CompetitionService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
         }
 
-
-
-
+        nettoyerMatchsEtIndispos(idCompeptition);
 
         List<Terrain> terrains = competition.getTerrains()
                 .stream()
@@ -161,5 +162,24 @@ public class CompetitionService {
         return competitionRepository.save(competition);
     }
 
+    /**
+     * Nettoie TOUT : Matchs, Indispos Terrains ET Indispos Équipes
+     */
+    private void nettoyerMatchsEtIndispos(Long idCompetition) {
+        List<Match> anciensMatchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
+
+        if (anciensMatchs.isEmpty()) return;
+
+        for (Match match : anciensMatchs) {
+            IndisponibiliteTerrain terrain = indisponibiliteTerrainRepository.findByMatch(match);
+            List<Indisponibilite> indisponibilites = indisponibiliteRepository.findByMatch(match);
+            if(terrain != null)
+                indisponibiliteTerrainRepository.delete(terrain);
+            if(!indisponibilites.isEmpty())
+                indisponibiliteRepository.deleteAll(indisponibilites);
+        }
+
+        matchRepository.deleteAll(anciensMatchs);
+    }
 
 }

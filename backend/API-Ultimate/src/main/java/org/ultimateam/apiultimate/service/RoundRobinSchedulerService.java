@@ -27,7 +27,7 @@ public class RoundRobinSchedulerService {
 
     private static final int MATCH_DURATION_MIN = 100;  // Durée d'un match
     private static final int BREAK_DURATION_BETWEEN_MATCHES_MIN = 10;  // Pause entre deux matchs
-    private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_BETWEEN_MATCHES_MIN;
+    protected static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_BETWEEN_MATCHES_MIN;
 
     /**
      * autoBlocks garde la liste des créneaux où chaque équipe est automatiquement bloquée
@@ -127,10 +127,10 @@ public class RoundRobinSchedulerService {
                     result.addMatch(match);
 
                     // On bloque les équipes pendant ce créneau
-                    blockEquipe(A, dateMatch, autoBlocks, result);
-                    blockEquipe(B, dateMatch, autoBlocks, result);
+                    blockEquipe(A, dateMatch, autoBlocks, result, match);
+                    blockEquipe(B, dateMatch, autoBlocks, result, match);
 
-                    blockTerrain(terrain, dateMatch, result);
+                    blockTerrain(terrain, dateMatch, result, match);
 
                     matchIndex++;
                 }
@@ -183,10 +183,10 @@ public class RoundRobinSchedulerService {
         return true;
     }
 
-    private void blockTerrain(Terrain terrain, LocalDateTime dateMatch, ScheduleResult result) {
+    private void blockTerrain(Terrain terrain, LocalDateTime dateMatch, ScheduleResult result, Match match) {
         terrainAutoBlocks.putIfAbsent(terrain, new ArrayList<>());
         terrainAutoBlocks.get(terrain).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
-        result.addIndisponibiliteTerrain(new IndisponibiliteTerrain(dateMatch,dateMatch.plusMinutes(SLOT_DURATION_MIN),terrain));
+        result.addIndisponibiliteTerrain(new IndisponibiliteTerrain(dateMatch,dateMatch.plusMinutes(SLOT_DURATION_MIN),terrain, match));
     }
 
 
@@ -288,13 +288,13 @@ public class RoundRobinSchedulerService {
     /**
      * Bloque automatiquement une équipe pour un créneau (lorsqu'un match lui est attribué)
      */
-    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, ScheduleResult result) {
+    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, ScheduleResult result, Match match) {
         autoBlocks.putIfAbsent(equipe, new ArrayList<>());
         autoBlocks.get(equipe).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
 
         // Ajoute directement dans le résultat
         //System.out.println(dateMatch);
-        result.addIndisponibilite(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe));
+        result.addIndisponibilite(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe, match));
         //System.out.println(result.getIndisponibilites().get(0).getDateDebutIndisponibilite());
 
     }

@@ -23,6 +23,10 @@ public class IndisponibiliteTerrain {
     @JoinColumn(name = "id_terrain")
     private Terrain terrain;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_match", nullable = true)
+    private Match match;
+
     @JsonProperty("dateDebut")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime dateDebutIndisponibilite;
@@ -32,10 +36,13 @@ public class IndisponibiliteTerrain {
     private LocalDateTime dateFinIndisponibilite;
 
 
-    public IndisponibiliteTerrain(LocalDateTime dateDebut, LocalDateTime dateFin, Terrain terrain) {
+
+
+    public IndisponibiliteTerrain(LocalDateTime dateDebut, LocalDateTime dateFin, Terrain terrain, Match match) {
         this.dateDebutIndisponibilite = dateDebut;
         this.dateFinIndisponibilite = dateFin;
         this.terrain = terrain;
+        this.match = match;
     }
 
 }
