@@ -126,42 +126,42 @@ public class JoueurService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Le joueur fait déjà parti de l'équipe");
         }
         else if (equipe.isFull())
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Equipe complete");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Equipe complete");
         else if (equipe.getGenre() == Genre.H2F3){
             if (joueur.getGenre() == GenreJoueur.HOMME && getNbHommes(equipe) >=2 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre d'homme maximum atteint");
             }
             else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=3 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre de femme maximum atteint");
             }
         }
         else if (equipe.getGenre() == Genre.H3F2){
             if (joueur.getGenre() == GenreJoueur.HOMME && getNbHommes(equipe) >=3 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre d'homme maximum atteint");
             }
             else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=2 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre de femme maximum atteint");
             }
         }
         else if (equipe.getGenre() == Genre.H4F3){
             if (getNbHommes(equipe) >=4 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre d'homme maximum atteint");
             }
             else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=3 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre de femme maximum atteint");
             }
         }
         else if (equipe.getGenre() == Genre.H3F4){
             if (joueur.getGenre() == GenreJoueur.HOMME && getNbHommes(equipe) >=3 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre d'homme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre d'homme maximum atteint");
             }
             else if (joueur.getGenre() == GenreJoueur.FEMME && getNbFemmes(equipe) >=4 ){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nombre de femme maximum atteint");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nombre de femme maximum atteint");
             }
         }
         else if (equipe.getGenre() == Genre.FEMME){
             if (joueur.getGenre() == GenreJoueur.HOMME){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Equipe ne peut pas contenir d'hommes");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Equipe ne peut pas contenir d'hommes");
             }
         }
         equipe.addJoueur(joueur);
@@ -199,7 +199,7 @@ public class JoueurService {
                 .orElseThrow(() -> new EntityNotFoundException("Équipe non trouvée"));
 
         if (joueur.getEquipe() != null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Impossible de rejoindre plusieurs équipes");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible de rejoindre plusieurs équipes");
         }
         JoueurRequest request = new JoueurRequest(joueur, equipe);
         request.setId(request.getId());
@@ -261,7 +261,7 @@ public class JoueurService {
         if (equipe == null)
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Equipe introuvable");
         else if (equipe.isFull())
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Equipe complete");
+            throw new ResponseStatusException(HttpStatus.OK,"Equipe complete");
         else if (equipe.getGenre() == Genre.FEMME)
             return joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME);
 

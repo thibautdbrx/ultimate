@@ -196,10 +196,11 @@ public class EquipeService {
      */
 
     public List<Equipe> getEquipeGenre(Genre genre) {
-        updateAllGenre(findAll());
-        List<Equipe> equipes = equipeRepository.findAll();
+        //updateAllGenre(findAll());
+        List<Equipe> equipes = equipeRepository.findAllByGenre(genre);
         equipes.removeIf(equipe -> !equipe.isFull());
-        return equipeRepository.findAllByGenre(genre);
+
+        return equipes;
     }
 
     public List<Equipe> getNotFull(Long idJoueur){
