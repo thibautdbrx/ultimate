@@ -249,6 +249,16 @@ const openTerrainsModal = () => {
   if (competitionDejaCommencee.value) return notify("Compétition commencée.", "error")
   modalShow_Terrains.value = true
 }
+
+const formatDate = (isoString) => {
+  if (!isoString) return "";
+
+  return new Date(isoString).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+};
 </script>
 
 <template>
@@ -281,6 +291,9 @@ const openTerrainsModal = () => {
         <h2>
           {{ competition.nomCompetition }} — {{ format_bien_aff }} — {{ competition.genre }} — {{ nbTeams }} équipes
         </h2>
+        <h3>
+          {{ formatDate(competition.dateDebut)}} - {{ formatDate(competition.dateFin)}}
+        </h3>
 
         <div v-if="!competitionDejaCommencee && !loading" class="no-matches">
           <p class="info-msg">Aucun match n’a encore été généré.</p>
@@ -363,6 +376,10 @@ const openTerrainsModal = () => {
 
 h2 {
   margin-bottom: 1.5rem;
+  text-align: center;
+  color: #000;
+}
+h3{
   text-align: center;
   color: #000;
 }
