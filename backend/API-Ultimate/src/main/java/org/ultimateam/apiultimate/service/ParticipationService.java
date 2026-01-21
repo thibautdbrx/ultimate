@@ -140,7 +140,7 @@ public class ParticipationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Impossible d'ajouter une équipe à une competition déjà commencée");
 
         if (!equipe.isFull())
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "L'équipe n'est pas pleine");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'équipe n'est pas pleine");
         else if (equipe.getGenre().name().equals(competition.getGenre().name())) {
             Participation participation = new Participation(equipe, competition);
             return participationRepository.save(participation);
