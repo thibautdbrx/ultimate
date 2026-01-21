@@ -276,13 +276,13 @@ const openTerrainsModal = () => {
       <div v-if="loading">Chargement...</div>
       <div v-if="error" class="state-msg error">{{ error }}</div>
 
-      <div v-if="competition">
+      <div v-if="competition" class="compet_container">
 
         <h2>
           {{ competition.nomCompetition }} — {{ format_bien_aff }} — {{ competition.genre }} — {{ nbTeams }} équipes
         </h2>
 
-        <div v-if="allowEdit && !loading" class="no-matches">
+        <div v-if="!competitionDejaCommencee && !loading" class="no-matches">
           <p class="info-msg">Aucun match n’a encore été généré.</p>
 
           <button v-if="auth.isAdmin" class="btn-primary" @click="editMode = !editMode">
@@ -292,11 +292,14 @@ const openTerrainsModal = () => {
           <button v-if="auth.isAdmin || auth.isArbitre" class="btn-primary" @click="GenererMatch">
             Générer les poules et créer les matchs
           </button>
-        </div>
 
-        <button v-if="auth.isAdmin && !competitionDejaCommencee && hasMatches" class="btn-primary" @click="supprimerMatch">
-          Supprimer tous les matchs
-        </button>
+          <button v-if="auth.isAdmin && hasMatches" class="btn-primary" @click="supprimerMatch">
+            Supprimer tous les matchs
+          </button>
+        </div>
+        <p v-else class="info-msg">un ou plusieurs matchs sont finis ou sont en cours, vous ne pouvez plus modifier cette competition</p>
+
+
 
         <CompetitionTeams
             :teams="teams"
@@ -353,6 +356,10 @@ const openTerrainsModal = () => {
   align-items: center;
   padding: 2rem;
 }
+.compet_container{
+  width: 90%;
+
+}
 
 h2 {
   margin-bottom: 1.5rem;
@@ -388,6 +395,7 @@ h2 {
   color: #666;
   margin-top: 1rem;
   font-style: italic;
+  text-align: center;
 }
 
 /* TOAST & CONFIRM STYLES */
