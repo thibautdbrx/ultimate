@@ -296,6 +296,9 @@ public class JoueurService {
             else if (getNbFemmes(equipe) <4 ){
                 joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME));
             }
+        else {
+            joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNull());
+            }
         }
         /**
         if(genre == null){
