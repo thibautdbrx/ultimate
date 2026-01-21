@@ -88,7 +88,6 @@ const filtered = computed(() =>
       <div class="titre">
         <h3>Choisir un joueur</h3>
         <button id="close-btt-haut" @click="emit('close')">Fermer</button>
-        <button id="close-btt-haut" @click="emit('nvj')">Nouveau joueur</button>
       </div>
 
       <input
