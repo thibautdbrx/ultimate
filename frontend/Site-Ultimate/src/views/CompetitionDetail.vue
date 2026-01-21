@@ -207,7 +207,7 @@ const GenererMatch = async () => {
 
     } catch (error) {
       console.error(error);
-      notify("Une erreur est survenue lors de la génération", "error")
+      notify(error, "error")
     }
   })
 };
