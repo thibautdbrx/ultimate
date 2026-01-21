@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.service;
 
+import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -9,6 +10,7 @@ import org.ultimateam.apiultimate.repository.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -174,7 +176,7 @@ public class CompetitionService {
 
         checkCommencer(idCompetition);
 
-        if(!competition.getCommencer()){
+        if(!competition.isCommencer()){
 
             List<Match> anciensMatchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
 
@@ -207,22 +209,33 @@ public class CompetitionService {
             );
         }
 
+
+        if (Boolean.TRUE.equals(competition.isCommencer())) {
+            return competition;
+        }
+
+
+        LocalDate today = LocalDate.now();
+        competition.setCommencer(false);
+
+
+        if (competition.getDateDebut().isBefore(today)) {
+            competition.setCommencer(true);
+            return competition;
+        }
+
+
+
         List<Match> matchs =
                 matchRepository.findByIdCompetition_IdCompetition(idCompetition);
-
-        competition.setCommencer(false);
 
         if (matchs != null && !matchs.isEmpty()) {
             for (Match match : matchs) {
                 if (match.getStatus() != Match.Status.WAITING) {
                     competition.setCommencer(true);
-                    break; // on a trouvé un match démarré
+                    break;
                 }
             }
-        }
-        if (competition.getDateDebut().isAfter(LocalDate.now())
-                || competition.getDateFin().isBefore(LocalDate.now())) {
-            competition.setCommencer(true);
         }
 
         return saveCompetition(competition);
