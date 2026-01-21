@@ -7,6 +7,7 @@ import org.ultimateam.apiultimate.DTO.ScheduleResult;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,17 +27,6 @@ public class CompetitionService {
     private final IndisponibiliteTerrainRepository indisponibiliteTerrainRepository;
     private final IndisponibiliteTerrainService indisponibiliteTerrainService;
 
-    /**
-     * Constructeur avec injection des dépendances nécessaires au service.
-     *
-     * @param competitionRepository repository pour accéder aux compétitions
-     * @param matchRepository repository pour accéder aux matchs
-     * @param participationRepository repository pour accéder aux participations
-     * @param equipeService service utilisé pour récupérer les informations des équipes
-     * @param scheduler service responsable de la génération des plannings (round-robin / tournoi)
-     * @param indisponibiliteRepository repository pour persister les indisponibilités
-     * @param classementRepository repository pour créer les classements associés
-     */
     public CompetitionService(
             CompetitionRepository competitionRepository,
             MatchRepository matchRepository,
@@ -60,31 +50,14 @@ public class CompetitionService {
         this.indisponibiliteTerrainService = indisponibiliteTerrainService;
     }
 
-    /**
-     * Récupère toutes les compétitions présentes en base de données.
-     *
-     * @return une liste de toutes les {@link Competition}
-     */
     public List<Competition> getAllCompetition() {
         return competitionRepository.findAll();
     }
 
-    /**
-     * Récupère une compétition par son identifiant.
-     *
-     * @param id l'identifiant de la compétition recherchée
-     * @return l'objet {@link Competition} si trouvé, sinon {@code null}
-     */
     public Competition getCompetitionById(Long id) {
         return competitionRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Persiste une compétition en base (création ou mise à jour).
-     *
-     * @param Competition l'entité {@link Competition} à sauvegarder
-     * @return la compétition persistée
-     */
     public Competition saveCompetition(Competition Competition) {
         if (Competition.getDateDebut() == null || Competition.getDateFin() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veuillez renseigner les dates");
@@ -92,11 +65,6 @@ public class CompetitionService {
         return competitionRepository.save(Competition);
     }
 
-    /**
-     * Supprime une compétition identifiée par son id.
-     *
-     * @param id identifiant de la compétition à supprimer
-     */
     public void deleteCompetitionById(Long id) {
         competitionRepository.deleteById(id);
     }
@@ -164,12 +132,6 @@ public class CompetitionService {
         return matchs;
     }
 
-    /**
-     * Récupère la liste des matchs d'une compétition triés par date de match croissante.
-     *
-     * @param idCompetition identifiant de la compétition
-     * @return liste des {@link Match} correspondant à la compétition
-     */
     public List<Match> getMatchesByCompetition(Long idCompetition) {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idCompetition);
     }
@@ -240,17 +202,27 @@ public class CompetitionService {
     public Competition checkCommencer(Long idCompetition) {
         Competition competition = getCompetitionById(idCompetition);
         if (competition == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Compétition n'existe pas");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Compétition n'existe pas"
+            );
         }
 
-        List<Match> matchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
-        if (matchs == null || matchs.isEmpty() || matchs.size() ==0)competition.setCommencer(false);
+        List<Match> matchs =
+                matchRepository.findByIdCompetition_IdCompetition(idCompetition);
 
-        else {
+        competition.setCommencer(false);
+
+        if (matchs != null && !matchs.isEmpty()) {
             for (Match match : matchs) {
-                if (match.getStatus() != Match.Status.WAITING)
+                if (match.getStatus() != Match.Status.WAITING) {
                     competition.setCommencer(true);
+                    break; // on a trouvé un match démarré
+                }
             }
+        }
+        if (competition.getDateDebut().isAfter(LocalDate.now())
+                || competition.getDateFin().isBefore(LocalDate.now())) {
+            competition.setCommencer(true);
         }
 
         return saveCompetition(competition);
