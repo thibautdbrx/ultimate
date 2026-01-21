@@ -254,7 +254,9 @@ const formatDateTimeSafe = (value) => {
           <button v-show="editMode" class="btn-supprimer" @click="supprimerJoueur(i)">Supprimer</button>
           <CardJoueur :nom="j.nomJoueur" :prenom="j.prenomJoueur" :genre="j.genre" :photo="j.photoJoueur" />
         </div>
+        <Teleport to="body">
         <SelectJoueur :show="modalShow_1" :genre="genre" :id_equipe="equipeId" @close="modalShow_1 = false" @select="selectExisting" />
+        </Teleport>
       </div>
     </div>
   </main>
