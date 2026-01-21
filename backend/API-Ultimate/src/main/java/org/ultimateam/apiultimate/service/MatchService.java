@@ -33,7 +33,17 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class MatchService {
-
+/**
+     * Vérifie et met à jour le statut "commencer" d'une compétition.
+     *
+     * <p>Une compétition est considérée comme commencée si :
+     * 1. Le flag est déjà à {@code true}.
+     * 2. La date de début est dépassée.
+     * 3. Au moins un match de la compétition a un statut différent de 'WAITING'.</p>
+     *
+     * @param idCompetition identifiant de la compétition
+     * @return la {@link Competition} avec son statut mis à jour
+     */
     private final MatchRepository matchRepository;
     private final EquipeService equipeService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
