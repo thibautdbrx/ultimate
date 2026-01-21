@@ -229,16 +229,45 @@ async function postuler(equipeId) {
 }
 
 .equipes-list {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2rem; width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1000px;
+  align-items: stretch; 
 }
 
-.equipe-wrapper { display: flex; flex-direction: column; align-items: center; }
-.card-link { text-decoration: none; color: inherit; transition: transform 0.2s; }
+.equipe-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Permet au wrapper de prendre toute la hauteur de la ligne de la grille */
+  height: 100%; 
+  background: white; /* Optionnel : si vous voulez un fond uniforme */
+  padding-bottom: 1rem; /* Espace sous le bouton */
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s;
+  /* Ces deux lignes sont cruciales : */
+  flex-grow: 1; 
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.card-link :deep(.card) { 
+  height: 100%;
+}
+
 .card-link:hover { transform: translateY(-5px); }
 
 .postuler-btn {
   margin-top: 1rem; width: 100%; padding: 0.6rem 1rem; background-color: #27ae60; color: white;
   border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+  margin-bottom: 2em;
 }
 
 .postuler-btn:hover:not(:disabled) { background-color: #219150; transform: scale(1.02); }

@@ -339,11 +339,17 @@ onUnmounted(() => {
            
               <p v-if="loadingActions">Chargement…</p>
 
-              <div v-for="i in actions">
-               <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
-                {{ calculTempsAction(i.dateAction, i.datePause) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
-              </p>
-              </div>
+              <SliderVertical class="listePoints">
+                <template v-for="i in actions">
+                  <div 
+                    v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'" class="point">
+                    <p>
+                      {{ calculTempsAction(i.dateAction, i.datePause) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                    </p>
+                  </div>
+                </template>
+              </SliderVertical>
+                        
             
             </div>
           
@@ -362,13 +368,19 @@ onUnmounted(() => {
            
             <p v-if="loadingActions">Chargement…</p>
 
-            <div v-for="i in actions">
-               <p v-if="(i.joueur.equipe.idEquipe == match.equipe2.idEquipe) && i.type == 'POINT'">
-                {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
-              </p>
-              </div>
-            
+              <SliderVertical class="listePoints">
+                <template v-for="i in actions">
+                  <div 
+                    v-if="i.joueur.equipe.idEquipe == match.equipe2.idEquipe && i.type == 'POINT'" class="point">
+                    <p>
+                      {{ calculTempsAction(i.dateAction, i.datePause) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                    </p>
+                  </div>
+                </template>
+              </SliderVertical>
           </div>
+            
+           
           
         </div>
       </div>
@@ -396,8 +408,8 @@ onUnmounted(() => {
         <div class="joueurDiv" v-for="j in joueursEquipe1">
 
           <div class="boutons">
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe1.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
-            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" title="ajouter un point" @click="AjoutPoint(match.equipe1.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
+            <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" title="ajouter une faute" @click="AjoutFaute(match.equipe1.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
           </div>
           <Card_joueur
               
@@ -422,10 +434,10 @@ onUnmounted(() => {
       <!-- COLONNE MILIEU -->
       <div class="middle">
         <div id="actionsMatch">
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction actionEnd"><img :src="end" alt="Terminer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" title="Démarrer le match" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" title="Terminer le match" @click="operationMatch('end')" class="boutonAction actionEnd"><img :src="end" alt="Terminer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" title="Mettre en pause le match" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="pauser le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" title="Reprendre le match" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="reprendre le match"></button>
         </div>
 
         <h3>Informations du Match</h3>
@@ -463,8 +475,8 @@ onUnmounted(() => {
         <div class="joueurDiv" v-for="j in joueursEquipe2">
 
         <div class="boutons">
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" title="Ajouter un point" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" title="Ajouter une faute" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
         </div>
         
         <Card_joueur
@@ -533,6 +545,19 @@ onUnmounted(() => {
 
 }
 
+.listePoints {
+  max-height: 10rem;
+}
+
+.point {
+  margin: 0;
+  padding: 0;
+}
+
+.point p {
+  margin: 0;
+  line-height: 1.4;  
+}
 
 .points {
   font-size: 4.5rem;
@@ -696,7 +721,7 @@ color: gray}
 
 .boutonAction:hover {
   transform: translateY(-1px);
-
+  background: #cac8c8;
 }
 
 .boutonAction img {
@@ -705,23 +730,23 @@ color: gray}
 }
 
 .actionStart, .actionResume {
-  background-color: #2ecc71;
+  /*background-color: #2ecc71;*/
 }
 
 .actionStart:hover, .actionResume:hover {
-  background-color: #29ad60;
+  /*background-color: #29ad60;*/
 }
 
 .actionPause:hover {
-  background-color: #eaeaea;
+  /*background-color: #eaeaea;*/
 }
 
 .actionEnd {
-  background-color: #e74c3c;
+  /*background-color: #e74c3c;*/
 }
 
 .actionEnd:hover {
-  background-color: #b94134;
+  /*background-color: #b94134;*/
 }
 
   /* -------------------- */
@@ -746,6 +771,10 @@ color: gray}
 
 .fautes {
   position: absolute;
+  max-height: 100%;
+
+  overflow: hidden;
+  
 }
 
 .droite {
