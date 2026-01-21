@@ -292,7 +292,7 @@ public class MatchService {
      */
     public Match ajouterFaute(long idMatch, long idEquipe, MatchFauteDTO fauteDTO) {
         Match match = getById(idMatch);
-        Equipe equipe = equipeService.getById(idMatch);
+        Equipe equipe = equipeService.getById(idEquipe);
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
         if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
 
