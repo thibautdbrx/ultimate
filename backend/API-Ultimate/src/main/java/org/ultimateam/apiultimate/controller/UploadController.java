@@ -36,7 +36,7 @@ public class UploadController {
      */
     @Operation(summary = "Uploader un fichier", description = "Permet d'uploader un fichier. Nécessite d'être authentifié.")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, String>> upload(
             @Parameter(description = "Fichier à uploader", required = true)
             @RequestParam("file") MultipartFile file) {
