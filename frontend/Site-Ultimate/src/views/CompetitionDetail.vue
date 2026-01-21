@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // --- SERVICES & STORES ---
@@ -49,11 +49,19 @@ const hasMatches = computed(() => matches.value.length > 0)
 const nbTeams = computed(() => teams.value.length)
 
 const competitionDejaCommencee = computed(() => {
-  if (!competition.value?.dateDebut) return false
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const debut = new Date(competition.value.dateDebut); debut.setHours(0, 0, 0, 0)
-  return debut < today
-})
+  return competition.value?.commencer === true
+});
+
+async function verifierStatutCompetition() {
+  try {
+    const response = await api.put(`/competition/${competitionId}/checkCommencer`);
+    competition.value.commencer = response.data.commencer;
+    console.log(competition.value.commencer);
+  } catch (err) {
+    console.error("Erreur lors de la vérification du statut:", err);
+  }
+}
+
 
 const canGenerate = computed(() => {
   const hasEnoughTeams = teams.value.length >= 2
@@ -109,7 +117,19 @@ async function fetchData() {
   }
 }
 
-onMounted(fetchData)
+let statusInterval = null;
+onMounted(async () => {
+  await fetchData();
+
+  // Vérifie le statut toutes les 30 secondes
+  statusInterval = setInterval(async () => {
+    await verifierStatutCompetition();
+  }, 30000);
+});
+
+onUnmounted(() => {
+  if (statusInterval) clearInterval(statusInterval); //reset interval
+});
 
 // --- ACTIONS ÉQUIPES ---
 const addTeam = async (equipe) => {
@@ -194,15 +214,21 @@ const GenererMatch = async () => {
 
     } catch (error) {
       console.error(error);
-      notify("Une erreur est survenue lors de la génération")
+      notify("Une erreur est survenue lors de la génération", "error")
     }
   })
 };
 
 const supprimerMatch = async () => {
   askConfirmation("Voulez-vous vraiment supprimer tous les matchs ?", async () => {
-    // Logique API à implémenter si besoin, ou message d'erreur
-    notify("Fonctionnalité en cours de développement", "error")
+    try {
+      await api.delete(`/competition/${competitionId}/clean`);
+      notify("Match correctement supprimés, vous pouvez de nouveau generer des matchs", "success")
+      setTimeout(() => { window.location.reload() }, 1500)
+    } catch (error) {
+      console.error(error);
+      notify("Une erreur est survenue lors de la suppressions des matchs", "error")
+    }
   })
 }
 
@@ -268,7 +294,7 @@ const openTerrainsModal = () => {
           </button>
         </div>
 
-        <button v-if="auth.isAdmin && !allowEdit" class="btn-primary" @click="supprimerMatch">
+        <button v-if="auth.isAdmin && !competitionDejaCommencee && hasMatches" class="btn-primary" @click="supprimerMatch">
           Supprimer tous les matchs
         </button>
 

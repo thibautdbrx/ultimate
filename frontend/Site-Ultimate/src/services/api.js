@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // On crée l'instance avec la configuration de base
 const api = axios.create({
-    // Comme tu as un proxy dans vite.config.js, on met juste '/api'
+    // Comme on a un proxy dans vite.config.js, on met juste '/api'
     baseURL: '/api',
     headers: {
         'Content-Type': 'application/json',

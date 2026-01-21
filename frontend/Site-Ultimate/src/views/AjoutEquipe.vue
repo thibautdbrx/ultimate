@@ -103,70 +103,75 @@ const selectExisting = (joueur) => {
   j.clickable = false;
   modalShow_1.value = false;
 }
-
 const valider_ajout_equipe = async () => {
-  // --- 1) VALIDATION ---
-  if (!nomEquipe.value.trim() || !categorie.value || !format.value) {
-    notify("Le nom, la catégorie et le format sont obligatoires.");
+  // --- 1) VALIDATION DE BASE ---
+  if (!nomEquipe.value.trim()) {
+    notify("Le nom de l'équipe est obligatoire.");
     return;
   }
-  if (categorie.value === 'MIXTE' && !mixite.value) {
-    notify("Veuillez sélectionner la répartition (Mixité).");
+  if (!categorie.value) {
+    notify("Veuillez choisir une catégorie.");
     return;
   }
 
-  // --- 2) RÉCUPÉRATION ET COMPTAGE DES JOUEURS ---
-  const slotsVisibles = joueurs.value.slice(0, nombreJoueurs.value);
-  const joueursRemplis = slotsVisibles.filter(j => j.id !== null);
+  // --- 2) CALCUL DU GENRE (CORRESPONDANCE ENUM) ---
+  let genreFinal = "";
 
-  if (joueursRemplis.length > 0) {
-    const countH = joueursRemplis.filter(j => j.genre === 'HOMME').length;
-    const countF = joueursRemplis.filter(j => j.genre === 'FEMME').length;
-
-    if (categorie.value === 'FEMME' && countH > 0) {
-      notify("Erreur : Une équipe 'FEMME' ne peut contenir que des joueuses.");
+  if (categorie.value === 'MIXTE') {
+    // Si c'est mixte, on prend la valeur de mixite (H3F2, etc.)
+    if (!mixite.value) {
+      notify("Veuillez sélectionner la répartition Mixte.");
       return;
     }
+    genreFinal = mixite.value;
+  } else {
+    // Pour OPEN ou FEMME, on prend directement la catégorie
+    genreFinal = categorie.value;
+  }
 
-    if (categorie.value === 'MIXTE' && mixite.value) {
-      const maxH = parseInt(mixite.value.charAt(1));
-      const maxF = parseInt(mixite.value.charAt(3));
-      if (countH > maxH) { notify(`Trop d'hommes (Max : ${maxH}).`); return; }
-      if (countF > maxF) { notify(`Trop de femmes (Max : ${maxF}).`); return; }
-    }
+  // LOG DE SÉCURITÉ : Si c'est vide ici, on arrête tout
+  console.log("DEBUG GENRE SELECTIONNÉ :", genreFinal);
+
+  if (!genreFinal || genreFinal === "") {
+    notify("Erreur interne : Le genre n'a pas pu être déterminé.");
+    return;
   }
 
   try {
-    const genreFinal = categorie.value === 'MIXTE' ? mixite.value : categorie.value;
-    const formatTexte = format.value === '5v5' ? 'CINQ' : 'SEPT';
-
+    // --- 3) PRÉPARATION DU PAYLOAD ---
     const equipePayload = {
-      nomEquipe: nomEquipe.value,
-      description: descriptionEquipe.value,
-      genre: genreFinal,
-      nbJoueur: formatTexte,
+      nomEquipe: nomEquipe.value,    // - OK (correspond à private String nomEquipe)
+      description: descriptionEquipe.value, // - OK (correspond à private String description)
+      genre: genreFinal,             // - OK
+      nbJoueurs: format.value === '5v5' ? "CINQ" : "SEPT", // - OK (doit être pluriel avec 's')
     };
 
-    // Remplacement fetch par api.post
+    console.log("Payload envoyé au POST /equipe :", equipePayload);
+
     const resEquipe = await api.post("/equipe", equipePayload);
     const equipeCree = resEquipe.data;
 
     // --- 4) AFFECTATION DES JOUEURS ---
+    const slotsVisibles = joueurs.value.slice(0, nombreJoueurs.value);
+    const joueursRemplis = slotsVisibles.filter(j => j.id !== null);
+
     if (joueursRemplis.length > 0) {
-      // Remplacement fetch par api.patch dans le Promise.all
-      await Promise.all(joueursRemplis.map(j =>
-          api.patch(`/joueur/${j.id}/equipe/${equipeCree.idEquipe}`)
-      ));
+      // On boucle un par un pour éviter les erreurs 500 de concurrence
+      for (const j of joueursRemplis) {
+        await api.patch(`/joueur/${j.id}/equipe/${equipeCree.idEquipe}`);
+      }
     }
 
     notify("Équipe créée avec succès !", "success");
     setTimeout(() => router.push("/Equipe"), 1500);
 
   } catch (e) {
-    const errorMsg = e.response?.data?.message || "Impossible de contacter le serveur";
+    console.error("Erreur serveur détaillée :", e.response?.data);
+    const errorMsg = e.response?.data?.message || "Erreur lors de la création";
     notify(errorMsg);
   }
 };
+
 </script>
 
 <template>
