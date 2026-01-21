@@ -91,9 +91,9 @@ public class SecurityConfig {
                         // 3. JOUEUR CONNECTÉ (Actions courantes)
                         // Upload image, rejoindre équipe, modifier son profil (PATCH)
                         .requestMatchers("/api/files/upload").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/joueur/request/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/request/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/joueur/request/**").hasAuthority("ROLE_VISITEUR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VISITEUR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/request/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VISITEUR")
 
                         // 4. ARBITRE & ADMIN (Gestion Matchs)
                         .requestMatchers(
