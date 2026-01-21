@@ -15,6 +15,20 @@ import org.ultimateam.apiultimate.DTO.NombreJoueurs;
 
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * Représente une équipe participant à des compétitions.
+ *
+ * Contient les informations basiques (nom, description), la liste des joueurs
+ * et les indisponibilités. Les getters/setters sont fournis par Lombok.
+ *
+ * Rappel important sur le calcul des points dans les classements :
+ * - victoire = +3 points
+ * - égalité  = +1 point
+ * - défaite  = +0 point
+ *
+ * Ces règles sont appliquées au niveau des entités/services de classement
+ */
 @Getter
 @Setter
 @NoArgsConstructor

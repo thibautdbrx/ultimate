@@ -20,6 +20,13 @@ import org.ultimateam.apiultimate.repository.JoueurRequestRepository;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Service responsable des opérations liées aux joueurs.
+ *
+ * <p>Ce service fournit des méthodes pour récupérer, créer, modifier et supprimer
+ * des {@link Joueur}, gérer leur appartenance à une {@link Equipe} ainsi que
+ * traiter les demandes d'affectation (JoueurRequest).</p>
+ */
 @Service
 public class JoueurService {
 
@@ -29,10 +36,13 @@ public class JoueurService {
     private final EquipeRepository equipeRepository;
 
     /**
-     * Constructeur pour l'injection des dépendances JoueurRepository et EquipeService.
+     * Constructeur pour l'injection des dépendances JoueurRepository, EquipeService,
+     * JoueurRequestRepository et EquipeRepository.
      *
-     * @param joueurRepository Le repository pour l'accès aux données des joueurs.
-     * @param equipeService Le service pour la gestion des équipes.
+     * @param joueurRepository repository pour l'accès aux joueurs
+     * @param equipeService service pour la gestion des équipes
+     * @param joueurRequestRepository repository pour les demandes de joueur
+     * @param equipeRepository repository pour l'accès aux équipes
      */
     public JoueurService(JoueurRepository joueurRepository, EquipeService equipeService, JoueurRequestRepository joueurRequestRepository, EquipeRepository equipeRepository) {
         this.joueurRepository = joueurRepository;
@@ -42,9 +52,10 @@ public class JoueurService {
     }
 
     /**
-     * Récupère la liste de tous les joueurs.
+     * Récupère la liste de tous les joueurs ou filtre par genre si fourni.
      *
-     * @return Un Itérable contenant tous les joueurs.
+     * @param genre le genre à filtrer (peut être {@code null} pour ne pas filtrer)
+     * @return la liste des {@link Joueur} correspondant au filtre
      */
     public List<Joueur> getAll(GenreJoueur genre) {
         if(genre==null){
@@ -58,7 +69,7 @@ public class JoueurService {
      * Récupère un joueur spécifique par son identifiant (ID).
      *
      * @param id L'identifiant du joueur à rechercher.
-     * @return Le joueur trouvé, ou null si aucun joueur ne correspond à l'ID.
+     * @return Le joueur trouvé, ou {@code null} si aucun joueur ne correspond à l'ID.
      */
     public Joueur getById(Long id) {
         return joueurRepository.findById(id).orElse(null);
@@ -78,6 +89,7 @@ public class JoueurService {
      * Supprime un joueur de la base de données en utilisant son identifiant.
      *
      * @param id L'identifiant du joueur à supprimer.
+     * @throws ResponseStatusException si le joueur n'existe pas
      */
     public void deleteJoueur(Long id) {
         if (!joueurRepository.existsById(id)) {
@@ -86,18 +98,26 @@ public class JoueurService {
         joueurRepository.deleteById(id);
     }
 
+    /**
+     * Récupère la liste des joueurs appartenant à une équipe donnée.
+     *
+     * @param idEquipe L'identifiant de l'équipe
+     * @return la liste des {@link Joueur} associés à l'équipe
+     */
     public List<Joueur> getJoueurByEquipe(Long idEquipe){
         return joueurRepository.findAllByEquipe_IdEquipe(idEquipe);
     }
 
     /**
      * Assigne un joueur à une équipe spécifique.
-     * Récupère le joueur et l'équipe par leurs ID, établit l'association
-     * des deux côtés et sauvegarde les modifications.
+     *
+     * <p>La méthode récupère le joueur et l'équipe par leurs ID, met à jour
+     * les relations bidirectionnelles (ajout/suppression), met à jour le genre
+     * de l'équipe et persiste les entités modifiées.</p>
      *
      * @param id_joueur L'identifiant du joueur à assigner.
      * @param id_equipe L'identifiant de l'équipe qui reçoit le joueur.
-     * @return L'équipe mise à jour après l'assignation.
+     * @return Le joueur mis à jour après l'assignation.
      */
     public Joueur assignerEquipe(Long id_joueur, Long id_equipe) {
         Joueur joueur = getById(id_joueur);
@@ -152,7 +172,19 @@ public class JoueurService {
         return joueur;
     }
 
-
+    /**
+     * Crée une demande d'affectation d'un joueur à une équipe (JoueurRequest).
+     *
+     * <p>La méthode vérifie que l'utilisateur représenté par le token agit pour
+     * son propre joueur, puis crée et persiste la demande.</p>
+     *
+     * @param idJoueur identifiant du joueur concerné
+     * @param idEquipe identifiant de l'équipe demandée
+     * @param idJoueurDuToken identifiant du joueur provenant du token (sécurité)
+     * @return la {@link JoueurRequest} créée et persistée
+     * @throws AccessDeniedException si l'utilisateur n'agit pas pour son propre joueur
+     * @throws EntityNotFoundException si le joueur ou l'équipe n'existe pas
+     */
     public JoueurRequest demandeJoueur(long idJoueur, long idEquipe, long idJoueurDuToken) {
         // Vérification que le joueur n'agit que pour lui-même
         if (idJoueur != idJoueurDuToken) {
@@ -175,6 +207,17 @@ public class JoueurService {
         return joueurRequestRepository.save(request);
     }
 
+    /**
+     * Accepte une demande d'affectation joueur->équipe et effectue l'assignation.
+     *
+     * <p>La méthode recherche la demande par son identifiant composite, la supprime
+     * puis appelle {@link #assignerEquipe} pour rattacher le joueur à l'équipe.</p>
+     *
+     * @param idJoueur identifiant du joueur
+     * @param idEquipe identifiant de l'équipe
+     * @return le {@link Joueur} assigné à l'équipe
+     * @throws ResponseStatusException si la demande n'existe pas
+     */
     public Joueur accepterDemande(long idJoueur, long idEquipe) {
         JoueurRequestId id = new JoueurRequestId(idJoueur, idEquipe);
         JoueurRequest joueurRequest = joueurRequestRepository.findById(id)
@@ -188,16 +231,27 @@ public class JoueurService {
         return assignerEquipe(joueurRequest.getId().getIdJoueur(), joueurRequest.getId().getIdEquipe());
     }
 
+    /**
+     * Refuse et supprime une demande d'affectation existante.
+     *
+     * @param idJoueur identifiant du joueur
+     * @param idEquipe identifiant de l'équipe
+     * @throws ResponseStatusException si la demande n'existe pas
+     */
     public void refuseDemande(long idJoueur, long idEquipe) {
         JoueurRequestId id = new JoueurRequestId(idJoueur, idEquipe);
-        JoueurRequest joueurRequest = joueurRequestRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Demande inexistante"
-                ));
+        if (!joueurRequestRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demande inexistante");
+        }
         joueurRequestRepository.deleteById(id);
     }
 
+    /**
+     * Récupère les joueurs n'appartenant à aucune équipe (joueurs "solo").
+     *
+     * @param genre filtre optionnel par genre (peut être {@code null})
+     * @return la liste des {@link Joueur} solo correspondant au filtre
+     */
     public List<Joueur> getJoueurSolo(Long idEquipe) {
         if (idEquipe == null) {
             return joueurRepository.findAllByEquipe_IdEquipeIsNull();
@@ -272,9 +326,10 @@ public class JoueurService {
     }
 
     /**
-     * Retire un joueur d'une équipe.
-     * Récupère le joueur et l'équipe, puis rompt l'association en mettant
-     * l'équipe du joueur à null et en sauvegardant les changements.
+     * Retire un joueur d'une équipe et met à jour les entités concernées.
+     *
+     * <p>La méthode rompt l'association entre le joueur et l'équipe, met à jour le genre
+     * de l'équipe et persiste les changements.</p>
      *
      * @param id_joueur L'identifiant du joueur à retirer.
      * @param id_equipe L'identifiant de l'équipe dont le joueur est retiré.
@@ -292,6 +347,14 @@ public class JoueurService {
         return equipe;
     }
 
+    /**
+     * Met à jour la photo d'un joueur et persiste la modification.
+     *
+     * @param idJoueur identifiant du joueur à mettre à jour
+     * @param imageDTO DTO contenant l'image (base64 ou chemin selon implémentation)
+     * @return le {@link Joueur} mis à jour
+     * @throws ResponseStatusException si le joueur n'existe pas
+     */
     public Joueur updateJoueur(long idJoueur, ImageDTO imageDTO) {
         if (!joueurRepository.existsById(idJoueur)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
@@ -301,6 +364,14 @@ public class JoueurService {
         return joueurRepository.save(joueur);
     }
 
+    /**
+     * Modifie les informations nominatives d'un joueur (nom, prénom, genre) si fournies.
+     *
+     * @param nameDTO DTO contenant les champs modifiables
+     * @param idJoueur identifiant du joueur à modifier
+     * @return le {@link Joueur} mis à jour
+     * @throws ResponseStatusException si le joueur n'existe pas
+     */
     public Joueur editName(EditJoueurDTO nameDTO, long idJoueur) {
         Joueur joueur = joueurRepository.findById(idJoueur)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Joueur non trouvée"));
@@ -310,8 +381,19 @@ public class JoueurService {
         return joueurRepository.save(joueur);
     }
 
+    /**
+     * Récupère les joueurs par genre.
+     *
+     * @param genre le genre demandé
+     * @return la liste des {@link Joueur} correspondant au genre
+     */
     public List<Joueur> getGenre(GenreJoueur genre) { return joueurRepository.findAllByGenre(genre);}
 
+    /**
+     * Récupère toutes les demandes d'affectation de joueurs (JoueurRequest).
+     *
+     * @return la liste des {@link JoueurRequest} existantes
+     */
     public List<JoueurRequest> getAllRequests() { return joueurRequestRepository.findAll();}
 
 }

@@ -11,6 +11,22 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Classe de base représentant une compétition (tournoi, championnat, ...).
+ *
+ * Contient les informations générales partagées par tous les types de
+ * compétitions : genre, format, dates, nom et description.
+ *
+ * Règles de scoring conventionnelles (utilisées pour calculer le score dans
+ * les classements) :
+ *
+ *   - victoire = +3 points</li>
+ *   - égalité = +1 point</li>
+ *   - défaite = +0 point</li>
+ *
+ * Ces règles sont appliquées au niveau des services/entités de classement
+ * (par exemple dans {@code Classement}) pour calculer le score d'une équipe.
+ */
 @Entity
 @Getter
 @Setter
@@ -30,6 +46,14 @@ public abstract class Competition {
     @Enumerated(EnumType.STRING)
     private Format format;
 
+    /**
+     * Retourne le type concret de la compétition (le nom de la classe fille).
+     *
+     * Utile pour exposer un champ lisible côté client indiquant le type
+     * (par exemple "Championnat" ou "Tournoi").
+     *
+     * @return nom simple de la classe concrète implémentant {@code Competition}
+     */
     @JsonProperty("typeCompetition")
     public String getTypeCompetition() {
         return this.getClass().getSimpleName();

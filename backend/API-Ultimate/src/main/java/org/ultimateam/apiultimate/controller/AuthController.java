@@ -23,6 +23,12 @@ import org.ultimateam.apiultimate.model.User;
 import org.ultimateam.apiultimate.repository.UserRepository;
 import org.ultimateam.apiultimate.service.JoueurService;
 
+/**
+ * Contrôleur REST pour la gestion de l'authentification des utilisateurs.
+ *
+ * Ce contrôleur expose des endpoints pour l'inscription et la connexion des utilisateurs,
+ * en utilisant JWT pour la génération des tokens d'authentification.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -30,12 +36,32 @@ import org.ultimateam.apiultimate.service.JoueurService;
 @Tag(name = "Authentification", description = "Endpoints pour l'authentification")
 public class AuthController {
 
+    /** Repository pour accéder aux données des utilisateurs. */
     private final UserRepository userRepository;
+    /** Service pour encoder les mots de passe. */
     private final PasswordEncoder passwordEncoder;
+    /** Utilitaire pour générer et manipuler les tokens JWT. */
     private final JwtUtils jwtUtils;
+    /** Gestionnaire d'authentification Spring Security. */
     private final AuthenticationManager authenticationManager;
+    /** Service pour gérer les joueurs. */
     private final JoueurService joueurService;
 
+    /**
+     * Inscrit un nouvel utilisateur et crée un joueur associé.
+     *
+     * Ce endpoint :
+     *   - Vérifie que l'email n'est pas déjà utilisé.
+     *   - Crée un nouvel utilisateur avec le rôle {@link User.Role#ROLE_VISITEUR} par défaut.
+     *   - Crypte le mot de passe avant de le sauvegarder.
+     *   - Crée un joueur associé à l'utilisateur.
+     *   - Génère un token JWT pour l'utilisateur.
+     *
+     * @param request Objet {@link RegisterRequest} contenant les informations d'inscription (email, mot de passe, prénom, nom, genre).
+     * @return Une {@link ResponseEntity} contenant :
+     *         - Un objet {@link AuthResponse} avec le token JWT et le type "Bearer" en cas de succès (HTTP 200).
+     *         - Un message d'erreur si l'email est déjà utilisé (HTTP 400).
+     */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) { // permet d'évité qu'une personne envoie un json avec comme role admin
 
@@ -65,6 +91,19 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token, "Bearer")); // 200 ok avec le token
     }
 
+    /**
+     * Authentifie un utilisateur existant et génère un token JWT.
+     *
+     * Ce endpoint :
+     *   - Vérifie les informations d'authentification (email et mot de passe).
+     *   - Génère un token JWT si l'authentification réussit.
+     *   - Inclut l'identifiant du joueur dans le token si l'utilisateur est un joueur ou un arbitre.
+     *
+     * @param request Objet {@link LoginRequest} contenant l'email et le mot de passe.
+     * @return Une {@link ResponseEntity} contenant :
+     *         - Un objet {@link AuthResponse} avec le token JWT et le type "Bearer" en cas de succès (HTTP 200).
+     *         - Un message d'erreur si l'authentification échoue (HTTP 401).
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
