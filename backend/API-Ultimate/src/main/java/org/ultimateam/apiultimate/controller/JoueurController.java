@@ -156,7 +156,7 @@ public class JoueurController {
      */
     @Operation(summary = "Refuser une demande", description = "Refuse la demande d'un joueur.")
     @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/refuse")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public void refuseDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {
         joueurService.refuseDemande(idJoueur, idEquipe);
     }
