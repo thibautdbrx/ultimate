@@ -18,6 +18,9 @@ import resume from "@/assets/img/matchIcon/resume.png";
 
 import curseur from "@/assets/img/curseur.cur"
 
+import "leaflet/dist/leaflet.css"
+import { LMap, LTileLayer, LMarker, LTooltip } from "@vue-leaflet/vue-leaflet"
+
 import api from '@/services/api' // Ajout de l'import api
 import { useAuthStore } from "@/stores/auth";
 import PUB from "@/components/PUB.vue";
@@ -41,6 +44,8 @@ let etatMatch = ref("WAITING");
 let duree = ref(null);
 
 const error = ref(null);
+
+
 
 
 //------------------------

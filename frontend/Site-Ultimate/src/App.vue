@@ -5,11 +5,13 @@ import Footer from './components/Footer.vue'
 </script>
 
 <template>
-  <div id="app">
+  <div class="layout-container">
     <Header />
+    
     <main>
       <router-view />
     </main>
+    
     <Footer />
   </div>
 </template>
@@ -17,12 +19,13 @@ import Footer from './components/Footer.vue'
 <style>
 body {
   margin: 0;
+  height: 100%; 
 }
 
-#app {
+.layout-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100vh; 
 }
 
 main {
