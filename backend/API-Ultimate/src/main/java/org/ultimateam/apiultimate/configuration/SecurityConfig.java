@@ -23,7 +23,7 @@ import org.ultimateam.apiultimate.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // a commenter pour activer/desactive la securité
+@EnableMethodSecurity // Active la sécurité via annotations dans les contrôleurs (@PreAuthorize)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -54,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        // --- MODE DEV (Sécurité désactivée) ---
+        // --- MODE DEV : Si app.security.enabled=false, on ouvre tout le pare-feu ---
         if (!securityEnabled) {
             return http
                     .csrf(AbstractHttpConfigurer::disable)
@@ -63,17 +63,18 @@ public class SecurityConfig {
                     .build();
         }
 
-        // --- MODE PROD (Sécurité active) ---
+        // --- MODE PROD : Règles de sécurité ---
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // 1. PUBLIC : Authentification et Documentation
+                        // 1. PUBLIC : Authentification, Swagger, et FICHIERS (Upload/Download)
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/documentation/**"
+                                "/documentation/**",
+                                "/api/files/**"
                         ).permitAll()
 
                         // 2. PUBLIC (LECTURE SEULE)
@@ -85,38 +86,21 @@ public class SecurityConfig {
                                 "/api/match/**",
                                 "/api/terrain/**",
                                 "/api/classement/**",
-                                "/api/action-match/**",
-                                "/api/files/**"
+                                "/api/action-match/**"
                         ).permitAll()
 
-                        // 3. JOUEUR CONNECTÉ (Actions courantes)
-                        .requestMatchers("/api/files/upload").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/joueur/request/**").hasAuthority("ROLE_VISITEUR")
-                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VISITEUR")
-                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/request/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VISITEUR")
+                        // 3. ACTIONS UTILISATEURS (Connecté)
+                        .requestMatchers(HttpMethod.PATCH, "/api/joueur/{idJoueur}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "api/joueur/request/{idJoueur}/equipe/{idEquipe}").permitAll()
 
-                        // 4. ADMIN (Gestion Globale - Matchs inclus car Arbitre n'existe plus)
-                        // On regroupe tout ce qui est modification structurelle ou gestion de matchs
-                        .requestMatchers(
-                                "/api/match/**",
-                                "/api/action-match/**"
-                        ).hasAuthority("ROLE_ADMIN")
+                        // 4. ADMIN (Tout le reste : Création, Suppression, Gestion des matchs)
+                        .requestMatchers("/api/match/**", "/api/action-match/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/**").hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/equipe/**",
-                                "/api/competition/**",
-                                "/api/terrain/**",
-                                "/api/joueur/**").hasAuthority("ROLE_ADMIN")
-
-                        .requestMatchers(HttpMethod.PUT,
-                                "/api/equipe/**",
-                                "/api/competition/**",
-                                "/api/joueur/**").hasAuthority("ROLE_ADMIN")
-
-                        .requestMatchers(HttpMethod.DELETE,
-                                "/api/**").hasAuthority("ROLE_ADMIN")
-
-                        // 6. Le reste doit être authentifié par défaut
+                        // 5. Sécurité par défaut pour tout ce qui n'est pas listé
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

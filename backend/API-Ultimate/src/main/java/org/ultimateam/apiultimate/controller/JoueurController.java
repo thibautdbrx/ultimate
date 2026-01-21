@@ -121,7 +121,7 @@ public class JoueurController {
      */
     @Operation(summary = "Demander à rejoindre une équipe", description = "Le joueur connecté demande à rejoindre une équipe.")
     @PostMapping("/request/{idJoueur}/equipe/{idEquipe}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<JoueurRequest> requestJoueur(
             @PathVariable long idJoueur,
             @PathVariable long idEquipe,
@@ -143,7 +143,7 @@ public class JoueurController {
      */
     @Operation(summary = "Accepter une demande", description = "Accepte la demande d'un joueur pour rejoindre l'équipe.")
     @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/accept")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public Joueur accepterDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {
         return joueurService.accepterDemande(idJoueur, idEquipe);
     }
@@ -168,7 +168,7 @@ public class JoueurController {
      */
     @Operation(summary = "Lister les demandes", description = "Affiche toutes les demandes d'adhésion en cours.")
     @GetMapping("/requests")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public List<JoueurRequest> getRequests() {
         return joueurService.getAllRequests();
     }
@@ -183,7 +183,7 @@ public class JoueurController {
      */
     @Operation(summary = "Mettre à jour l'image", description = "Modifie l'avatar du joueur connecté.")
     @PatchMapping("/{idJoueur}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public Joueur editImage(@RequestBody ImageDTO imageDTO, @PathVariable long idJoueur) {
         return joueurService.updateJoueur(idJoueur, imageDTO);
     }
