@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import weather_card from "@/components/weather_card.vue"
-import CarteMatch from "@/components/card_match.vue"
+import weather_card from "@/components/card/weather_card.vue"
+import CarteMatch from "@/components/card/card_match.vue"
 import PUB from "@/components/PUB.vue"
 
 const props = defineProps({

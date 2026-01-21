@@ -2,9 +2,9 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 
-import Card_joueur from "@/components/card_joueur.vue";
+import Card_joueur from "@/components/card/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
-import weather_card from  "@/components/weather_card.vue";
+import weather_card from "@/components/card/weather_card.vue";
 
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';

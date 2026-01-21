@@ -1,5 +1,5 @@
 <script setup>
-import ContactCard from '@/components/Contact_Card.vue'
+import ContactCard from '@/components/card/Contact_Card.vue'
 import MailIcon from '@/assets/icons/email.svg'
 
 const contacts = [

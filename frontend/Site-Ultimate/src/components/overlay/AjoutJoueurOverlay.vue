@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from "vue"
-import JoueurCardForm from "@/components/JoueurCardForm.vue"
-import { useAuthStore } from "@/stores/auth";
-import api from '@/services/api' // Import de l'instance Axios
+import JoueurCardForm from "@/components/card/JoueurCardForm.vue"
+import { useAuthStore } from "@/stores/auth.js";
+import api from '@/services/api.js' // Import de l'instance Axios
 
 const emit = defineEmits(["close", "created"])
 

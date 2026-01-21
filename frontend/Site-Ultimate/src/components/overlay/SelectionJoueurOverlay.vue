@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, computed} from "vue"
-import CardJoueur from "@/components/card_joueur.vue";
-import api from '@/services/api' // Ajout de l'import api
+import CardJoueur from "@/components/card/card_joueur.vue";
+import api from '@/services/api.js' // Ajout de l'import api
 
 const props = defineProps({
   show: Boolean,

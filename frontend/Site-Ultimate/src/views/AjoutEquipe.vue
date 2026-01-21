@@ -2,10 +2,10 @@
 import { ref, computed, watch } from "vue"
 import { useRouter } from 'vue-router'
 import champs_input from "@/components/champs_input.vue"
-import JoueurCardForm from "@/components/JoueurCardForm.vue"
-import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
+import JoueurCardForm from "@/components/card/JoueurCardForm.vue"
+import SelectJoueur from "@/components/overlay/SelectionJoueurOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
-import AjoutJoueurOverlay from "@/components/AjoutJoueurOverlay.vue";
+import AjoutJoueurOverlay from "@/components/overlay/AjoutJoueurOverlay.vue";
 import api from '@/services/api' // Import de l'instance Axios
 import { useAuthStore } from "@/stores/auth";
 
@@ -124,8 +124,7 @@ const valider_ajout_equipe = async () => {
       return;
     }
     genreFinal = mixite.value;
-  } else {
-    // Pour OPEN ou FEMME, on prend directement la catégorie
+  }else{
     genreFinal = categorie.value;
   }
 
@@ -140,10 +139,10 @@ const valider_ajout_equipe = async () => {
   try {
     // --- 3) PRÉPARATION DU PAYLOAD ---
     const equipePayload = {
-      nomEquipe: nomEquipe.value,    // - OK (correspond à private String nomEquipe)
-      description: descriptionEquipe.value, // - OK (correspond à private String description)
-      genre: genreFinal,             // - OK
-      nbJoueurs: format.value === '5v5' ? "CINQ" : "SEPT", // - OK (doit être pluriel avec 's')
+      description: descriptionEquipe.value,
+      genre: genreFinal,
+      nbJoueurs: format.value === '5v5' ? "CINQ" : "SEPT",
+      nomEquipe: nomEquipe.value
     };
 
     console.log("Payload envoyé au POST /equipe :", equipePayload);

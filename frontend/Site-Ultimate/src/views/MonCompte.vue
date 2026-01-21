@@ -4,9 +4,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from "@/stores/auth.js"
 import api from '@/services/api' // Import de l'instance Axios
 
-import CarteEquipe from "@/components/card_equipe.vue"
-import CarteMatch from "@/components/card_match.vue"
-import CardJoueur from "@/components/card_joueur.vue"
+import CarteEquipe from "@/components/card/card_equipe.vue"
+import CarteMatch from "@/components/card/card_match.vue"
+import CardJoueur from "@/components/card/card_joueur.vue"
 import ImageEquipeFond from "../assets/img/img_equipe.jpg"
 
 const router = useRouter()

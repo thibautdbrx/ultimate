@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import CarteMatch from '@/components/card_match.vue'
+import CarteMatch from '@/components/card/card_match.vue'
 import api from '@/services/api' // Import de l'instance Axios
 import {useAuthStore} from "@/stores/auth.js";
 

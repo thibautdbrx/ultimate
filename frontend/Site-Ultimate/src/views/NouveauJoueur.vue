@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue"
-import JoueurCardForm from "@/components/JoueurCardForm.vue"
+import JoueurCardForm from "@/components/card/JoueurCardForm.vue"
 import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth";
 import api from '@/services/api' // Ajout de l'import api

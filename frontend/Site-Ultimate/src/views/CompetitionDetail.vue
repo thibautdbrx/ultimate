@@ -13,8 +13,8 @@ import CompetitionClassement from "@/components/competition_detail/CompetitionCl
 import CompetitionTerrains from "@/components/competition_detail/CompetitionTerrains.vue"
 
 // --- OVERLAYS ---
-import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
-import SelectionTerrainOverlay from "@/components/SelectionTerrainOverlay.vue"
+import SelectEquipe from "@/components/overlay/SelectionEquipeOverlay.vue"
+import SelectionTerrainOverlay from "@/components/overlay/SelectionTerrainOverlay.vue"
 
 const auth = useAuthStore();
 const route = useRoute()

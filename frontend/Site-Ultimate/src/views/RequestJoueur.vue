@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
-import CarteEquipe from "@/components/card_equipe.vue"
+import CarteEquipe from "@/components/card/card_equipe.vue"
 import api from '@/services/api' // Import de l'instance Axios
 import { useAuthStore } from "@/stores/auth.js"
 

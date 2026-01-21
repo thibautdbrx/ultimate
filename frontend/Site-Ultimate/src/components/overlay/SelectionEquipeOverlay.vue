@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, computed} from "vue"
-import CardEquipe from "@/components/card_equipe.vue"
-import api from '@/services/api' // Import de l'instance Axios
+import CardEquipe from "@/components/card/card_equipe.vue"
+import api from '@/services/api.js' // Import de l'instance Axios
 
 const props = defineProps({
   show: Boolean,

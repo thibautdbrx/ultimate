@@ -2,7 +2,7 @@
 import { ref, computed } from "vue"
 import { useRouter } from 'vue-router'
 import champs_input from "@/components/champs_input.vue"
-import SelectEquipe from "@/components/SelectionEquipeOverlay.vue"
+import SelectEquipe from "@/components/overlay/SelectionEquipeOverlay.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import imgEquipeDefault from "@/assets/img/img_equipe.jpg"
 import api from '@/services/api' // Import de l'instance Axios

@@ -1,5 +1,5 @@
 <script setup>
-import CarteEquipe from "@/components/card_equipe.vue"
+import CarteEquipe from "@/components/card/card_equipe.vue"
 import ImageFond from "@/assets/img/img_equipe.jpg"
 
 defineProps({

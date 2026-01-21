@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import champs_input from "@/components/champs_input.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
-import defaultImage from '../assets/img_joueur/pnj.jpg'
+import defaultImage from '../../assets/img_joueur/pnj.jpg'
 
 const props = defineProps({
   joueur: Object,

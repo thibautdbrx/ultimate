@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import SliderCardHorizontal from "@/components/Slider_card_horizontal.vue"
-import CardMatch from "@/components/card_match.vue"
+import CardMatch from "@/components/card/card_match.vue"
 
 const props = defineProps({
   matches: { type: Array, default: () => [] }

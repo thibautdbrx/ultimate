@@ -9,8 +9,8 @@ import { useAuthStore } from "@/stores/auth";
 
 import api from '@/services/api' // Ajout de l'import api
 import SliderCardHorizontal from '../components/Slider_card_horizontal.vue'
-import CardInfo from '../components/Card_info.vue'
-import CardMatch from '../components/card_match.vue'
+import CardInfo from '../components/card/Card_info.vue'
+import CardMatch from '../components/card/card_match.vue'
 import PUB from "@/components/PUB.vue"
 
 const router = useRouter()

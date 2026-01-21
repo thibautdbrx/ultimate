@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import CardJoueur from "@/components/card_joueur.vue"
+import CardJoueur from "@/components/card/card_joueur.vue"
 import UserIcon from "@/assets/icons/avatar.svg"
 import champ_input from "@/components/champs_input.vue"
-import SelectJoueur from "@/components/SelectionJoueurOverlay.vue"
+import SelectJoueur from "@/components/overlay/SelectionJoueurOverlay.vue"
 
 import api from '@/services/api' // Ajout de l'import api
 import { useAuthStore } from "@/stores/auth";
