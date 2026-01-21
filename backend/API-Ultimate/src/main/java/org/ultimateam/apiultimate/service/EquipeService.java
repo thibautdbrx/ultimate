@@ -203,21 +203,59 @@ public class EquipeService {
         return equipes;
     }
 
-    public List<Equipe> getNotFull(Long idJoueur){
-        List<Equipe> equipes;
+    public List<Equipe> getNotFull(Long idJoueur) {
         Joueur joueur = joueurRepository.findById(idJoueur).orElse(null);
         if (joueur == null) {
-            equipes = Collections.emptyList();
+            return Collections.emptyList();
         }
-        else {
-            List<JoueurRequest> joueursRequests = joueurRequestRepository.getByJoueur(joueur);
-            equipes = equipeRepository.findAllById(joueursRequests.stream().map(JoueurRequest::getEquipe).map(Equipe::getIdEquipe).collect(Collectors.toList()));
-        }
-        List<Equipe> all = equipeRepository.findAll();
-        return all.stream()
-                .filter(e -> !e.isFull())
-                .filter(e -> !equipes.contains(e))
+        //Récupération des IDs équipes déjà demandées
+        List<JoueurRequest> joueursRequests = joueurRequestRepository.getByJoueur(joueur);
+        List<Long> idsEquipesDemandees = joueursRequests.stream()
+                .map(req -> req.getEquipe().getIdEquipe())
                 .collect(Collectors.toList());
 
+        List<Equipe> all = equipeRepository.findAll();
+
+        // Filtrage
+        return all.stream()
+                .filter(e -> {
+                    if (e.isFull() || idsEquipesDemandees.contains(e.getIdEquipe()) || e.getJoueurs().contains(joueur)) {
+                        return false;
+                    }
+                    // Compte le nombre d'hommes et de femmes dans l'équipe
+                    long nbHommes = e.getJoueurs().stream()
+                            .filter(j -> j.getGenre() == GenreJoueur.HOMME)
+                            .count();
+
+                    long nbFemmes = e.getJoueurs().stream()
+                            .filter(j -> j.getGenre() == GenreJoueur.FEMME)
+                            .count();
+
+                    boolean isHomme = joueur.getGenre() == GenreJoueur.HOMME;
+
+                    // Vérifications des critères (si l'équipe peut accepter un homme ou une femme)
+                    if (e.getGenre() == Genre.H2F3) {
+                        if (isHomme && nbHommes >= 2) return false;
+                        if (!isHomme && nbFemmes >= 3) return false;
+                    }
+                    else if (e.getGenre() == Genre.H3F2) {
+                        if (isHomme && nbHommes >= 3) return false;
+                        if (!isHomme && nbFemmes >= 2) return false;
+                    }
+                    else if (e.getGenre() == Genre.H4F3) {
+                        if (isHomme && nbHommes >= 4) return false;
+                        if (!isHomme && nbFemmes >= 3) return false;
+                    }
+                    else if (e.getGenre() == Genre.H3F4) {
+                        if (isHomme && nbHommes >= 3) return false;
+                        if (!isHomme && nbFemmes >= 4) return false;
+                    }
+                    else if (e.getGenre() == Genre.FEMME) {
+                        if (isHomme) return false;
+                    }
+
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
 }
