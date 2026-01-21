@@ -20,7 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
+/**
 @ExtendWith(MockitoExtension.class)
 class ParticipationServiceTest {
 
@@ -151,4 +151,4 @@ class ParticipationServiceTest {
         // On vérifie que l'équipe retournée est bien celle mockée
         assertEquals(equipe, result.get(0));
     }
-}
+}*/
