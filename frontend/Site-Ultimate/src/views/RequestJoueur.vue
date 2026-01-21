@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ImageFond from "../assets/img/img_equipe.jpg"
 import CarteEquipe from "@/components/card/card_equipe.vue"
-import api from '@/services/api' // Import de l'instance Axios
+import api from '@/services/api' // On utilise ton instance Axios configurée
 import { useAuthStore } from "@/stores/auth.js"
 
 const auth = useAuthStore()
@@ -20,15 +20,16 @@ const existingTeam = ref(null)
 const showToast = ref(false)
 const toastMessage = ref("")
 
-// Fonction pour afficher le toast et le cacher automatiquement
+// Fonction pour afficher le toast
 function triggerToast(message) {
   toastMessage.value = message
   showToast.value = true
   setTimeout(() => {
     showToast.value = false
-  }, 4000) // Disparaît après 4 secondes
+  }, 4000)
 }
 
+// Fonction de secours pour récupérer l'ID si le store est vide (page refresh)
 function getJoueurIdFromCookie() {
   const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
   if (token) {
@@ -41,7 +42,9 @@ function getJoueurIdFromCookie() {
 }
 
 onMounted(async () => {
+  // Récupération de l'ID via le store ou le cookie
   let currentJoueurId = auth.joueurId || getJoueurIdFromCookie()
+
   if (!currentJoueurId) {
     router.push('/Connexion')
     return
@@ -50,24 +53,27 @@ onMounted(async () => {
   try {
     loading.value = true
 
-    // Remplacement fetch par api.get
+    // 1. On récupère les infos du joueur (avec Axios)
     const resJoueur = await api.get(`/joueur/${currentJoueurId}`)
     const joueur = resJoueur.data
 
+    // Si le joueur a déjà une équipe
     if (joueur.equipe) {
       existingTeam.value = joueur.equipe
       loading.value = false
       return
     }
 
-    // Remplacement fetch par api.get avec params
+    // 2. Sinon, on récupère les équipes ouvertes (avec Axios)
+    // On passe l'ID en paramètre propre (params)
     const resEquipes = await api.get('/equipe/open', {
       params: { idJoueur: currentJoueurId }
     })
     equipes.value = resEquipes.data
 
   } catch (err) {
-    error.value = err.message
+    console.error(err)
+    error.value = "Impossible de charger les données."
   } finally {
     loading.value = false
   }
@@ -76,26 +82,41 @@ onMounted(async () => {
 async function postuler(equipeId) {
   let currentJoueurId = auth.joueurId || getJoueurIdFromCookie()
 
-  // Le token est géré automatiquement par l'intercepteur de api.js
-  if (!currentJoueurId) {
-    triggerToast("Erreur d'authentification.")
+  // 1. On récupère le token proprement depuis les cookies
+  let token = auth.token
+  if (!token) {
+    const cookieToken = document.cookie.split('; ').find(row => row.startsWith('token='))
+    if (cookieToken) token = cookieToken.split('=')[1]
+  }
+
+  if (!currentJoueurId || !token) {
+    triggerToast("Erreur d'authentification : Token manquant.")
     return
   }
 
   submittingId.value = equipeId
+
   try {
-    // Remplacement fetch par api.post
-    // Plus besoin de headers 'Content-Type' ou 'Authorization' manuels
-    await api.post(`/joueur/request/${currentJoueurId}/equipe/${equipeId}`)
+    // 2. On fait l'appel AXIOS en forçant le header ici
+    // Syntaxe : api.post(URL, BODY, CONFIG)
+    await api.post(
+        `/joueur/request/${currentJoueurId}/equipe/${equipeId}`,
+        {}, // <--- Body vide obligatoire
+        {
+          headers: {
+            'Authorization': `Bearer ${token}` // <--- On force le token ici
+          }
+        }
+    )
 
+    // Mise à jour locale
     equipes.value = equipes.value.filter(e => e.idEquipe !== equipeId)
-
-    // --- REMPLACEMENT DE L'ALERT PAR LE TOAST ---
     triggerToast("Votre postulation a bien été envoyée !")
 
   } catch (err) {
     console.error(err)
-    const msg = err.response?.data?.message || err.message
+    // On affiche le vrai message d'erreur du serveur s'il existe
+    const msg = err.response?.data?.message || err.message || "Erreur inconnue"
     triggerToast("Erreur : " + msg)
   } finally {
     submittingId.value = null
@@ -108,7 +129,9 @@ async function postuler(equipeId) {
 
     <Transition name="toast">
       <div v-if="showToast" class="toast-notification">
-        ✔ {{ toastMessage }}
+        <span v-if="toastMessage.includes('Erreur')">✖</span>
+        <span v-else>✔</span>
+        {{ toastMessage }}
       </div>
     </Transition>
 
@@ -119,6 +142,7 @@ async function postuler(equipeId) {
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
 
     <div v-else>
+
       <div v-if="existingTeam" class="already-team-container">
         <p class="info-text">Vous faites déjà partie d'une équipe !</p>
         <div class="my-team-card">
@@ -129,13 +153,20 @@ async function postuler(equipeId) {
 
       <div v-else>
         <p class="subtitle">Voici les équipes qui recrutent.</p>
+
         <div v-if="equipes.length === 0" class="state-msg info">Aucune équipe disponible.</div>
+
         <div v-else class="equipes-list">
           <div v-for="equipe in equipes" :key="equipe.idEquipe" class="equipe-wrapper">
             <router-link :to="{ name: 'Equipe-details', params: { id: equipe.idEquipe, nom: equipe.nomEquipe } }" class="card-link">
               <CarteEquipe :equipe="equipe" :image="ImageFond" />
             </router-link>
-            <button class="postuler-btn" :disabled="submittingId === equipe.idEquipe" @click="postuler(equipe.idEquipe)">
+
+            <button
+                class="postuler-btn"
+                :disabled="submittingId === equipe.idEquipe"
+                @click="postuler(equipe.idEquipe)"
+            >
               {{ submittingId === equipe.idEquipe ? 'Envoi...' : 'Postuler' }}
             </button>
           </div>
@@ -146,7 +177,7 @@ async function postuler(equipeId) {
 </template>
 
 <style scoped>
-/* --- STYLE DU TOAST (BANDEAU VERT) --- */
+/* --- STYLE DU TOAST (BANDEAU) --- */
 .toast-notification {
   position: fixed;
   bottom: 30px;
@@ -172,7 +203,7 @@ async function postuler(equipeId) {
 }
 .toast-enter-from, .toast-leave-to {
   opacity: 0;
-  bottom: 0px;
+  transform: translate(-50%, 20px);
 }
 
 /* --- LE RESTE DES STYLES --- */
@@ -202,6 +233,8 @@ async function postuler(equipeId) {
 }
 
 .equipe-wrapper { display: flex; flex-direction: column; align-items: center; }
+.card-link { text-decoration: none; color: inherit; transition: transform 0.2s; }
+.card-link:hover { transform: translateY(-5px); }
 
 .postuler-btn {
   margin-top: 1rem; width: 100%; padding: 0.6rem 1rem; background-color: #27ae60; color: white;
@@ -213,5 +246,5 @@ async function postuler(equipeId) {
 
 .state-msg { text-align: center; font-size: 1.1rem; color: #555; margin-top: 2rem; }
 .state-msg.error { color: #e74c3c; }
-.state-msg.info { background: #eef2ff; padding: 2rem; border-radius: 8px; color: #333; }
+.state-msg.info { background: #eef2ff; padding: 2rem; border-radius: 8px; color: #333; width: 100%; }
 </style>
