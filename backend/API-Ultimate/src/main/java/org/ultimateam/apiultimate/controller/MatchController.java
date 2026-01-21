@@ -1,7 +1,9 @@
 package org.ultimateam.apiultimate.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.MatchDTO;
 import org.ultimateam.apiultimate.DTO.MatchFauteDTO;
@@ -13,224 +15,214 @@ import java.util.List;
 
 /**
  * Contrôleur REST pour la gestion des matchs.
- *
- * Ce contrôleur expose des endpoints pour lister, créer, démarrer, mettre en pause,
- * reprendre, terminer, et supprimer des matchs. Il permet également d'ajouter des points
- * ou des fautes à un match en cours.
  */
 @RestController
-@Tag(name = "Match", description = "Endpoints pour gérer les matchs")
 @RequestMapping("/api/match")
+@RequiredArgsConstructor
+@Tag(name = "Match", description = "Endpoints pour gérer les matchs (Scores, Chronomètre, Création)")
 public class MatchController {
 
-    /** Service utilisé pour gérer les opérations liées aux matchs. */
     private final MatchService matchService;
 
     /**
-     * Constructeur du contrôleur.
-     *
-     * @param matchService Service injecté pour gérer les matchs.
-     */
-    public MatchController(MatchService matchService) {
-        this.matchService = matchService;
-    }
-
-    /**
-     * Récupère la liste complète de tous les matchs enregistrés.
+     * Récupère la liste complète de tous les matchs.
      *
      * @return Une liste de tous les {@link Match}.
      */
-    @Operation(
-            summary = "Lister tous les matchs",
-            description = "Retourne la liste complète de tous les matchs enregistrés."
-    )
+    @Operation(summary = "Lister tous les matchs", description = "Retourne la liste complète de tous les matchs enregistrés.")
     @GetMapping
+    @PreAuthorize("permitAll()")
     public List<Match> getAllMatch() {
         return (List<Match>) matchService.getAll();
     }
+
     /**
      * Récupère un match par son identifiant.
      *
      * @param id Identifiant unique du match.
-     * @return Le {@link Match} correspondant à l'identifiant fourni.
-     * @throws RuntimeException Si le match n'existe pas.
+     * @return Le {@link Match} correspondant.
      */
-
-    @Operation(
-            summary = "Récupérer un match par son identifiant",
-            description = "Retourne le match correspondant à l'identifiant fourni. Une erreur est renvoyée si le match n'existe pas."
-    )
+    @Operation(summary = "Récupérer un match", description = "Retourne le match correspondant à l'identifiant fourni.")
     @GetMapping("/{id}")
-    public Match getById(@PathVariable Long id) {return matchService.getById(id);}
+    @PreAuthorize("permitAll()")
+    public Match getById(@PathVariable Long id) {
+        return matchService.getById(id);
+    }
 
     /**
-     * Récupère la liste des matchs dont l'état est 'commencé'.
+     * Récupère la liste des matchs 'commencés'.
      *
      * @return Une liste de {@link Match} en cours.
      */
-    @Operation(
-            summary = "Lister les matchs commencés",
-            description = "Retourne la liste des matchs dont l'état est 'commencé'."
-    )
+    @Operation(summary = "Lister les matchs en cours", description = "Retourne la liste des matchs dont l'état est 'commencé'.")
     @GetMapping("/started")
-    public List<Match> getMatchStarted() {return matchService.getStarted();}
+    @PreAuthorize("permitAll()")
+    public List<Match> getMatchStarted() {
+        return matchService.getStarted();
+    }
 
     /**
-     * Récupère la liste des matchs qui n'ont pas encore commencé.
+     * Récupère la liste des matchs non commencés.
      *
-     * @return Une liste de {@link Match} non commencés.
+     * @return Une liste de {@link Match} à venir.
      */
-    @Operation(
-            summary = "Lister les matchs non commencés",
-            description = "Retourne la liste des matchs qui n'ont pas encore commencé."
-    )
+    @Operation(summary = "Lister les matchs à venir", description = "Retourne la liste des matchs qui n'ont pas encore commencé.")
     @GetMapping("/notstarted")
-    public List<Match> getMatchNotStarted() {return matchService.getNotStarted();}
+    @PreAuthorize("permitAll()")
+    public List<Match> getMatchNotStarted() {
+        return matchService.getNotStarted();
+    }
 
     /**
-     * Récupère la liste des matchs dont l'état est 'terminé'.
+     * Récupère la liste des matchs terminés.
      *
      * @return Une liste de {@link Match} terminés.
      */
-    @Operation(
-            summary = "Lister les matchs terminés",
-            description = "Retourne la liste des matchs dont l'état est 'terminé'."
-    )
+    @Operation(summary = "Lister les matchs terminés", description = "Retourne la liste des matchs dont l'état est 'terminé'.")
     @GetMapping("/finished")
-    public List<Match> getMatchFinished() {return matchService.getFinished();}
-
-    @GetMapping("/joueur/{idJoueur}")
-    public List<Match> getMatchsEquipe(@PathVariable long idJoueur) {return matchService.getMatchesByEquipe(idJoueur);}
-
-    @GetMapping("terrains/{idTerrain}")
-    public List<Match> getMatchsTerrains(@PathVariable long idTerrain) { return matchService.getMatchesByTerrain(idTerrain);}
+    @PreAuthorize("permitAll()")
+    public List<Match> getMatchFinished() {
+        return matchService.getFinished();
+    }
 
     /**
-     * Crée un nouveau match à partir des informations fournies.
+     * Récupère les matchs d'une équipe (via un joueur de l'équipe).
      *
-     * @param matchDTO Objet contenant les informations nécessaires à la création du match (équipes, terrain, date, etc.).
-     * @return Le {@link Match} nouvellement créé.
+     * @param idJoueur Identifiant d'un joueur de l'équipe.
+     * @return Liste des matchs.
      */
-    @Operation(
-            summary = "Créer un nouveau match",
-            description = "Crée un nouveau match à partir des informations fournies dans le corps de la requête (équipes, terrain, date, etc.)."
-    )
+    @Operation(summary = "Matchs d'une équipe", description = "Retourne les matchs associés à l'équipe d'un joueur donné.")
+    @GetMapping("/joueur/{idJoueur}")
+    @PreAuthorize("permitAll()")
+    public List<Match> getMatchsEquipe(@PathVariable long idJoueur) {
+        return matchService.getMatchesByEquipe(idJoueur);
+    }
+
+    /**
+     * Récupère les matchs planifiés sur un terrain spécifique.
+     *
+     * @param idTerrain Identifiant du terrain.
+     * @return Liste des matchs.
+     */
+    @Operation(summary = "Matchs d'un terrain", description = "Retourne les matchs planifiés sur un terrain spécifique.")
+    @GetMapping("terrains/{idTerrain}")
+    @PreAuthorize("permitAll()")
+    public List<Match> getMatchsTerrains(@PathVariable long idTerrain) {
+        return matchService.getMatchesByTerrain(idTerrain);
+    }
+
+    /**
+     * Crée un nouveau match.
+     * Réservé aux administrateurs.
+     *
+     * @param matchDTO Objet DTO de création.
+     * @return Le {@link Match} créé.
+     */
+    @Operation(summary = "Créer un match", description = "Crée un nouveau match. Réservé aux administrateurs.")
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match createMatch(@RequestBody MatchDTO matchDTO) {
         return matchService.creerMatch(matchDTO);
     }
 
     /**
-     * Méthode de test pour créer un match (actuellement commentée).
-     * @return Un {@link Match} de test.
-     */
-    /*
-    /**
-    @PostMapping("/test")
-    public Match testMatch(){ return matchService.testMatch();}
-    */
-
-    /**
-     * Change l'état du match en 'commencé'.
+     * Démarre un match.
+     * Réservé aux administrateurs.
      *
-     * @param id Identifiant unique du match à démarrer.
+     * @param id Identifiant du match.
      * @return Le {@link Match} mis à jour.
-     * @throws RuntimeException Si le match est déjà démarré ou inexistant.
      */
-    @Operation(
-            summary = "Démarrer un match",
-            description = "Change l'état du match en 'commencé'. Une erreur est renvoyée si le match est déjà démarré ou inexistant."
-    )
+    @Operation(summary = "Démarrer un match", description = "Passe l'état du match à 'commencé'. Réservé aux administrateurs.")
     @PutMapping("/{id}/start")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match startMatch(@PathVariable Long id) {
         return matchService.commencerMatch(id);
     }
 
     /**
-     * Met le match en pause s'il est en cours.
+     * Met un match en pause.
+     * Réservé aux administrateurs.
      *
-     * @param id Identifiant unique du match à mettre en pause.
+     * @param id Identifiant du match.
      * @return Le {@link Match} mis à jour.
-     * @throws RuntimeException Si le match n'est pas en cours.
      */
-    @Operation(
-            summary = "Mettre un match en pause",
-            description = "Met le match en pause s'il est en cours. Une erreur est renvoyée si le match n'est pas en cours."
-    )
+    @Operation(summary = "Mettre en pause", description = "Met le match en pause. Réservé aux administrateurs.")
     @PutMapping("/{id}/pause")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match pauseMatch(@PathVariable Long id) {
         return matchService.mettreEnPause(id);
     }
 
     /**
-     * Reprend un match précédemment mis en pause.
+     * Reprend un match en pause.
+     * Réservé aux administrateurs.
      *
-     * @param id Identifiant unique du match à reprendre.
+     * @param id Identifiant du match.
      * @return Le {@link Match} mis à jour.
      */
-    @Operation(
-            summary = "Reprendre un match",
-            description = "Reprend un match précédemment mis en pause."
-    )
+    @Operation(summary = "Reprendre un match", description = "Reprend le chronomètre d'un match en pause. Réservé aux administrateurs.")
     @PutMapping("/{id}/resume")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match resumeMatch(@PathVariable Long id) {
         return matchService.reprendreMatch(id);
     }
 
     /**
-     * Met fin au match et change son état en 'terminé'.
+     * Termine un match.
+     * Réservé aux administrateurs.
      *
-     * @param id Identifiant unique du match à terminer.
+     * @param id Identifiant du match.
      * @return Le {@link Match} mis à jour.
      */
-    @Operation(
-            summary = "Terminer un match",
-            description = "Met fin au match et change son état en 'terminé'."
-    )
+    @Operation(summary = "Terminer un match", description = "Clôture le match définitivement. Réservé aux administrateurs.")
     @PutMapping("/{id}/end")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match endMatch(@PathVariable Long id) {
         return matchService.finirMatch(id);
     }
 
     /**
-     * Ajoute un point à une équipe pour un match donné.
+     * Ajoute un point.
+     * Réservé aux administrateurs.
      *
-     * @param idMatch Identifiant unique du match.
-     * @param idEquipe Identifiant unique de l'équipe à qui ajouter le point.
-     * @param matchPointDTO Objet contenant les informations sur le point à ajouter.
+     * @param idMatch Identifiant du match.
+     * @param idEquipe Identifiant de l'équipe.
+     * @param matchPointDTO Infos du point.
      * @return Le {@link Match} mis à jour.
      */
+    @Operation(summary = "Ajouter un point", description = "Ajoute un point au score. Réservé aux administrateurs.")
     @PatchMapping("{idMatch}/equipe/{idEquipe}/point")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match addPoint(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchPointDTO matchPointDTO) {
-        return matchService.ajouterPoint(idMatch,  idEquipe, matchPointDTO);
+        return matchService.ajouterPoint(idMatch, idEquipe, matchPointDTO);
     }
 
     /**
-     * Ajoute une faute à une équipe pour un match donné.
+     * Ajoute une faute.
+     * Réservé aux administrateurs.
      *
-     * @param idMatch Identifiant unique du match.
-     * @param idEquipe Identifiant unique de l'équipe à qui ajouter la faute.
-     * @param matchFauteDTO Objet contenant les informations sur la faute à ajouter.
+     * @param idMatch Identifiant du match.
+     * @param idEquipe Identifiant de l'équipe.
+     * @param matchFauteDTO Infos de la faute.
      * @return Le {@link Match} mis à jour.
      */
+    @Operation(summary = "Ajouter une faute", description = "Enregistre une faute. Réservé aux administrateurs.")
     @PatchMapping("{idMatch}/equipe/{idEquipe}/faute")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Match addFaute(@PathVariable Long idMatch, @PathVariable Long idEquipe, @RequestBody MatchFauteDTO matchFauteDTO) {
         return matchService.ajouterFaute(idMatch, idEquipe, matchFauteDTO);
     }
 
     /**
-     * Supprime un match par son identifiant.
+     * Supprime un match.
+     * Réservé aux administrateurs.
      *
-     * @param id Identifiant unique du match à supprimer.
-     * @throws RuntimeException Si le match n'existe pas.
+     * @param id Identifiant du match.
      */
-    @Operation(
-            summary = "Supprimer un match",
-            description = "Supprime le match correspondant à l'identifiant fourni. Une erreur est renvoyée si le match n'existe pas."
-    )
+    @Operation(summary = "Supprimer un match", description = "Supprime le match de la base de données. Réservé aux administrateurs.")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void deleteMatch(@PathVariable Long id) {
         matchService.deleteById(id);
     }
-
 }

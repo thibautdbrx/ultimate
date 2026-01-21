@@ -1,80 +1,63 @@
 package org.ultimateam.apiultimate.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.websocket.server.PathParam;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EquipeNameDTO;
 import org.ultimateam.apiultimate.DTO.Genre;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
-import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.service.EquipeService;
 
 import java.util.List;
 
 /**
  * Contrôleur REST pour la gestion des entités {@link Equipe}.
- *
- * Ce contrôleur expose les endpoints de l'API pour les opérations CRUD sur les équipes,
- * ainsi que des fonctionnalités spécifiques comme la gestion des indisponibilités,
- * la récupération du nombre de joueurs, et la mise à jour du genre des équipes.
  */
 @RestController
-@Tag(name = "Equipe", description = "Endpoints pour gérer les équipes")
 @RequestMapping("/api/equipe")
+@RequiredArgsConstructor
+@Tag(name = "Equipe", description = "Endpoints pour gérer les équipes (Lecture publique, Modification Admin)")
 public class EquipeController {
 
-    /** Service utilisé pour gérer les opérations liées aux équipes. */
     private final EquipeService equipeService;
-
-    /**
-     * Constructeur du contrôleur.
-     *
-     * @param equipeService Service injecté pour gérer les équipes.
-     */
-    public EquipeController(EquipeService equipeService) { this.equipeService = equipeService;
-    }
 
     /**
      * Récupère la liste complète de toutes les équipes enregistrées.
      *
      * @return Une liste de toutes les {@link Equipe}.
      */
-    @Operation(
-            summary = "Lister toutes les équipes",
-            description = "Retourne la liste complète de toutes les équipes enregistrées en base de données."
-    )
+    @Operation(summary = "Lister toutes les équipes", description = "Retourne la liste complète de toutes les équipes enregistrées en base de données.")
     @GetMapping
-    public List<Equipe> findAll() { return equipeService.findAll(); }
+    @PreAuthorize("permitAll()")
+    public List<Equipe> findAll() {
+        return equipeService.findAll();
+    }
 
     /**
      * Récupère une équipe par son identifiant.
      *
      * @param idEquipe Identifiant unique de l'équipe.
      * @return L'{@link Equipe} correspondant à l'identifiant fourni.
-     * @throws RuntimeException Si aucune équipe ne correspond à cet identifiant.
      */
-    @Operation(
-            summary = "Récupérer une équipe par son identifiant",
-            description = "Retourne l'équipe correspondant à l'identifiant fourni. Une erreur est renvoyée si aucune équipe ne correspond à cet identifiant."
-    )
+    @Operation(summary = "Récupérer une équipe par ID", description = "Retourne l'équipe correspondant à l'identifiant fourni.")
     @GetMapping("/{idEquipe}")
-    public Equipe getById(@PathVariable long idEquipe) { return equipeService.getById(idEquipe); }
+    @PreAuthorize("permitAll()")
+    public Equipe getById(@PathVariable long idEquipe) {
+        return equipeService.getById(idEquipe);
+    }
 
     /**
      * Récupère la liste des indisponibilités associées à une équipe.
      *
      * @param idEquipe Identifiant unique de l'équipe.
      * @return Une liste des {@link Indisponibilite} de l'équipe.
-     * @throws RuntimeException Si l'équipe n'existe pas.
      */
-    @Operation(
-            summary = "Lister les indisponibilités d'une équipe",
-            description = "Retourne la liste des indisponibilités associées à l'équipe identifiée par son id. Une erreur est renvoyée si l'équipe n'existe pas."
-    )
+    @Operation(summary = "Lister les indisponibilités", description = "Retourne la liste des indisponibilités associées à l'équipe.")
     @GetMapping("/{idEquipe}/indisponibilite")
+    @PreAuthorize("permitAll()")
     public List<Indisponibilite> getIndisponibilites(@PathVariable long idEquipe) {
         return equipeService.getIndisponibilites(idEquipe);
     }
@@ -82,18 +65,13 @@ public class EquipeController {
     /**
      * Récupère la liste des équipes correspondant à un genre spécifique.
      *
-     * @param genre Genre des équipes à filtrer (ex: HOMME, FEMME, MIXTE).
+     * @param genre Genre des équipes à filtrer.
      * @return Une liste des {@link Equipe} correspondant au genre spécifié.
-     * @throws RuntimeException Si le genre est invalide.
      */
-    @Operation(
-            summary = "Lister les équipes par genre",
-            description = "Retourne la liste des équipes correspondant au genre spécifié (ex: HOMME, FEMME, MIXTE). Une erreur est renvoyée si le genre est invalide."
-    )
+    @Operation(summary = "Lister les équipes par genre", description = "Retourne la liste des équipes correspondant au genre spécifié (HOMME, FEMME, MIXTE).")
     @GetMapping("/genre")
-    public List<Equipe> getEquipeGenre(
-           Genre genre
-    ) {
+    @PreAuthorize("permitAll()")
+    public List<Equipe> getEquipeGenre(@RequestParam Genre genre) {
         return equipeService.getEquipeGenre(genre);
     }
 
@@ -102,57 +80,66 @@ public class EquipeController {
      *
      * @param idEquipe Identifiant unique de l'équipe.
      * @return Le nombre total de joueurs dans l'équipe.
-     * @throws RuntimeException Si l'équipe n'existe pas.
      */
-    @Operation(
-            summary = "Obtenir le nombre de joueurs d'une équipe",
-            description = "Retourne le nombre total de joueurs appartenant à l'équipe identifiée par son id. Une erreur est renvoyée si l'équipe n'existe pas."
-    )
+    @Operation(summary = "Nombre de joueurs", description = "Retourne le nombre total de joueurs appartenant à l'équipe.")
     @GetMapping("/{idEquipe}/nbjoueurs")
-    public int getNbJoueurs(@PathVariable long idEquipe) { return equipeService.getNbJoueurs(idEquipe); }
+    @PreAuthorize("permitAll()")
+    public int getNbJoueurs(@PathVariable long idEquipe) {
+        return equipeService.getNbJoueurs(idEquipe);
+    }
 
     /**
-     * Crée une nouvelle équipe à partir des informations fournies.
+     * Crée une nouvelle équipe.
+     * Accessible uniquement par l'ADMIN.
      *
-     * @param equipe Objet {@link Equipe} contenant les informations de l'équipe à créer (nom, description, genre).
-     * @return L'{@link Equipe} nouvellement créée.
+     * @param equipe Objet {@link Equipe} à créer.
+     * @return L'{@link Equipe} créée.
      */
-    @Operation(
-            summary = "Créer une nouvelle équipe",
-            description = "Crée une nouvelle équipe à partir des informations fournies dans le corps de la requête (nom, description, genre)."
-    )
+    @Operation(summary = "Créer une équipe", description = "Crée une nouvelle équipe. Réservé aux administrateurs.")
     @PostMapping
-    public Equipe createEquipe(@RequestBody Equipe equipe) { return equipeService.save(equipe); }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public Equipe createEquipe(@RequestBody Equipe equipe) {
+        return equipeService.save(equipe);
+    }
 
     /**
-     * Met à jour le nom et/ou la description d'une équipe existante.
+     * Met à jour le nom et/ou la description d'une équipe.
+     * Accessible uniquement par l'ADMIN.
      *
-     * @param equipedto Objet {@link EquipeNameDTO} contenant le nouveau nom et/ou la nouvelle description.
-     * @param idEquipe Identifiant unique de l'équipe à mettre à jour.
+     * @param equipedto DTO contenant les modifications.
+     * @param idEquipe Identifiant de l'équipe.
      * @return L'{@link Equipe} mise à jour.
      */
-    @Operation(
-            summary = "Modifier le nom et/ou la description d'une équipe",
-            description = "Permet de modifier le nom et/ou la description d'une équipe existante. Il n'est pas obligatoire de fournir les deux champs."
-    )
+    @Operation(summary = "Modifier le nom/description", description = "Modifie le nom ou la description d'une équipe. Réservé aux administrateurs.")
     @PatchMapping("/{idEquipe}/name")
-    public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) { return equipeService.editName(equipedto, idEquipe); }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) {
+        return equipeService.editName(equipedto, idEquipe);
+    }
 
     /**
-     * Supprime une équipe par son identifiant.
+     * Supprime une équipe.
+     * Accessible uniquement par l'ADMIN.
      *
-     * @param id Identifiant unique de l'équipe à supprimer.
-     * @throws RuntimeException Si l'équipe n'existe pas.
+     * @param id Identifiant de l'équipe à supprimer.
      */
-    @Operation(
-            summary = "Supprimer une équipe",
-            description = "Supprime l'équipe correspondant à l'identifiant fourni. Une erreur est renvoyée si l'équipe n'existe pas."
-    )
+    @Operation(summary = "Supprimer une équipe", description = "Supprime définitivement une équipe. Réservé aux administrateurs.")
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public void deleteById(@PathVariable long id) {
+        equipeService.deleteById(id);
+    }
 
-
+    /**
+     * Liste les équipes non complètes pour un joueur donné.
+     *
+     * @param idJoueur Identifiant du joueur cherchant une équipe.
+     * @return Liste des équipes disponibles.
+     */
+    @Operation(summary = "Lister les équipes ouvertes", description = "Retourne les équipes qui ne sont pas encore complètes pour un joueur donné.")
     @GetMapping("/open")
-    public List<Equipe> openEquipe(@RequestParam Long idJoueur) {return equipeService.getNotFull(idJoueur);}
-
+    @PreAuthorize("permitAll()")
+    public List<Equipe> openEquipe(@RequestParam Long idJoueur) {
+        return equipeService.getNotFull(idJoueur);
+    }
 }

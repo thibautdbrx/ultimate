@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,14 +21,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.ultimateam.apiultimate.filter.JwtFilter;
 import org.ultimateam.apiultimate.service.CustomUserDetailsService;
 
-/**
- * Configuration principale de la sécurité de l'application via Spring Security.
- *
- * <p>Cette classe définit les politiques d'accès aux ressources, la gestion des rôles
- * (ADMIN, ARBITRE, JOUEUR), l'encodage des mots de passe et l'intégration du filtre JWT.</p>
- */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // a commenter pour activer/desactive la securité
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -37,33 +33,16 @@ public class SecurityConfig {
     @Value("${app.security.enabled}")
     private boolean securityEnabled;
 
-    /**
-     * Définit l'algorithme de hachage utilisé pour les mots de passe.
-     *
-     * @return un {@link BCryptPasswordEncoder} pour sécuriser les identifiants
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Expose le gestionnaire d'authentification standard de Spring Security.
-     *
-     * @param config la configuration d'authentification fournie par Spring
-     * @return l'{@link AuthenticationManager} configuré
-     * @throws Exception en cas d'erreur de récupération du manager
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    /**
-     * Configure le fournisseur d'authentification utilisant {@link CustomUserDetailsService}.
-     *
-     * @return un {@link AuthenticationProvider} liant le service utilisateur et l'encodeur
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -72,18 +51,6 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    /**
-     * Définit la chaîne de filtres de sécurité et les règles d'autorisation par endpoint.
-     *
-     * <p>La configuration gère deux modes :
-     * 1. Mode Développement : Si {@code securityEnabled} est faux, tout est autorisé.
-     * 2. Mode Production : Accès public pour la lecture (GET) et la doc,
-     * accès restreint par rôle pour les modifications.</p>
-     *
-     * @param http le constructeur de sécurité HTTP
-     * @return la {@link SecurityFilterChain} configurée
-     * @throws Exception en cas d'erreur de configuration
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -109,10 +76,9 @@ public class SecurityConfig {
                                 "/documentation/**"
                         ).permitAll()
 
-                        // 2. PUBLIC (LECTURE SEULE) : On autorise les GET pour tout le monde
-                        // C'est ici que j'ai ajouté "/api/participation/**" pour corriger ton erreur 403
+                        // 2. PUBLIC (LECTURE SEULE)
                         .requestMatchers(HttpMethod.GET,
-                                "/api/participation/**", // <--- LE FIX EST ICI
+                                "/api/participation/**",
                                 "/api/equipe/**",
                                 "/api/competition/**",
                                 "/api/joueur/**",
@@ -120,25 +86,22 @@ public class SecurityConfig {
                                 "/api/terrain/**",
                                 "/api/classement/**",
                                 "/api/action-match/**",
-                                "/api/files/**" // Pour afficher les images de profil
+                                "/api/files/**"
                         ).permitAll()
 
                         // 3. JOUEUR CONNECTÉ (Actions courantes)
-                        // Upload image, rejoindre équipe, modifier son profil (PATCH)
                         .requestMatchers("/api/files/upload").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/joueur/request/**").hasAuthority("ROLE_VISITEUR")
                         .requestMatchers(HttpMethod.PATCH, "/api/joueur/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VISITEUR")
                         .requestMatchers(HttpMethod.PATCH, "/api/joueur/request/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VISITEUR")
 
-                        // 4. ARBITRE & ADMIN (Gestion Matchs)
+                        // 4. ADMIN (Gestion Globale - Matchs inclus car Arbitre n'existe plus)
+                        // On regroupe tout ce qui est modification structurelle ou gestion de matchs
                         .requestMatchers(
                                 "/api/match/**",
                                 "/api/action-match/**"
-                        ).hasAnyAuthority("ROLE_ADMIN", "ROLE_ARBITRE")
+                        ).hasAuthority("ROLE_ADMIN")
 
-                        // 5. ADMIN (Gestion Structurelle : Création/Suppression)
-                        // Attention : On bloque POST/PUT/DELETE par défaut pour l'Admin,
-                        // SAUF ce qui a été autorisé explicitement au-dessus pour les joueurs/arbitres.
                         .requestMatchers(HttpMethod.POST,
                                 "/api/equipe/**",
                                 "/api/competition/**",
