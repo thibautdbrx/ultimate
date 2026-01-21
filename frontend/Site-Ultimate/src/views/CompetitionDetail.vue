@@ -1,18 +1,16 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-// --- SERVICES & STORES ---
+
 import api from '@/services/api'
 import { useAuthStore } from "@/stores/auth";
 
-// --- SOUS-COMPOSANTS ---
 import CompetitionTeams from "@/components/competition_detail/CompetitionTeams.vue"
 import CompetitionMatches from "@/components/competition_detail/CompetitionMatches.vue"
 import CompetitionClassement from "@/components/competition_detail/CompetitionClassement.vue"
 import CompetitionTerrains from "@/components/competition_detail/CompetitionTerrains.vue"
 
-// --- OVERLAYS ---
 import SelectEquipe from "@/components/overlay/SelectionEquipeOverlay.vue"
 import SelectionTerrainOverlay from "@/components/overlay/SelectionTerrainOverlay.vue"
 
@@ -127,9 +125,6 @@ onMounted(async () => {
   }, 30000);
 });
 
-onUnmounted(() => {
-  if (statusInterval) clearInterval(statusInterval); //reset interval
-});
 
 // --- ACTIONS ÉQUIPES ---
 const addTeam = async (equipe) => {
@@ -209,8 +204,6 @@ const GenererMatch = async () => {
       await api.put(`/competition/${competitionId}/create`);
 
       notify("Matchs générés avec succès !", "success");
-      // Petit délai pour laisser l'utilisateur lire le toast avant reload
-      setTimeout(() => { window.location.reload() }, 1500)
 
     } catch (error) {
       console.error(error);
@@ -220,17 +213,32 @@ const GenererMatch = async () => {
 };
 
 const supprimerMatch = async () => {
-  askConfirmation("Voulez-vous vraiment supprimer tous les matchs ?", async () => {
-    try {
-      await api.delete(`/competition/${competitionId}/clean`);
-      notify("Match correctement supprimés, vous pouvez de nouveau generer des matchs", "success")
-      setTimeout(() => { window.location.reload() }, 1500)
-    } catch (error) {
-      console.error(error);
-      notify("Une erreur est survenue lors de la suppressions des matchs", "error")
+  try {
+    //maj de l'état commencé ou pas
+    await verifierStatutCompetition();
+
+    if (competitionDejaCommencee.value) {
+      notify("Action impossible : un match a déjà débuté.", "error");
+      return;
     }
-  })
-}
+
+    askConfirmation("Voulez-vous vraiment supprimer tous les matchs ?", async () => {
+      try {
+        await api.delete(`/competition/${competitionId}/clean`);
+        notify("Matchs supprimés avec succès.", "success");
+
+        // On recharge les données pour remettre l'interface en mode "génération"
+        await fetchData();
+        editMode.value = false;
+      } catch (error) {
+        console.error(error);
+        notify("Une erreur est survenue lors de la suppression.", "error");
+      }
+    });
+  } catch (err) {
+    notify("Erreur lors de la vérification du statut.", "error");
+  }
+};
 
 // --- NAVIGATION ---
 const goToEquipe = (t) => {
