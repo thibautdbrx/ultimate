@@ -118,11 +118,10 @@ async function fetchData() {
 let statusInterval = null;
 onMounted(async () => {
   await fetchData();
-
   // Vérifie le statut toutes les 30 secondes
   statusInterval = setInterval(async () => {
     await verifierStatutCompetition();
-  }, 30000);
+  }, 30000); // à supprimer en vrai
 });
 
 
