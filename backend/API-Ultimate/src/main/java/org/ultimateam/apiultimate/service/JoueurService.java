@@ -260,8 +260,11 @@ public class JoueurService {
         Equipe equipe = equipeRepository.findById(idEquipe).orElse(null);
         if (equipe == null)
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Equipe introuvable");
-        else if (equipe.isFull())
-            throw new ResponseStatusException(HttpStatus.OK,"Equipe complete");
+
+        if (equipe.isFull())
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Equipe complete");
+        else if (equipe.getGenre() == Genre.OPEN)
+            return joueurRepository.findAllByEquipe_IdEquipeIsNull();
         else if (equipe.getGenre() == Genre.FEMME)
             return joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME);
 
@@ -295,9 +298,6 @@ public class JoueurService {
             }
             else if (getNbFemmes(equipe) <4 ){
                 joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNullAndGenre(GenreJoueur.FEMME));
-            }
-        else {
-            joueurs.addAll(joueurRepository.findAllByEquipe_IdEquipeIsNull());
             }
         }
         /**
