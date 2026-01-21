@@ -65,4 +65,5 @@ public interface ClassementRepository extends JpaRepository<Classement, Particip
      */
     List<Classement> findAllByEquipe_IdEquipe(Long idEquipe);
 
+
 }

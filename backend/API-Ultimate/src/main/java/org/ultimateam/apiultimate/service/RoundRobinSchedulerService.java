@@ -1,14 +1,11 @@
 package org.ultimateam.apiultimate.service;
 
-import org.antlr.v4.runtime.misc.Interval;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.ultimateam.apiultimate.DTO.ScheduleResult;
-import org.ultimateam.apiultimate.model.Equipe;
-import org.ultimateam.apiultimate.model.Indisponibilite;
-import org.ultimateam.apiultimate.model.Match;
+import org.ultimateam.apiultimate.model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,17 +25,16 @@ public class RoundRobinSchedulerService {
     private static final int START_HOUR = 9;   // Début des matchs
     private static final int END_HOUR = 18;    // Fin des matchs
 
-    private static final int MATCH_DURATION_MIN = 90;  // Durée d'un match
-    private static final int BREAK_DURATION_MIN = 10;  // Pause entre deux matchs
-    private static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_MIN;
-
-    private static final int MAX_FIELDS = 5; // Nombre maximum de terrains en parallèle
+    private static final int MATCH_DURATION_MIN = 100;  // Durée d'un match
+    private static final int BREAK_DURATION_BETWEEN_MATCHES_MIN = 10;  // Pause entre deux matchs
+    protected static final int SLOT_DURATION_MIN = MATCH_DURATION_MIN + BREAK_DURATION_BETWEEN_MATCHES_MIN;
 
     /**
      * autoBlocks garde la liste des créneaux où chaque équipe est automatiquement bloquée
      * (parce qu'un match lui a déjà été attribué).
      */
     Map<Equipe, List<Interval>> autoBlocks = new HashMap<>();
+    Map<Terrain, List<Interval>> terrainAutoBlocks = new HashMap<>();
 
 
     /**
@@ -61,15 +57,18 @@ public class RoundRobinSchedulerService {
      */
     public ScheduleResult generateSchedule(
             List<Equipe> equipes,
+            List<Terrain> terrainsDisponibles,
             LocalDate startDate,
             LocalDate endDate,
             boolean homeAndAway, // aller-retour ou non
-            List<Indisponibilite> indisponibilites
+            List<Indisponibilite> indisponibilites,
+            List<IndisponibiliteTerrain> indisponibilitesTerrains
     ) {
+        terrainAutoBlocks.clear();
         //autoBlocks.clear();
         // Objet qui contiendra les matchs + indisponibilités renvoyés
         ScheduleResult result =
-                new ScheduleResult(new ArrayList<Match>(), indisponibilites);
+                new ScheduleResult(new ArrayList<Match>(), indisponibilites, indisponibilitesTerrains);
 
         if (equipes.size() < 2) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut au moins 2 équipes.");
@@ -82,10 +81,11 @@ public class RoundRobinSchedulerService {
         List<LocalTime> timeSlots = generateTimeSlots();
 
         // Calcul du nombre total de matchs et de créneaux disponibles
+        int nbTerrains = terrainsDisponibles.size();
         long totalMatches = pairs.size();
         long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
-        long slotsPerDay = (long) timeSlots.size() * MAX_FIELDS;
+        long slotsPerDay = (long) timeSlots.size() * nbTerrains;
         long totalPossibleSlots = slotsPerDay * totalDays;
 
         // Vérification que la période est suffisante
@@ -105,9 +105,15 @@ public class RoundRobinSchedulerService {
         while (matchIndex < totalMatches) {
 
             for (LocalTime time : timeSlots) {
-                for (int field = 1; field <= MAX_FIELDS; field++) {
+                for (Terrain terrain : terrainsDisponibles) {
 
                     if (matchIndex >= totalMatches) break;
+
+                    LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
+
+                    if (!isTerrainAvailable(terrain, dateMatch, indisponibilitesTerrains)) {
+                        continue; // Le terrain est occupé ou indisponible, on passe au suivant
+                    }
 
                     // On récupère la paire A vs B
                     Pair<Equipe, Equipe> pair = pairs.get(matchIndex);
@@ -115,7 +121,6 @@ public class RoundRobinSchedulerService {
                     Equipe B = pair.getRight();
                     if (A == null || B == null) break;
 
-                    LocalDateTime dateMatch = LocalDateTime.of(currentDay, time);
 
                     //System.out.println(dateMatch);
 
@@ -132,13 +137,15 @@ public class RoundRobinSchedulerService {
                     match.setEquipe1(A);
                     match.setEquipe2(B);
                     match.setDateMatch(dateMatch);
-                    match.setTerrain(field);
+                    match.setTerrain(terrain);
 
                     result.addMatch(match);
 
                     // On bloque les équipes pendant ce créneau
-                    blockEquipe(A, dateMatch, autoBlocks, result);
-                    blockEquipe(B, dateMatch, autoBlocks, result);
+                    blockEquipe(A, dateMatch, autoBlocks, result, match);
+                    blockEquipe(B, dateMatch, autoBlocks, result, match);
+
+                    blockTerrain(terrain, dateMatch, result, match);
 
                     matchIndex++;
                 }
@@ -153,6 +160,48 @@ public class RoundRobinSchedulerService {
         }
 
         return result;
+    }
+
+    private boolean isTerrainAvailable(Terrain terrain, LocalDateTime dateMatch, List<IndisponibiliteTerrain> declaredBlocks) {
+        LocalDateTime start = dateMatch;
+        LocalDateTime end = dateMatch.plusMinutes(SLOT_DURATION_MIN);
+
+        if (declaredBlocks != null) {
+            for (IndisponibiliteTerrain ind : declaredBlocks) {
+                if (ind.getTerrain() != null &&
+                        java.util.Objects.equals(ind.getTerrain().getIdTerrain(), terrain.getIdTerrain())) {
+
+                    boolean isOverlapping = end.isBefore(ind.getDateDebutIndisponibilite());
+                    isOverlapping = isOverlapping || start.isAfter(ind.getDateFinIndisponibilite());
+                    System.out.println("Chevauchement :" + !isOverlapping + " \n date fin indispo : " + ind.getDateFinIndisponibilite() + "date debut match : " + start
+                    + "\n date debut indispo : " + ind.getDateDebutIndisponibilite() + "date fin match : " + end + "\n \n ");
+
+
+                    if (!isOverlapping) {
+                        System.out.println("Terrain " + terrain.getIdTerrain() + " bloqué par indispo le " + dateMatch);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // 2. Vérification des indisponibilités automatiques (Matchs qu'on vient de placer)
+        List<Interval> blocks = terrainAutoBlocks.getOrDefault(terrain, new ArrayList<>());
+        for (Interval b : blocks) {
+            // Même logique de chevauchement
+            boolean isOverlapping = start.isBefore(b.end()) && end.isAfter(b.start());
+            if (isOverlapping) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void blockTerrain(Terrain terrain, LocalDateTime dateMatch, ScheduleResult result, Match match) {
+        terrainAutoBlocks.putIfAbsent(terrain, new ArrayList<>());
+        terrainAutoBlocks.get(terrain).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
+        result.addIndisponibiliteTerrain(new IndisponibiliteTerrain(dateMatch,dateMatch.plusMinutes(SLOT_DURATION_MIN),terrain, match));
     }
 
 
@@ -280,13 +329,13 @@ public class RoundRobinSchedulerService {
      * @param autoBlocks   map des blocs automatiques à mettre à jour
      * @param result       objet ScheduleResult dans lequel ajouter l'indisponibilite générée
      */
-    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, ScheduleResult result) {
+    private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, ScheduleResult result, Match match) {
         autoBlocks.putIfAbsent(equipe, new ArrayList<>());
         autoBlocks.get(equipe).add(new Interval(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN)));
 
         // Ajoute directement dans le résultat
         //System.out.println(dateMatch);
-        result.addIndisponibilite(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe));
+        result.addIndisponibilite(new Indisponibilite(dateMatch, dateMatch.plusMinutes(SLOT_DURATION_MIN), equipe, match));
         //System.out.println(result.getIndisponibilites().get(0).getDateDebutIndisponibilite());
 
     }

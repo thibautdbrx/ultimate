@@ -118,12 +118,8 @@ public class ParticipationController {
             summary = "Ajouter plusieurs participations",
             description = "Ajoute une liste d'équipes à une compétition spécifique."
     )
-    @Parameter(
-            name = "idCompetition",
-            description = "Identifiant unique de la compétition.",
-            required = true
-    )
-    @PostMapping("/competition/{idCompetition}")
+
+    @PostMapping("/competition")
     public List<Participation> createParticipation(@RequestBody ListEquipeDTO listEquipeDTO) {
         return participationService.addListParticipation(listEquipeDTO);
     }

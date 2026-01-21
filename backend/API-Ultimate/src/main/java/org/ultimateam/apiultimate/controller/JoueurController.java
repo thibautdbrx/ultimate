@@ -100,9 +100,10 @@ public class JoueurController {
             summary = "Lister les joueurs sans équipe",
             description = "Retourne la liste des joueurs non assignés à une équipe. Un filtre par genre peut être appliqué."
     )
-    @GetMapping("/solo")
-    public List<Joueur> getJoueurSolo(@RequestParam(required = false) GenreJoueur genre) {
-        return joueurService.getJoueurSolo(genre);
+    @GetMapping("/solo/")
+    public List<Joueur> getJoueurSolo(@RequestParam(required = false) Long idEquipe){//@RequestParam(required = false) GenreJoueur genre) {
+        return joueurService.getJoueurSolo(idEquipe);
+        //return joueurService.getJoueurSolo(genre);
     }
 
     /**

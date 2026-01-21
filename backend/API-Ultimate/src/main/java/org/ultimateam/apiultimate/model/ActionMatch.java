@@ -68,4 +68,6 @@ public class ActionMatch {
      */
     private LocalDateTime dateAction;
 
+    private LocalDateTime datePause;
+
 }

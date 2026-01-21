@@ -107,7 +107,9 @@ public class ActionMatchService {
      * @throws ResponseStatusException si le match, l'équipe ou le joueur n'existe pas, si le match n'est pas en cours, ou si le joueur ne fait pas partie du match.
      */
     public ActionMatch addPoint(long id_match, long id_equipe, MatchPointDTO matchPointDTO) {
-        return addAction(id_match, id_equipe, matchPointDTO.getIdJoueur(), ActionTypeDTO.POINT);
+        Match match = matchRepository.findById(id_match).orElse(null);
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        return addAction(id_match, id_equipe, matchPointDTO.getIdJoueur(), ActionTypeDTO.POINT, match.getDatePause());
     }
 
     /**
@@ -120,7 +122,9 @@ public class ActionMatchService {
      * @throws ResponseStatusException si le match, l'équipe ou le joueur n'existe pas, si le match n'est pas en cours, ou si le joueur ne fait pas partie du match.
      */
     public ActionMatch addFaute(long id_match, long id_equipe, MatchFauteDTO matchFauteDTO) {
-        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE);
+        Match match = matchRepository.findById(id_match).orElse(null);
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE, match.getDatePause());
     }
 
     /**
@@ -140,6 +144,12 @@ public class ActionMatchService {
      */
     public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type) {
         Match match = matchRepository.findById(id_match).orElse(null);
+        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
+        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE, match.getDatePause());
+    }
+
+    public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type, LocalDateTime datePause) {
+        Match match = matchRepository.findById(id_match).orElse(null);
         Equipe equipe = equipeService.getById(id_equipe);
         Joueur joueur = joueurService.getById(id_joueur);
 
@@ -158,10 +168,12 @@ public class ActionMatchService {
         }
 
         ActionMatch action = new ActionMatch();
+        action.setDatePause(datePause);
         action.setMatch(match);
         action.setJoueur(joueur);
         action.setType(type);
         action.setDateAction(LocalDateTime.now());
+        action.setDatePause(match.getDatePause());
 
         return actionMatchRepository.save(action);
     }

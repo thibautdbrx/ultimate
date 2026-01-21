@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+
+  api-ultimate:
+    build: ./backend/API-Ultimate
+    ports:
+      - "8080:8080"
+
+  site-ultimate:
+    build: ./frontend/Site-Ultimate
+    ports:
+      - "80:80"

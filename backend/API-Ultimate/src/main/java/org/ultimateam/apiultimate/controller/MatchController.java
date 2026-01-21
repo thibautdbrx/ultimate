@@ -99,6 +99,12 @@ public class MatchController {
     @GetMapping("/finished")
     public List<Match> getMatchFinished() {return matchService.getFinished();}
 
+    @GetMapping("/joueur/{idJoueur}")
+    public List<Match> getMatchsEquipe(@PathVariable long idJoueur) {return matchService.getMatchesByEquipe(idJoueur);}
+
+    @GetMapping("terrains/{idTerrain}")
+    public List<Match> getMatchsTerrains(@PathVariable long idTerrain) { return matchService.getMatchesByTerrain(idTerrain);}
+
     /**
      * Crée un nouveau match à partir des informations fournies.
      *

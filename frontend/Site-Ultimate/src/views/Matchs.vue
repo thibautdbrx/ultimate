@@ -2,20 +2,24 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import CarteMatch from '@/components/card_match.vue'
+import api from '@/services/api' // Import de l'instance Axios
+import {useAuthStore} from "@/stores/auth.js";
 
 const router = useRouter()
 const route = useRoute()
 const matchs = ref([])
 const loading = ref(false)
 const error = ref(null)
+const auth = useAuthStore();
 
 const filtre = ref(route.query.filtre || 'all')
 
 const endpoints = {
-  all: '/api/match',
-  started: '/api/match/started',
-  notstarted: '/api/match/notstarted',
-  finished: '/api/match/finished'
+  all: '/match',
+  started: '/match/started',
+  notstarted: '/match/notstarted',
+  finished: '/match/finished',
+  joueur: '/match/equipe/:'
 }
 
 function goToMatch(id) {
@@ -36,11 +40,15 @@ async function fetchMatchs() {
   error.value = null
 
   try {
-    const response = await fetch(endpoints[filtre.value])
-    if (!response.ok) throw new Error('Erreur lors du chargement des matchs')
-    matchs.value = await response.json()
+    // Remplacement de fetch par api.get
+    // On utilise les URLs relatives car baseURL est '/api'
+    const response = await api.get(endpoints[filtre.value])
+
+    // Axios met les données directement dans .data
+    matchs.value = response.data
   } catch (e) {
-    error.value = e.message
+    // Gestion de l'erreur via Axios
+    error.value = e.response?.data?.message || e.message
   } finally {
     loading.value = false
   }
@@ -48,7 +56,6 @@ async function fetchMatchs() {
 
 onMounted(fetchMatchs)
 
-// recharge automatique quand on change le filtre
 watch(filtre, fetchMatchs, { immediate: true })
 </script>
 
@@ -73,7 +80,12 @@ watch(filtre, fetchMatchs, { immediate: true })
     </div>
 
     <div v-if="loading" class="state-msg">Chargement...</div>
+
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
+
+    <div v-else-if="matchs.length === 0" class="state-msg info">
+      Aucun match trouvé pour cette catégorie.
+    </div>
 
     <div v-else class="competition-list">
       <div
@@ -123,10 +135,24 @@ watch(filtre, fetchMatchs, { immediate: true })
 .state-msg {
   margin-top: 2rem;
   text-align: center;
+  font-size: 1.1rem;
+  color: #555;
 }
 
 .state-msg.error {
-  color: red;
+  color: #e74c3c;
+}
+
+/* Style optionnel pour le message "Aucun match" */
+.state-msg.info {
+  color: #7f8c8d;
+  font-style: italic;
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+  max-width: 600px;
+  margin: 2rem auto;
 }
 
 .competition-list {

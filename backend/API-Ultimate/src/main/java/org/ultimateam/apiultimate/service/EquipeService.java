@@ -9,11 +9,14 @@ import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.model.Equipe;
 import org.ultimateam.apiultimate.model.Indisponibilite;
 import org.ultimateam.apiultimate.model.Joueur;
+import org.ultimateam.apiultimate.model.JoueurRequest;
 import org.ultimateam.apiultimate.repository.EquipeRepository;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
+import org.ultimateam.apiultimate.repository.JoueurRequestRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EquipeService {
@@ -21,6 +24,7 @@ public class EquipeService {
     private final EquipeRepository equipeRepository;
     private final JoueurRepository joueurRepository;
     private final ClassementService classementService;
+    private final JoueurRequestRepository joueurRequestRepository;
 
     /**
      * Constructeur pour l'injection de la dépendance EquipeRepository, JoueurRepository et ClassementService.
@@ -29,10 +33,11 @@ public class EquipeService {
      * @param joueurRepository Le repository pour l'accès aux données des joueurs.
      * @param classementService Le service manipulant les classements liés aux équipes.
      */
-    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository, ClassementService classementService) {
+    public EquipeService(EquipeRepository equipeRepository, JoueurRepository joueurRepository, ClassementService classementService, JoueurRequestRepository joueurRequestRepository) {
         this.equipeRepository = equipeRepository;
         this.joueurRepository = joueurRepository;
         this.classementService = classementService;
+        this.joueurRequestRepository = joueurRequestRepository;
     }
 
     /**
@@ -123,9 +128,11 @@ public class EquipeService {
 
     public void updateAllGenre(List<Equipe> equipes) {
         for (Equipe equipe : equipes) {
-            updateGenre(equipe);
+            //updateGenre(equipe);
         }
     }
+
+
     /**
      * Calcule et met à jour le genre d'une équipe en fonction des genres de ses joueurs :
      * - HOMME si tous les joueurs sont de genre HOMME,
@@ -189,5 +196,23 @@ public class EquipeService {
     public List<Equipe> getEquipeGenre(Genre genre) {
         updateAllGenre(findAll());
         return equipeRepository.findAllByGenre(genre);
+    }
+
+    public List<Equipe> getNotFull(Long idJoueur){
+        List<Equipe> equipes;
+        Joueur joueur = joueurRepository.findById(idJoueur).orElse(null);
+        if (joueur == null) {
+            equipes = Collections.emptyList();
+        }
+        else {
+            List<JoueurRequest> joueursRequests = joueurRequestRepository.getByJoueur(joueur);
+            equipes = equipeRepository.findAllById(joueursRequests.stream().map(JoueurRequest::getEquipe).map(Equipe::getIdEquipe).collect(Collectors.toList()));
+        }
+        List<Equipe> all = equipeRepository.findAll();
+        return all.stream()
+                .filter(e -> !e.isFull())
+                .filter(e -> !equipes.contains(e))
+                .collect(Collectors.toList());
+
     }
 }

@@ -29,17 +29,12 @@ public class EquipeController {
     /** Service utilisé pour gérer les opérations liées aux équipes. */
     private final EquipeService equipeService;
 
-    /** Repository utilisé pour accéder directement aux données des équipes. */
-    private final EquipeRepository equipeRepository;
-
     /**
      * Constructeur du contrôleur.
      *
      * @param equipeService Service injecté pour gérer les équipes.
-     * @param equipeRepository Repository injecté pour accéder aux données des équipes.
      */
-    public EquipeController(EquipeService equipeService, EquipeRepository equipeRepository) { this.equipeService = equipeService;
-        this.equipeRepository = equipeRepository;
+    public EquipeController(EquipeService equipeService) { this.equipeService = equipeService;
     }
 
     /**
@@ -144,21 +139,6 @@ public class EquipeController {
     public Equipe editNomEquipe(@RequestBody EquipeNameDTO equipedto, @PathVariable long idEquipe) { return equipeService.editName(equipedto, idEquipe); }
 
     /**
-     * Met à jour automatiquement le genre de toutes les équipes existantes.
-     *
-     * Cette méthode applique les règles définies dans le service pour recalculer
-     * le genre de chaque équipe en fonction de la composition actuelle des joueurs.
-     */
-    @Operation(
-            summary = "Mettre à jour le genre de toutes les équipes",
-            description = "Met à jour automatiquement le genre de toutes les équipes existantes selon les règles définies dans le service."
-    )
-    @PatchMapping("/updategenre")
-    public void updateGenre(){
-        equipeService.updateAllGenre(equipeService.findAll());
-    }
-
-    /**
      * Supprime une équipe par son identifiant.
      *
      * @param id Identifiant unique de l'équipe à supprimer.
@@ -171,14 +151,8 @@ public class EquipeController {
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable long id) { equipeService.deleteById(id); }
 
-    /**
-     * Méthode de test pour récupérer les équipes ayant un nombre spécifique de joueurs hommes et femmes.
-     *
-     * @param nbHomme Nombre minimum de joueurs hommes requis.
-     * @param nbFemme Nombre minimum de joueuses femmes requises.
-     * @return Une liste d'{@link Equipe} correspondant aux critères.
-     */
-    @GetMapping("/test/{nbHomme}/{nbFemme}")
-    public List<Equipe> test(@PathVariable int nbHomme, @PathVariable int nbFemme){return equipeRepository.findEquipesAvecHommesEtFemmes(nbHomme,nbFemme);}
+
+    @GetMapping("/open")
+    public List<Equipe> openEquipe(@RequestParam Long idJoueur) {return equipeService.getNotFull(idJoueur);}
 
 }

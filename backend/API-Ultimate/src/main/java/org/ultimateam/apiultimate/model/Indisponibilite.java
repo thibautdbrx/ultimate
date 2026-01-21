@@ -45,12 +45,17 @@ public class Indisponibilite {
     @JsonManagedReference
     private Equipe equipe;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_match", nullable = true)
+    private Match match;
+
     /**
      * Date et heure de début de l'indisponibilité.
      */
     @JsonProperty("dateDebut")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime dateDebutIndisponibilite;
+
 
     /**
      * Date et heure de fin de l'indisponibilité.
@@ -65,10 +70,16 @@ public class Indisponibilite {
      * @param dateDebutIndisponibilite début de la période d'indisponibilité
      * @param dateFinIndisponibilite fin de la période d'indisponibilité
      * @param equipe équipe concernée
+     * @param match match causant l'indisponibilite
      */
-    public Indisponibilite(LocalDateTime dateDebutIndisponibilite, LocalDateTime dateFinIndisponibilite, Equipe equipe){
+    public Indisponibilite(LocalDateTime dateDebutIndisponibilite, LocalDateTime dateFinIndisponibilite, Equipe equipe, Match match) {
         this.dateDebutIndisponibilite = dateDebutIndisponibilite;
         this.dateFinIndisponibilite = dateFinIndisponibilite;
         this.equipe = equipe;
+        this.match = match;
+    }
+
+    public Indisponibilite(LocalDateTime dateDebut, LocalDateTime dateFin, Equipe equipe){
+        this(dateDebut, dateFin, equipe, null);
     }
 }

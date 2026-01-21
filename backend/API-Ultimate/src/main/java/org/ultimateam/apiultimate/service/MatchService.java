@@ -9,6 +9,8 @@ import org.ultimateam.apiultimate.DTO.MatchPointDTO;
 import org.ultimateam.apiultimate.model.*;
 import org.ultimateam.apiultimate.repository.JoueurRepository;
 import org.ultimateam.apiultimate.repository.MatchRepository;
+import org.ultimateam.apiultimate.repository.TerrainRepository;
+
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -41,6 +43,9 @@ public class MatchService {
     private final JoueurRepository joueurRepository;
     private final JoueurService joueurService;
     private final ActionMatchService actionMatchService;
+    private final TerrainRepository terrainRepository;
+    private final TerrainService terrainService;
+
 
     /**
      * Constructeur avec injection des dépendances du service.
@@ -53,7 +58,7 @@ public class MatchService {
      * @param joueurService service de gestion des joueurs
      * @param actionMatchService service gérant les actions de match (points/faute)
      */
-    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurService, ActionMatchService actionMatchService) {
+    public MatchService(MatchRepository matchRepository, EquipeService equipeService, TournoisService tournoisService, ClassementService classementService, JoueurRepository joueurRepository, JoueurService joueurservice, JoueurService joueurService, ActionMatchService actionMatchService, TerrainRepository terrainRepository, TerrainService terrainService) {
         this.matchRepository = matchRepository;
         this.equipeService = equipeService;
         this.tournoisService = tournoisService;
@@ -61,6 +66,8 @@ public class MatchService {
         this.joueurRepository = joueurRepository;
         this.joueurService = joueurService;
         this.actionMatchService = actionMatchService;
+        this.terrainRepository = terrainRepository;
+        this.terrainService = terrainService;
     }
 
     // --------------------- BASIC CRUD ---------------------
@@ -125,6 +132,17 @@ public class MatchService {
      */
     public List<Match> getFinished() { return matchRepository.findByDateFinIsNotNull(); }
 
+    public List<Match> getMatchesByEquipe(long idJoueur) {
+        Joueur joueur = joueurRepository.findById(idJoueur).orElse(null);
+        if (joueur == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'existe pas");
+        if (joueur.getEquipe() == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le joueur n'a pas d'équipe");
+        return matchRepository.findMatchesByEquipe(joueur.getEquipe().getIdEquipe());
+    }
+
+    public List<Match> getMatchesByTerrain(long idTerrain) { return matchRepository.findByTerrain_Id_terrain(idTerrain); }
+
+
     // --------------------- MATCH CREATION ---------------------
 
     /**
@@ -137,11 +155,13 @@ public class MatchService {
     public Match creerMatch(MatchDTO matchDTO) {
         Equipe e1 = equipeService.getById(matchDTO.getIdEquipes().get(0));
         Equipe e2 = equipeService.getById(matchDTO.getIdEquipes().get(1));
-        if (e1 == null || e2 == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Une des équipes n'existe pas");
+        if (e1 == null || e2 == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Une des équipes n'existe pas");
 
         Match match = new Match();
         match.setEquipe1(e1);
         match.setEquipe2(e2);
+        match.setTerrain(terrainService.getById(matchDTO.getIdTerrain()));
         return save(match);
     }
 
@@ -367,5 +387,4 @@ public class MatchService {
         }
         finirMatchSafe(match);
     }
-
 }

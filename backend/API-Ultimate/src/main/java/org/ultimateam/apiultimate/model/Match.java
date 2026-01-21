@@ -1,10 +1,12 @@
 package org.ultimateam.apiultimate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.time.Duration;
@@ -120,7 +122,10 @@ public class Match {
     /**
      * Identifiant/numéro du terrain ou de la salle où se déroule le match.
      */
-    private long terrain = 0;
+    @ManyToOne
+    @JoinColumn(name = "idTerrain", nullable = false)
+    @Nullable
+    private Terrain terrain;
 
     /**
      * Date/heure de la dernière pause (null si pas en pause).

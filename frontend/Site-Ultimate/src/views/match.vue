@@ -4,8 +4,23 @@ import { useRoute } from "vue-router";
 
 import Card_joueur from "@/components/card_joueur.vue";
 import SliderVertical from "@/components/slider_card_vertical.vue";
+import weather_card from  "@/components/weather_card.vue";
 
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
+
+import start from "@/assets/img/matchIcon/start.png";
+import end from "@/assets/img/matchIcon/end.png";
+import pause from "@/assets/img/matchIcon/pause.png";
+import resume from "@/assets/img/matchIcon/resume.png";
+
+import curseur from "@/assets/img/curseur.cur"
+
+import api from '@/services/api' // Ajout de l'import api
 import { useAuthStore } from "@/stores/auth";
+import PUB from "@/components/PUB.vue";
 const auth = useAuthStore();
 
 // --- Récupération de l'id du match ---
@@ -22,69 +37,133 @@ const joueursEquipe1 = ref([]);
 const joueursEquipe2 = ref([]);
 const actions = ref([]);
 
-let etatMatch = ref("WAITING")
+let etatMatch = ref("WAITING");
+let duree = ref(null);
 
 const error = ref(null);
 
 
+//------------------------
+// 0) LA METEO
+//-------------------------
+const WEATHER_ERROR_FALLBACK = {
+  current: {
+    weather_code: -1,
+    temperature_2m: null,
+    wind_speed_10m: null
+  },
+  current_units: {
+    temperature_2m: "°C",
+    wind_speed_10m: "km/h"
+  }
+};
 
-let duree = ref(null);
+const weather = ref(null); // --- METEO : Stockage des infos météo
+
+
+// --- METEO : Fonction de récupération (Axios direct ici car c'est une API externe sans token) ---
+import axios from 'axios';
+
+const loadWeather = async (lat, lon) => {
+  if (lat === null || lat === undefined || lon === null || lon === undefined) {
+    console.warn("Coordonnées manquantes, pas de météo.");
+    return;
+  }
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code`;
+    const res = await axios.get(url);
+    weather.value = res.data;
+
+  } catch (e) {
+    console.error("Impossible de charger la météo", e);
+    weather.value = WEATHER_ERROR_FALLBACK;
+  }
+};
+
+
+
 
 // ----------------------
 // 1) Charger infos du match
 // ----------------------
 const loadMatch = async () => {
   try {
-    const res = await fetch(`/api/match/${matchId}`);
-    if (!res.ok) throw new Error("Erreur API match : " + res.status);
-
-    match.value = await res.json();
-    console.log(match.value);
+    const res = await api.get(`/match/${matchId}`);
+    match.value = res.data;
     etatMatch = match.value.status;
+
+    //loadWeather(match.value.terrain.latitude, 2.3488);
+    loadWeather(match.value.terrain.latitude, match.value.terrain.longitude);
 
   } catch (err) {
     error.value = err.message;
   } finally {
     loadingMatch.value = false;
   }
-
-
 };
+
+// Converti un objet duréePause en un temps en ms
+function ConversionPause(pause) {
+  if (!pause) {
+    pause = 0;
+  } else if (pause.substr(0,2) == "PT") {
+    pause = dayjs.duration(pause).asMilliseconds(); // Conversion en ms
+  } else {
+    pause = 0;
+  }
+
+  return pause;
+}
 
 const calculDuree = computed(() => {
   const dateDebut = match.value.dateDebut;
   if (!dateDebut) return 0;
 
-  let dureePause;
-  dureePause = match.value.dureePause;
-  if (!dureePause) {
-    dureePause = 0;
-  }
+  let pause = ConversionPause(match.value.dureePauseTotale); // Récupération d'un objet Duration à convertir en un temps en ms
 
   duree = 0;
 
   if (etatMatch == "ONGOING") {
-    duree = maintenant.value - Date.parse(dateDebut) - dureePause;
+    duree = maintenant.value - Date.parse(dateDebut) - pause;
   }
   else if (etatMatch == "FINISHED") {
     const dateFin = match.value.dateFin;
-    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut);
+    duree = Date.parse(match.value.dateFin) - Date.parse(dateDebut) - pause;
   }
   else if (etatMatch == "PAUSED") {
     const datePause = match.value.datePause;
-    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut);
+    duree = Date.parse(match.value.datePause) - Date.parse(dateDebut) - pause;
   }
-  
-
 
   return formatDuree(duree);
 });
 
-function calculTemps(dateAction) {
+const calculDureePause = computed(() => {
+  const debut = match.value.datePause;
+
+  if (!debut) {
+    return 0;
+  }
+
+  let dureePause = maintenant.value - Date.parse(debut);
+
+  return formatDuree(dureePause)
+});
+
+function calculTempsAction(dateAction, tempsPause=0) {
   const date = Date.parse(dateAction);
   const dateDebut = Date.parse(match.value.dateDebut);
 
-  return formatDuree(date - dateDebut)
+  let pause;
+
+  if (!tempsPause) {
+    pause = 0;
+  } else {
+    pause = ConversionPause(tempsPause);
+  }
+
+  return formatDuree(date - dateDebut - tempsPause)
 }
 
 function formatDuree(ms) {
@@ -102,22 +181,16 @@ function formatDuree(ms) {
 // 2) Charger les joueurs
 // ----------------------
 const loadPlayers = async () => {
-  if (!match.value) return;
+  if (!match.value || !match.value.equipe1 || !match.value.equipe2) return;
 
   try {
     const [res1, res2] = await Promise.all([
-      fetch(`/api/joueur/equipe/${match.value.equipe1.idEquipe}`),
-      fetch(`/api/joueur/equipe/${match.value.equipe2.idEquipe}`)
+      api.get(`/joueur/equipe/${match.value.equipe1.idEquipe}`),
+      api.get(`/joueur/equipe/${match.value.equipe2.idEquipe}`)
     ]);
 
-    if (!res1.ok || !res2.ok)
-      throw new Error("Erreur API joueurs");
-
-    joueursEquipe1.value = await res1.json();
-    joueursEquipe2.value = await res2.json();
-
-  
-   
+    joueursEquipe1.value = res1.data;
+    joueursEquipe2.value = res2.data;
 
   } catch (err) {
     error.value = err.message;
@@ -134,16 +207,9 @@ const loadActions = async () => {
   if (!match.value) return;
 
   try {
-    const [res1] = await Promise.all([
-      fetch(`/api/action-match/match/${matchId}`)
-    ]);
+    const res = await api.get(`/action-match/match/${matchId}`);
+    actions.value = res.data;
 
-    if (!res1.ok)
-      throw new Error("Erreur API joueurs");
-
-    actions.value = await res1.json();
-
-  
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -151,20 +217,17 @@ const loadActions = async () => {
   }
 };
 
-// ----------------------
-// LOGIQUE COULEURS
-// ----------------------
-
+// ... (Gardé tel quel : LOGIQUE COULEURS) ...
 const couleurEquipe1 = computed(() => {
   if (!match.value) return "noir";
-  if (match.value.status !== "FINISHED") return "noir";
+  if (match.value.status !== "FINISHED") return "noir"; // noir tant que le match n'est pas terminé
 
   const s1 = match.value.scoreEquipe1;
   const s2 = match.value.scoreEquipe2;
 
-  if (s1 > s2) return "vert";
-  if (s1 < s2) return "rouge";
-  return "or";
+  if (s1 > s2) return "vert"; // vert si l'équipe a plus de points
+  if (s1 < s2) return "rouge"; // rouge si moins de points
+  return "or"; // or sinon (correspond à une égalité)
 });
 
 const couleurEquipe2 = computed(() => {
@@ -179,79 +242,59 @@ const couleurEquipe2 = computed(() => {
   return "or";
 });
 
+// ajoute 1 point à l'équipe "numEquipe", marqué par le joueur "idJoueur"
 const AjoutPoint = async (numEquipe, combien, idJoueur) => {
 
-  const matchId = match.value.idMatch; 
+  const matchId = match.value.idMatch;
 
   const point = {
     point: combien,
     idJoueur:idJoueur
   }
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/point`, { 
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(point)
-  });
+  try {
+    await api.patch(`/match/${matchId}/equipe/${numEquipe}/point`, point);
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Erreur API:", errorText);
-    throw new Error("Erreur lors de l'ajout de point.");
+    await loadMatch();
+    await loadPlayers();
+    await loadActions();
+  } catch (err) {
+    console.error("Erreur lors de l'ajout de point", err);
   }
-
-  await loadMatch();
-  await loadPlayers();
-  await loadActions();
-  console.log("aaa");
 }
 
-  const AjoutFaute = async (numEquipe, idJoueur) => {
+// ajout d'une faute pour le joueur idJoueur de l'équipe numEquipe
+const AjoutFaute = async (numEquipe, idJoueur) => {
 
-  const matchId = match.value.idMatch; 
+  const matchId = match.value.idMatch;
 
-  const res = await fetch(`/api/match/${matchId}/equipe/${numEquipe}/faute`, { 
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({idJoueur : idJoueur})
-  });
+  try {
+    await api.patch(`/match/${matchId}/equipe/${numEquipe}/faute`, { idJoueur : idJoueur });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Erreur API:", errorText);
-    throw new Error("Erreur lors de l'ajout de point.");
+    await loadMatch();
+    await loadPlayers();
+    await loadActions();
+  } catch (err) {
+    console.error("Erreur lors de l'ajout de faute", err);
   }
-
-  await loadMatch();
-  await loadPlayers();
-  await loadActions();
-  console.log("aaa");
 }
 
+// appel d'une opération sur le match (Resume, Start, Pause ou End)
 const operationMatch = async (operation) => {
-  const res = await fetch(`/api/match/${matchId}/${operation}`, {
-    method: "PUT"
-  })
+  try {
+    await api.put(`/match/${matchId}/${operation}`);
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Erreur API:", errorText);
-    throw new Error(`Erreur lors du ${operation} du match.`);
+    await loadMatch();
+    await loadPlayers();
+    await loadActions();
+  } catch (err) {
+    console.error(`Erreur lors du ${operation} du match.`, err);
   }
-
-  await loadMatch();
-  await loadPlayers();
-  await loadActions();
-  console.log("aaa");
-} 
+}
 
 
 // ----------------------
-const maintenant = ref(Date.now());
+const maintenant = ref(Date.now()); // Date actuelle pour le calcul du timer
 let interval = null;
 
 
@@ -259,18 +302,17 @@ onMounted(async () => {
   await loadMatch();
   await loadPlayers();
   await loadActions();
-  console.log("aaa");
 
   interval = setInterval(() => {
-    maintenant.value = Date.now();
+    maintenant.value = Date.now(); // mise à jour de la variable chaque secondes. Ce qui appelera la fonction calculDuree et calculDureePause chaque secondes
   }, 1000);
+
+  
 });
 
 onUnmounted(() => {
-  clearInterval(interval);
+  clearInterval(interval); // Supprime la mise à jour de la variable quand la page est fermée
 });
-
-
 </script>
 
 <template>
@@ -282,7 +324,7 @@ onUnmounted(() => {
       <p v-if="!(etatMatch=='WAITING')" id="dureeMatch">{{ calculDuree }}</p>
 
       <h1>
-        Championnat régional
+        {{match.idCompetition.nomCompetition}}
       </h1>
 
       <div class="score-box">
@@ -299,7 +341,7 @@ onUnmounted(() => {
 
               <div v-for="i in actions">
                <p v-if="i.joueur.equipe.idEquipe == match.equipe1.idEquipe && i.type == 'POINT'">
-                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                {{ calculTempsAction(i.dateAction, i.datePause) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
             
@@ -322,7 +364,7 @@ onUnmounted(() => {
 
             <div v-for="i in actions">
                <p v-if="(i.joueur.equipe.idEquipe == match.equipe2.idEquipe) && i.type == 'POINT'">
-                {{ calculTemps(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
+                {{ calculTempsAction(i.dateAction) }} : {{ i.joueur.prenomJoueur }} {{ i.joueur.nomJoueur }}
               </p>
               </div>
             
@@ -335,7 +377,7 @@ onUnmounted(() => {
         <p v-if="!(etatMatch == 'WAITING')">Début : {{ new Date(match.dateDebut).toLocaleString() }}</p>
         <p v-if="etatMatch == 'FINISHED'">Fin :  {{ new Date(match.dateFin).toLocaleString() }}</p>
         <p v-if="etatMatch == 'PAUSED'">Début de la pause :  {{ new Date(match.datePause).toLocaleString() }}</p>
-        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ new Date(match.dureePause).toLocaleString() }}</p>
+        <p v-if="etatMatch == 'PAUSED'">Durée de la pause :  {{ calculDureePause }}</p>
       </div>
       <p class="status">Status : {{ match.status }}</p>
     </section>
@@ -360,7 +402,8 @@ onUnmounted(() => {
           <Card_joueur
               
               :key="j.idJoueur"
-              :nom="j.nomJoueur + ' ' + j.prenomJoueur"
+              :nom="j.nomJoueur"
+              :prenom="j.prenomJoueur"
               :genre="j.genre"
               :photo="j.photoJoueur"
               background="#ffdddd"
@@ -378,16 +421,37 @@ onUnmounted(() => {
 
       <!-- COLONNE MILIEU -->
       <div class="middle">
-        <h3>Informations du Match</h3>
-        <p v-if="auth.isAdmin || auth.isArbitre" ></p>
-
         <div id="actionsMatch">
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction">Commencer le match</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction">Terminer le match</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction">Pause le match</button>
-          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction">Resume le match</button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'WAITING'" @click="operationMatch('start')" class="boutonAction actionStart"><img :src="resume" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('end')" class="boutonAction actionEnd"><img :src="end" alt="Terminer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="operationMatch('pause')" class="boutonAction actionPause"><img :src="pause" alt="démarrer le match"></button>
+          <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'PAUSED'" @click="operationMatch('resume')" class="boutonAction actionResume"><img :src="resume" alt="démarrer le match"></button>
         </div>
-    
+
+        <h3>Informations du Match</h3>
+
+        <div class="Info">
+          <div class="Nom-Terrain">
+            <p>
+              {{ match.terrain.nom }}
+            </p>
+          </div>
+          <div class="map-terrain">
+            <p>afficher la localisation du terrain...</p>
+          </div>
+        </div>
+
+        <div v-if="weather">
+          <weather_card
+              :code="weather.current.weather_code"
+              :temp="weather.current.temperature_2m"
+              :temp_unit="weather.current_units.temperature_2m"
+              :wind="weather.current.wind_speed_10m"
+              :wind_unit="weather.current_units.wind_speed_10m"
+          />
+        </div>
+        <PUB id="pubMilieu"/>
+
       </div>
 
       <!-- COLONNE DROITE -->
@@ -402,14 +466,18 @@ onUnmounted(() => {
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutPoint(match.equipe2.idEquipe,1,j.idJoueur)" class="boutonScore boutonPlus">+</button>
           <button v-if="(auth.isAdmin || auth.isArbitre) && etatMatch == 'ONGOING'" @click="AjoutFaute(match.equipe2.idEquipe,j.idJoueur)" class="boutonScore boutonMoins">X</button>
         </div>
+        
         <Card_joueur
             
             :key="j.idJoueur"
-            :nom="j.nomJoueur + ' ' + j.prenomJoueur"
+            :nom="j.nomJoueur"
+            :prenom="j.prenomJoueur"
             :genre="j.genre"
             :photo="j.photoJoueur"
             background="#ffdddd"
         />
+
+        
 
         <div class="fautes droite">
           <template v-for="action in actions" :key="action.id">
@@ -545,7 +613,9 @@ color: gray}
   align-items: flex-start;
 }
 
-/* COLONNES EQUIPES */
+  /* -----------------------*/
+ /* -- COLONNES EQUIPES -- */
+/* -----------------------*/
 .col {
   width: 26%;
 
@@ -579,6 +649,10 @@ color: gray}
   border-right: 2px solid #f0f0f0;
 }
 
+.middle #pubMilieu {
+  margin: auto;
+}
+
 .middle h3 {
   text-align: center;
   margin-bottom: 1rem;
@@ -586,9 +660,17 @@ color: gray}
 }
 
 
+
+
+
+  /* -------------------------------- */
+ /* -- Bouton action sur le match -- */
+/* -------------------------------- */
+
 #actionsMatch {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-around;
   gap: 0.8rem;
   margin-top: 1.5rem;
 }
@@ -599,14 +681,52 @@ color: gray}
   border: none;
   background: #f4f4f4;
   font-weight: 600;
-  cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
+
+  border-radius: 42%;
+  width: 2.5em;
+  height: 2.5em;
+
+  font-size: 2em;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .boutonAction:hover {
-  background: #eaeaea;
   transform: translateY(-1px);
+
 }
+
+.boutonAction img {
+  max-width: 1em;
+  max-height: 1em;
+}
+
+.actionStart, .actionResume {
+  background-color: #2ecc71;
+}
+
+.actionStart:hover, .actionResume:hover {
+  background-color: #29ad60;
+}
+
+.actionPause:hover {
+  background-color: #eaeaea;
+}
+
+.actionEnd {
+  background-color: #e74c3c;
+}
+
+.actionEnd:hover {
+  background-color: #b94134;
+}
+
+  /* -------------------- */
+ /* -- Texte d'erreur -- */
+/* -------------------- */
 
 
 .error {
@@ -616,6 +736,13 @@ color: gray}
   margin-top: 1rem;
 }
 
+
+
+
+
+  /* -------------------------------------- */
+ /* -- Affichage des fautes des joueurs -- */
+/* -------------------------------------- */
 
 .fautes {
   position: absolute;
@@ -630,7 +757,7 @@ color: gray}
 }
 
 .faute {
-  background-color: red;
+  background-color: #e74c3c;
   width: 1.2rem;
   height: 1.7rem;
 
@@ -640,6 +767,32 @@ color: gray}
   font-size: 1rem;
   font-weight: bold;
 }
+
+
+
+
+/* CARTE */
+.map-container {
+  height: 250px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  z-index: 0;
+}
+
+.lien-competition {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.lien-competition:hover {
+  color: #3498db; /* Un bleu pour indiquer le lien, ou la couleur de ton thème */
+  text-decoration: underline;
+}
+
 
 
 

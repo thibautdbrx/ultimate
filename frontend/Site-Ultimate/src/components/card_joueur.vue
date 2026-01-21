@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import {computed} from "vue";
+
+const props = defineProps({
   nom: String,
   prenom: String,
   genre: String,
@@ -7,13 +9,15 @@ defineProps({
 })
 
 import Photo_pnj from "@/assets/img_joueur/pnj.jpg";
+const name = computed(() => props.nom.toUpperCase())
+const prename = computed(() => props.prenom.toLowerCase())
 </script>
 
 <template>
   <div class="carte">
     <img :src="Photo_pnj" alt="photo joueur" class="photo" v-if="photo==null"/>
     <img :src="`http://localhost:8080${photo}`"  alt="photo joueur" class="photo" v-else/>
-    <h3>{{ nom }} {{prenom}}</h3>
+    <h3>{{prename}} {{ name }} </h3>
     <p class="role">{{ genre }}</p>
   </div>
 </template>
