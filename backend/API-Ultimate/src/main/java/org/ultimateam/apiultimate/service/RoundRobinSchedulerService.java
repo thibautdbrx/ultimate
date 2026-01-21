@@ -42,7 +42,22 @@ public class RoundRobinSchedulerService {
 
 
     /**
-     * Méthode principale qui génère un calendrier Round Robin pour un tournoi.
+     * Génère un planning Round Robin pour les équipes fournies sur la période indiquée.
+     *
+     * La méthode :
+     * - construit toutes les paires de rencontre selon l'algorithme Round Robin (optionnellement aller-retour),
+     * - génère les créneaux horaires journaliers en fonction des constantes de durée,
+     * - itère jour par jour et place les matchs sur les terrains disponibles,
+     * - respecte les indisponibilités déclarées et les blocages automatiques déjà créés pour chaque équipe,
+     * - ajoute les matchs au ScheduleResult ainsi que les indisponibilités générées par l'attribution d'un match.
+     *
+     * @param equipes           liste des équipes participantes (doit contenir au moins 2 équipes)
+     * @param startDate         date de début de la période de planification (incluse)
+     * @param endDate           date de fin de la période de planification (incluse)
+     * @param homeAndAway       vrai pour générer des rencontres aller-retour (A vs B et B vs A)
+     * @param indisponibilites  liste des indisponibilités pré-déclarées des équipes (sera conservée dans le résultat)
+     * @return ScheduleResult contenant la liste des matchs planifiés et la liste d'indisponibilités (y compris celles ajoutées automatiquement)
+     * @throws ResponseStatusException si moins de 2 équipes sont fournies ou si la période ne contient pas assez de créneaux pour planifier tous les matchs
      */
     public ScheduleResult generateSchedule(
             List<Equipe> equipes,
@@ -141,14 +156,17 @@ public class RoundRobinSchedulerService {
     }
 
 
-
-
-
-
     /**
-     * Génère les paires Round Robin :
-     * - Round robin algorithm classique avec rotation des équipes
-     * - Gère optionnellement les matchs aller-retour
+     * Construit la liste des paires de rencontres selon l'algorithme Round Robin classique.
+     *
+     * L'algorithme :
+     * - si le nombre d'équipes est impair, ajoute une entrée "fantôme" (null) pour permettre la rotation,
+     * - pour chaque round, paire la i-ème équipe avec la n-1-i-ème équipe,
+     * - si l'option {@code homeAndAway} est vraie, ajoute également le match inverse (domicile/extérieur inversé).
+     *
+     * @param equipes      liste des équipes à pairer
+     * @param homeAndAway  vrai pour inclure les matchs aller-retour
+     * @return liste ordonnée de paires (Equipe, Equipe) représentant les rencontres à planifier
      */
     private List<Pair<Equipe, Equipe>> generateRoundRobinPairs(List<Equipe> equipes, boolean homeAndAway) {
         List<Pair<Equipe, Equipe>> matches = new ArrayList<>();
@@ -178,13 +196,13 @@ public class RoundRobinSchedulerService {
     }
 
 
-
-
-
-
     /**
-     * Génère tous les créneaux horaires possibles entre 9h et 18h,
-     * espacés de la durée d'un match + pause.
+     * Génère tous les créneaux horaires possibles entre les heures configurées (START_HOUR et END_HOUR).
+     *
+     * Les créneaux sont espacés d'une durée constante {@code SLOT_DURATION_MIN} (durée match + pause).
+     * Le créneau final est inclus uniquement si sa fin est avant ou égale à l'heure de fin.
+     *
+     * @return liste de LocalTime représentant le début de chaque créneau journalier disponible
      */
     private List<LocalTime> generateTimeSlots() {
         List<LocalTime> slots = new ArrayList<>();
@@ -202,8 +220,18 @@ public class RoundRobinSchedulerService {
 
     /**
      * Vérifie si une équipe est disponible pour un créneau donné.
-     * - Vérifie les indisponibilités déclarées
-     * - Vérifie les créneaux déjà bloqués automatiquement
+     *
+     * La vérification consiste en deux étapes :
+     * 1) Parcours des indisponibilités déclarées (liste fournie) et vérification qu'aucune ne chevauche
+     *    le créneau [dateMatch, dateMatch + SLOT_DURATION_MIN). Si un chevauchement est détecté, retourne false.
+     * 2) Parcours des blocs automatiques ({@code autoBlocks}) déjà assignés à l'équipe (matchs planifiés précédemment)
+     *    et vérification qu'aucun ne chevauche le créneau. Si un chevauchement est détecté, retourne false.
+     *
+     * @param equipe           l'équipe à vérifier
+     * @param dateMatch        date et heure de début du créneau à tester
+     * @param autoBlocks       map des blocs automatiques déjà réservés par équipe
+     * @param declaredBlocks   liste des indisponibilités déclarées par les équipes
+     * @return true si l'équipe est complètement disponible pour le créneau, false sinon
      */
     private boolean isAvailable(
             Equipe equipe,
@@ -241,7 +269,16 @@ public class RoundRobinSchedulerService {
     }
 
     /**
-     * Bloque automatiquement une équipe pour un créneau (lorsqu'un match lui est attribué)
+     * Bloque automatiquement une équipe pour un créneau donné lorsque le match lui est attribué.
+     *
+     * Actions effectuées :
+     * - ajoute un Interval [dateMatch, dateMatch + SLOT_DURATION_MIN) dans la map {@code autoBlocks} pour l'équipe,
+     * - crée et ajoute une {@link Indisponibilite} correspondante dans le {@code ScheduleResult} fourni.
+     *
+     * @param equipe       l'équipe à bloquer
+     * @param dateMatch    date et heure de début du match (le bloc est créé jusqu'à dateMatch + SLOT_DURATION_MIN)
+     * @param autoBlocks   map des blocs automatiques à mettre à jour
+     * @param result       objet ScheduleResult dans lequel ajouter l'indisponibilite générée
      */
     private void blockEquipe(Equipe equipe, LocalDateTime dateMatch, Map<Equipe, List<Interval>> autoBlocks, ScheduleResult result) {
         autoBlocks.putIfAbsent(equipe, new ArrayList<>());

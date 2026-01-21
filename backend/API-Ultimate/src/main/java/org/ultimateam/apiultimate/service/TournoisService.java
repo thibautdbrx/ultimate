@@ -21,6 +21,17 @@ public class TournoisService {
     private final IndisponibiliteRepository indisponibiliteRepository;
     private final ClassementRepository classementRepository;
 
+    /**
+     * Constructeur du service de gestion des tournois.
+     *
+     * @param tournoisRepository repository pour l'entité Tournoi
+     * @param participationRepository repository pour l'entité Participation
+     * @param equipeService service fournissant des opérations sur les équipes
+     * @param matchRepository repository pour l'entité Match
+     * @param scheduler service de génération de planning Round Robin
+     * @param indisponibiliteRepository repository pour les indisponibilités
+     * @param classementRepository repository pour les classements
+     */
     public TournoisService(TournoisRepository tournoisRepository, ParticipationRepository participationRepository, EquipeService equipeService,
                            MatchRepository matchRepository, RoundRobinSchedulerService scheduler, IndisponibiliteRepository indisponibiliteRepository,
                            ClassementRepository classementRepository) {
@@ -33,33 +44,61 @@ public class TournoisService {
         this.classementRepository = classementRepository;
     }
 
+    /**
+     * Retourne la liste de tous les tournois en base.
+     *
+     * @return liste de {@link Tournoi}
+     */
     public List<Tournoi> getAllTournois() {
         return tournoisRepository.findAll();
     }
 
+    /**
+     * Récupère un tournoi par son identifiant.
+     *
+     * @param id identifiant du tournoi
+     * @return le {@link Tournoi} correspondant ou null si non trouvé
+     */
     public Tournoi getTournoisById(Long id) {
         return tournoisRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Sauvegarde (création ou mise à jour) d'un tournoi.
+     *
+     * @param tournoi objet {@link Tournoi} à sauvegarder
+     * @return le tournoi sauvegardé
+     */
     public Tournoi saveTournois(Tournoi tournoi) {
         return tournoisRepository.save(tournoi);
     }
 
+    /**
+     * Supprime un tournoi en base par son identifiant.
+     *
+     * @param id identifiant du tournoi à supprimer
+     */
     public void deleteTournoisById(Long id) {
         tournoisRepository.deleteById(id);
     }
 
-/**
+/*
     public void genererTournois(Long idTournois) {
         genererRoundRobin(idTournois);
     }
 */
+    /**
+     * Récupère la liste des matchs associés à un tournoi, triés par date croissante.
+     *
+     * @param idTournois identifiant du tournoi
+     * @return liste des {@link Match} ordonnée par date
+     */
     public List<Match> getMatchesByTournois(Long idTournois) {
         return matchRepository.findByIdCompetition_IdCompetitionOrderByDateMatchAsc(idTournois);
     }
 
 
-/**
+/*
     //Pour le moment genererRoundRobin renvoie la liste des equipes qui participent à la competition.
     public List<Equipe> genererRoundRobin(Long idTournois) {
 
@@ -96,6 +135,14 @@ public class TournoisService {
         return equipes;
     }
 */
+    /**
+     * Modifie certaines propriétés d'un tournoi existant (nom et description) si fournies.
+     *
+     * @param nameDTO DTO contenant les nouveaux champs (nom, description)
+     * @param idTournoi identifiant du tournoi à éditer
+     * @return le {@link Tournoi} mis à jour
+     * @throws ResponseStatusException si le tournoi n'est pas trouvé
+     */
     public Tournoi editTournois(EquipeNameDTO nameDTO, Long idTournoi) {
         Tournoi tournoi = tournoisRepository.findById(idTournoi)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tournoi non trouvée"));
@@ -109,4 +156,3 @@ public class TournoisService {
     }
 
 }
-

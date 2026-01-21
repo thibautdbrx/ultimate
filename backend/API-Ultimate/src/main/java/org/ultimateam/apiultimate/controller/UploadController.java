@@ -13,17 +13,37 @@ import org.ultimateam.apiultimate.service.StorageService;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Contrôleur REST pour la gestion des fichiers.
+ *
+ * Ce contrôleur expose des endpoints pour uploader et télécharger des fichiers.
+ * Il utilise {@link StorageService} pour stocker et récupérer les fichiers.
+ */
+
 @RestController
 @Tag(name = "Upload Controller", description = "Gestion des fichiers")
 @RequestMapping("/api/files")
 public class UploadController {
 
+    /** Service de stockage utilisé pour gérer les fichiers. */
     private final StorageService storageService;
 
+    /**
+     * Constructeur du contrôleur.
+     *
+     * @param storageService Service de stockage injecté pour gérer les fichiers.
+     */
     public UploadController(StorageService storageService) {
         this.storageService = storageService;
     }
 
+    /**
+     * Upload un fichier sur le serveur.
+     *
+     * @param file Le fichier à uploader.
+     * @return Une réponse HTTP contenant le nom du fichier et son URL d'accès.
+     *         Le code de statut HTTP 201 (Created) est retourné en cas de succès.
+     */
     @Operation(
             summary = "Uploader un fichier",
             description = "Permet d'uploader un fichier et retourne le nom du fichier et son URL."
@@ -41,6 +61,14 @@ public class UploadController {
         );
     }
 
+    /**
+     * Télécharge un fichier depuis le serveur.
+     *
+     * @param filename Le nom du fichier à télécharger.
+     * @return Une réponse HTTP contenant le fichier demandé en tant que ressource.
+     *         Le type de contenu est déterminé automatiquement si possible.
+     *         Si le type de contenu ne peut pas être déterminé, "application/octet-stream" est utilisé par défaut.
+     */
     @Operation(
             summary = "Télécharger un fichier",
             description = "Retourne le fichier demandé à partir de son nom."

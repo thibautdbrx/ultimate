@@ -12,6 +12,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+
+
 public class Tournoi extends Competition{
     /**
     public Tournois(Genre genre, Format format, LocalDate date_debut, LocalDate date_fin, String nomCompetition, String descriptionCompetition) {
