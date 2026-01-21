@@ -17,6 +17,14 @@ import org.ultimateam.apiultimate.service.CustomUserDetailsService;
 
 import java.io.IOException;
 
+
+/**
+ * Filtre de sécurité pour l'authentification basée sur les jetons JWT.
+ *
+ * <p>Ce filtre intercepte chaque requête HTTP entrante pour extraire un token JWT
+ * depuis les en-têtes ou les cookies. Il valide ensuite l'identité de l'utilisateur
+ * et configure le contexte de sécurité de Spring Security.</p>
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -24,6 +32,21 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
+    /**
+     * Analyse la requête pour authentifier l'utilisateur via un token JWT.
+     *
+     * <p>Le processus suit quatre étapes clés :
+     * 1. Recherche du token dans le header "Authorization".
+     * 2. Recherche du token dans les cookies si le header est absent.
+     * 3. Extraction du nom d'utilisateur depuis le jeton.
+     * 4. Validation et injection de l'authentification dans le contexte de sécurité.</p>
+     *
+     * @param request     L'objet {@link HttpServletRequest} contenant les données de la requête.
+     * @param response    L'objet {@link HttpServletResponse} pour la gestion de la réponse.
+     * @param filterChain La chaîne de filtres {@link FilterChain} à poursuivre.
+     * @throws ServletException en cas d'erreur lors du traitement de la servlet.
+     * @throws IOException      en cas d'erreur d'entrée/sortie.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 

@@ -20,6 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.ultimateam.apiultimate.filter.JwtFilter;
 import org.ultimateam.apiultimate.service.CustomUserDetailsService;
 
+/**
+ * Configuration principale de la sécurité de l'application via Spring Security.
+ *
+ * <p>Cette classe définit les politiques d'accès aux ressources, la gestion des rôles
+ * (ADMIN, ARBITRE, JOUEUR), l'encodage des mots de passe et l'intégration du filtre JWT.</p>
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -31,16 +37,33 @@ public class SecurityConfig {
     @Value("${app.security.enabled}")
     private boolean securityEnabled;
 
+    /**
+     * Définit l'algorithme de hachage utilisé pour les mots de passe.
+     *
+     * @return un {@link BCryptPasswordEncoder} pour sécuriser les identifiants
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Expose le gestionnaire d'authentification standard de Spring Security.
+     *
+     * @param config la configuration d'authentification fournie par Spring
+     * @return l'{@link AuthenticationManager} configuré
+     * @throws Exception en cas d'erreur de récupération du manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Configure le fournisseur d'authentification utilisant {@link CustomUserDetailsService}.
+     *
+     * @return un {@link AuthenticationProvider} liant le service utilisateur et l'encodeur
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -49,6 +72,18 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    /**
+     * Définit la chaîne de filtres de sécurité et les règles d'autorisation par endpoint.
+     *
+     * <p>La configuration gère deux modes :
+     * 1. Mode Développement : Si {@code securityEnabled} est faux, tout est autorisé.
+     * 2. Mode Production : Accès public pour la lecture (GET) et la doc,
+     * accès restreint par rôle pour les modifications.</p>
+     *
+     * @param http le constructeur de sécurité HTTP
+     * @return la {@link SecurityFilterChain} configurée
+     * @throws Exception en cas d'erreur de configuration
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 

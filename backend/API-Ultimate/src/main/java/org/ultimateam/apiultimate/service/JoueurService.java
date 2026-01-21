@@ -306,6 +306,12 @@ public class JoueurService {
         return joueurs;
     }
 
+    /**
+     * Calcule le nombre de joueurs de genre masculin inscrits dans une équipe.
+     *
+     * @param equipe l'équipe à analyser
+     * @return le nombre total d'hommes dans l'équipe
+     */
     private long getNbHommes(Equipe equipe){
         long nb = 0;
         for (Joueur joueur : equipe.getJoueurs()) {
@@ -315,6 +321,13 @@ public class JoueurService {
         }
         return nb;
     }
+
+    /**
+     * Calcule le nombre de joueuses de genre féminin inscrites dans une équipe.
+     *
+     * @param equipe l'équipe à analyser
+     * @return le nombre total de femmes dans l'équipe
+     */
     private long getNbFemmes(Equipe equipe){
         long nb = 0;
         for (Joueur joueur : equipe.getJoueurs()) {
