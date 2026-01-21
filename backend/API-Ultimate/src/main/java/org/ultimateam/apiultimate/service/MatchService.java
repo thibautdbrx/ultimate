@@ -33,7 +33,17 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class MatchService {
-
+/**
+     * Vérifie et met à jour le statut "commencer" d'une compétition.
+     *
+     * <p>Une compétition est considérée comme commencée si :
+     * 1. Le flag est déjà à {@code true}.
+     * 2. La date de début est dépassée.
+     * 3. Au moins un match de la compétition a un statut différent de 'WAITING'.</p>
+     *
+     * @param idCompetition identifiant de la compétition
+     * @return la {@link Competition} avec son statut mis à jour
+     */
     private final MatchRepository matchRepository;
     private final EquipeService equipeService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
@@ -282,7 +292,7 @@ public class MatchService {
      */
     public Match ajouterFaute(long idMatch, long idEquipe, MatchFauteDTO fauteDTO) {
         Match match = getById(idMatch);
-        Equipe equipe = equipeService.getById(idMatch);
+        Equipe equipe = equipeService.getById(idEquipe);
         if (match == null || equipe == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match/équipe n'existe pas");;
         if (match.getStatus() != Match.Status.ONGOING) throw new ResponseStatusException(HttpStatus.CONFLICT, "Match n'est pas en jeu");
 

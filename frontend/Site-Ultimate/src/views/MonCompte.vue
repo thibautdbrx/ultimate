@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from "@/stores/auth.js"
-import api from '@/services/api' // Import de l'instance Axios
 
 import CarteEquipe from "@/components/card/card_equipe.vue"
 import CarteMatch from "@/components/card/card_match.vue"
@@ -12,7 +11,7 @@ import ImageEquipeFond from "../assets/img/img_equipe.jpg"
 const router = useRouter()
 const auth = useAuthStore()
 
-// --- LOGIQUE TOAST ---
+// --- LOGIQUE TOAST (AJOUTÉ) ---
 const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("error")
@@ -30,7 +29,7 @@ const error = ref(null)
 const joueur = ref(null)
 const prochainsMatchs = ref([])
 
-// --- STATES MODALE ---
+// --- STATES MODALE (Pour la photo) ---
 const showModal = ref(false)
 const selectedFile = ref(null)
 const previewImage = ref(null)
@@ -53,7 +52,7 @@ function goToMatch(id) {
   router.push(`/match/${id}`)
 }
 
-function goToEquipe(id, nom) {
+function goToEquipe(id,nom) {
   router.push({ name: 'Equipe-details', params: { id, nom } })
 }
 
@@ -86,9 +85,27 @@ const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  // Axios gère automatiquement le token via l'intercepteur et le Content-Type pour FormData
-  const uploadRes = await api.post(`/files/upload`, formData);
-  return uploadRes.data.url;
+  let token = auth.token;
+  if (!token) {
+    const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+    if (tokenCookie) token = tokenCookie.split('=')[1];
+  }
+
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const uploadRes = await fetch(`/api/files/upload`, {
+    method: "POST",
+    headers: headers,
+    body: formData
+  });
+
+  if (!uploadRes.ok) throw new Error("Erreur lors de l'upload de l'image.");
+
+  const uploadData = await uploadRes.json();
+  return uploadData.url;
 }
 
 const openEditModal = () => {
@@ -121,17 +138,22 @@ const validerChangementPhoto = async () => {
   try {
     const newPhotoUrl = await uploadFile(selectedFile.value)
 
-    // Remplacement fetch par api.patch
-    await api.patch(`/joueur/${joueur.value.idJoueur}`, { image: newPhotoUrl })
+    const res = await fetch(`/api/joueur/${joueur.value.idJoueur}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: newPhotoUrl })
+    })
+
+    if(!res.ok) throw new Error("Erreur lors de la mise à jour du profil.")
 
     joueur.value.photoJoueur = newPhotoUrl
+
     closeEditModal()
     notify("Photo de profil mise à jour !", "success")
 
   } catch (e) {
     console.error(e)
-    const msg = e.response?.data?.message || e.message
-    notify(msg, "error")
+    notify(e.message, "error")
   } finally {
     loadingUpload.value = false
   }
@@ -152,16 +174,25 @@ onMounted(async () => {
   }
 
   try {
-    // Remplacement fetch par api.get
-    const resJoueur = await api.get(`/joueur/${currentJoueurId}`)
-    joueur.value = resJoueur.data
+    const resJoueur = await fetch(`/api/joueur/${currentJoueurId}`)
+    if (!resJoueur.ok) {
+      if(resJoueur.status === 404) throw new Error("Joueur introuvable.")
+      throw new Error("Impossible de récupérer les informations du joueur.")
+    }
+    joueur.value = await resJoueur.json()
 
     if (!joueur.value.equipe) {
+      console.log("Le joueur n'a pas d'équipe, on ne charge pas les matchs.")
       prochainsMatchs.value = []
     }
     else {
-      const resMatchs = await api.get(`/match/joueur/${currentJoueurId}`)
-      const tousLesMatchs = resMatchs.data
+      const resMatchs = await fetch(`/api/match/joueur/${currentJoueurId}`)
+
+      if (!resMatchs.ok) {
+        throw new Error("Impossible de récupérer les matchs.")
+      }
+
+      const tousLesMatchs = await resMatchs.json()
       const maintenant = new Date()
 
       prochainsMatchs.value = tousLesMatchs
@@ -171,7 +202,7 @@ onMounted(async () => {
 
   } catch (err) {
     console.error(err)
-    error.value = err.response?.data?.message || err.message || "Une erreur est survenue."
+    error.value = err.message || "Une erreur est survenue."
   } finally {
     loading.value = false
   }

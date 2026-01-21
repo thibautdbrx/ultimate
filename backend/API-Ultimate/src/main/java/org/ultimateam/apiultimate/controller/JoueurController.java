@@ -1,11 +1,13 @@
 package org.ultimateam.apiultimate.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.ultimateam.apiultimate.DTO.EditJoueurDTO;
-import org.ultimateam.apiultimate.DTO.Genre;
 import org.ultimateam.apiultimate.DTO.GenreJoueur;
 import org.ultimateam.apiultimate.DTO.ImageDTO;
 import org.ultimateam.apiultimate.configuration.JwtUtils;
@@ -18,44 +20,26 @@ import java.util.List;
 
 /**
  * Contrôleur REST pour la gestion des entités {@link Joueur}.
- *
- * Ce contrôleur expose les endpoints de l'API pour les opérations CRUD sur les joueurs,
- * ainsi que pour la gestion de leur assignation aux équipes, des demandes d'adhésion,
- * et la mise à jour de leurs informations personnelles.
  */
 @RestController
-@Tag(name = "Joueur", description = "Endpoints pour gérer les joueurs")
 @RequestMapping("/api/joueur")
+@RequiredArgsConstructor
+@Tag(name = "Joueur", description = "Endpoints pour gérer les joueurs")
 public class JoueurController {
 
-    /** Service utilisé pour gérer les opérations liées aux joueurs. */
     private final JoueurService joueurService;
-    /** Utilitaire pour manipuler les tokens JWT et extraire les informations des joueurs authentifiés. */
     private final JwtUtils jwtUtils;
-
-    /**
-     * Constructeur du contrôleur.
-     *
-     * @param joueurService Service injecté pour gérer les joueurs.
-     * @param jwtUtils Utilitaire pour manipuler les tokens JWT.
-     */
-    public JoueurController(JoueurService joueurService, JwtUtils jwtUtils) {
-        this.joueurService = joueurService;
-        this.jwtUtils = jwtUtils;
-    }
 
     /**
      * Récupère la liste de tous les joueurs, avec un filtre optionnel par genre.
      *
-     * @param genre Genre optionnel pour filtrer les joueurs (Homme, Femme, Mixte, etc.).
-     * @return Une liste de tous les {@link Joueur} correspondant au filtre.
+     * @param genre Genre optionnel pour filtrer les joueurs.
+     * @return Une liste de tous les {@link Joueur}.
      */
-    @Operation(
-            summary = "Lister tous les joueurs",
-            description = "Retourne la liste de tous les joueurs. Il est possible de filtrer par genre via un paramètre optionnel."
-    )
+    @Operation(summary = "Lister tous les joueurs", description = "Retourne la liste de tous les joueurs. Filtre par genre optionnel.")
     @GetMapping
-    public List<Joueur> getAllJoueurs(@RequestParam(required = false) GenreJoueur genre ) {
+    @PreAuthorize("permitAll()")
+    public List<Joueur> getAllJoueurs(@RequestParam(required = false) GenreJoueur genre) {
         return joueurService.getAll(genre);
     }
 
@@ -63,14 +47,11 @@ public class JoueurController {
      * Récupère un joueur par son identifiant.
      *
      * @param id Identifiant unique du joueur.
-     * @return Le {@link Joueur} correspondant à l'identifiant fourni.
-     * @throws RuntimeException Si le joueur n'existe pas.
+     * @return Le {@link Joueur} correspondant.
      */
-    @Operation(
-            summary = "Récupérer un joueur par son identifiant",
-            description = "Retourne le joueur correspondant à l'identifiant fourni. Une erreur est renvoyée si le joueur n'existe pas."
-    )
+    @Operation(summary = "Récupérer un joueur", description = "Retourne le joueur correspondant à l'identifiant fourni.")
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public Joueur getJoueurById(@PathVariable Long id) {
         return joueurService.getById(id);
     }
@@ -79,163 +60,173 @@ public class JoueurController {
      * Récupère la liste des joueurs appartenant à une équipe spécifique.
      *
      * @param idEquipe Identifiant unique de l'équipe.
-     * @return Une liste de {@link Joueur} appartenant à l'équipe.
+     * @return Une liste de {@link Joueur}.
      */
-    @Operation(
-            summary = "Lister les joueurs d'une équipe",
-            description = "Retourne la liste des joueurs appartenant à l'équipe identifiée par son id."
-    )
+    @Operation(summary = "Lister les joueurs d'une équipe", description = "Retourne la liste des joueurs appartenant à l'équipe donnée.")
     @GetMapping("/equipe/{idEquipe}")
+    @PreAuthorize("permitAll()")
     public List<Joueur> getJoueurByEquipe(@PathVariable Long idEquipe) {
         return joueurService.getJoueurByEquipe(idEquipe);
     }
 
     /**
-     * Récupère la liste des joueurs non assignés à une équipe, avec un filtre optionnel par genre.
+     * Récupère la liste des joueurs non assignés à une équipe.
      *
-     * @param genre Genre optionnel pour filtrer les joueurs sans équipe.
-     * @return Une liste de {@link Joueur} non assignés à une équipe.
+     * @param idEquipe Filtre optionnel par ID d'équipe.
+     * @return Une liste de {@link Joueur} sans équipe.
      */
-    @Operation(
-            summary = "Lister les joueurs sans équipe",
-            description = "Retourne la liste des joueurs non assignés à une équipe. Un filtre par genre peut être appliqué."
-    )
+    @Operation(summary = "Lister les joueurs sans équipe", description = "Retourne la liste des joueurs disponibles (solo).")
     @GetMapping("/solo/")
-    public List<Joueur> getJoueurSolo(@RequestParam(required = false) Long idEquipe){//@RequestParam(required = false) GenreJoueur genre) {
+    @PreAuthorize("permitAll()")
+    public List<Joueur> getJoueurSolo(@RequestParam(required = false) Long idEquipe) {
         return joueurService.getJoueurSolo(idEquipe);
-        //return joueurService.getJoueurSolo(genre);
     }
 
     /**
-     * Crée un nouveau joueur à partir des informations fournies.
+     * Crée un nouveau joueur (Profil).
+     * Réservé aux administrateurs.
      *
-     * @param joueur Objet {@link Joueur} contenant les informations du joueur à créer.
-     * @return Le {@link Joueur} nouvellement créé.
+     * @param joueur Objet {@link Joueur} à créer.
+     * @return Le {@link Joueur} créé.
      */
-    @Operation(
-            summary = "Créer un nouveau joueur",
-            description = "Crée un nouveau joueur à partir des informations fournies dans le corps de la requête."
-    )
+    @Operation(summary = "Créer un joueur", description = "Crée un nouveau profil joueur. Réservé aux administrateurs.")
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Joueur createJoueur(@RequestBody Joueur joueur) {
         return joueurService.addJoueur(joueur);
     }
 
     /**
-     * Assigne un joueur existant à une équipe existante.
+     * Assigne un joueur à une équipe (Force administrative).
+     * Réservé aux administrateurs.
      *
-     * @param idJoueur Identifiant unique du joueur à assigner.
-     * @param idEquipe Identifiant unique de l'équipe cible.
-     * @return Le {@link Joueur} mis à jour avec son équipe assignée.
-     * @throws RuntimeException Si le joueur ou l'équipe n'existe pas.
+     * @param idJoueur Identifiant du joueur.
+     * @param idEquipe Identifiant de l'équipe.
+     * @return Le {@link Joueur} mis à jour.
      */
-    @Operation(
-            summary = "Assigner un joueur à une équipe",
-            description = "Assigne un joueur existant à une équipe existante. Une erreur est renvoyée si le joueur ou l'équipe n'existe pas."
-    )
+    @Operation(summary = "Assigner un joueur (Admin)", description = "Assigne administrativement un joueur à une équipe. Réservé aux administrateurs.")
     @PatchMapping("/{idJoueur}/equipe/{idEquipe}")
-    public Joueur assignerEquipe(@PathVariable long idJoueur, @PathVariable long idEquipe) { return joueurService.assignerEquipe(idJoueur, idEquipe); }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public Joueur assignerEquipe(@PathVariable long idJoueur, @PathVariable long idEquipe) {
+        return joueurService.assignerEquipe(idJoueur, idEquipe);
+    }
 
     /**
-     * Permet à un joueur de faire une demande pour rejoindre une équipe.
+     * Permet à un joueur connecté de demander à rejoindre une équipe.
      *
-     * @param idJoueur Identifiant unique du joueur qui fait la demande.
-     * @param idEquipe Identifiant unique de l'équipe cible.
-     * @param authHeader En-tête HTTP contenant le token JWT du joueur authentifié.
-     * @return Une {@link ResponseEntity} contenant la {@link JoueurRequest} créée.
+     * @param idJoueur Identifiant du joueur.
+     * @param idEquipe Identifiant de l'équipe cible.
+     * @param authHeader Token d'authentification.
+     * @return La demande créée.
      */
+    @Operation(summary = "Demander à rejoindre une équipe", description = "Le joueur connecté demande à rejoindre une équipe.")
     @PostMapping("/request/{idJoueur}/equipe/{idEquipe}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<JoueurRequest> requestJoueur(
             @PathVariable long idJoueur,
             @PathVariable long idEquipe,
-            @RequestHeader("Authorization") String authHeader
+            @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader
     ) {
         String token = authHeader.replace("Bearer ", "");
         Long joueurIdToken = jwtUtils.extractJoueurId(token);
-
         JoueurRequest request = joueurService.demandeJoueur(idJoueur, idEquipe, joueurIdToken);
         return ResponseEntity.ok(request);
     }
 
     /**
-     * Accepte une demande d'adhésion d'un joueur à une équipe.
+     * Accepte une demande d'adhésion.
+     * Accessible aux utilisateurs authentifiés (ex: capitaine/gestionnaire) ou Admin.
      *
-     * @param idJoueur Identifiant unique du joueur dont la demande est acceptée.
-     * @param idEquipe Identifiant unique de l'équipe qui accepte la demande.
-     * @return Le {@link Joueur} mis à jour avec son équipe assignée.
+     * @param idJoueur Identifiant du joueur.
+     * @param idEquipe Identifiant de l'équipe.
+     * @return Le joueur intégré à l'équipe.
      */
+    @Operation(summary = "Accepter une demande", description = "Accepte la demande d'un joueur pour rejoindre l'équipe.")
     @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/accept")
-    public Joueur accepterDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {return joueurService.accepterDemande(idJoueur, idEquipe); }
+    @PreAuthorize("permitAll()")
+    public Joueur accepterDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {
+        return joueurService.accepterDemande(idJoueur, idEquipe);
+    }
 
     /**
-     * Refuse une demande d'adhésion d'un joueur à une équipe.
+     * Refuse une demande d'adhésion.
      *
-     * @param idJoueur Identifiant unique du joueur dont la demande est refusée.
-     * @param idEquipe Identifiant unique de l'équipe qui refuse la demande.
+     * @param idJoueur Identifiant du joueur.
+     * @param idEquipe Identifiant de l'équipe.
      */
+    @Operation(summary = "Refuser une demande", description = "Refuse la demande d'un joueur.")
     @PatchMapping("/request/{idJoueur}/equipe/{idEquipe}/refuse")
-    public void refuseDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {joueurService.refuseDemande(idJoueur, idEquipe);}
+    @PreAuthorize("permitAll()")
+    public void refuseDemande(@PathVariable long idJoueur, @PathVariable long idEquipe) {
+        joueurService.refuseDemande(idJoueur, idEquipe);
+    }
 
     /**
-     * Récupère la liste de toutes les demandes d'adhésion en attente.
+     * Récupère toutes les demandes en attente.
      *
-     * @return Une liste de {@link JoueurRequest} représentant les demandes en attente.
+     * @return Liste des demandes.
      */
+    @Operation(summary = "Lister les demandes", description = "Affiche toutes les demandes d'adhésion en cours.")
     @GetMapping("/requests")
-    public List<JoueurRequest> getRequests() {return joueurService.getAllRequests();}
+    @PreAuthorize("permitAll()")
+    public List<JoueurRequest> getRequests() {
+        return joueurService.getAllRequests();
+    }
 
     /**
-     * Met à jour l'image ou l'avatar d'un joueur.
+     * Met à jour l'image d'un joueur.
+     * Accessible au joueur lui-même (authentifié).
      *
-     * @param imageDTO Objet contenant les données de l'image à mettre à jour.
-     * @param idJoueur Identifiant unique du joueur à mettre à jour.
-     * @return Le {@link Joueur} mis à jour avec sa nouvelle image.
+     * @param imageDTO DTO contenant l'image.
+     * @param idJoueur Identifiant du joueur.
+     * @return Le joueur mis à jour.
      */
-    @Operation(
-            summary = "Mettre à jour l'image d'un joueur",
-            description = "Met à jour l'image ou l'avatar associé à un joueur."
-    )
+    @Operation(summary = "Mettre à jour l'image", description = "Modifie l'avatar du joueur connecté.")
     @PatchMapping("/{idJoueur}")
-    public Joueur editImage(@RequestBody ImageDTO imageDTO, @PathVariable long idJoueur) { return joueurService.updateJoueur(idJoueur, imageDTO);}
+    @PreAuthorize("permitAll()")
+    public Joueur editImage(@RequestBody ImageDTO imageDTO, @PathVariable long idJoueur) {
+        return joueurService.updateJoueur(idJoueur, imageDTO);
+    }
 
     /**
-     * Met à jour le nom ou les informations principales d'un joueur.
+     * Met à jour les informations textuelles d'un joueur.
+     * Accessible au joueur lui-même (authentifié).
      *
-     * @param nameDTO Objet contenant les nouvelles informations du joueur.
-     * @param idJoueur Identifiant unique du joueur à mettre à jour.
-     * @return Le {@link Joueur} mis à jour.
+     * @param nameDTO DTO contenant les infos.
+     * @param idJoueur Identifiant du joueur.
+     * @return Le joueur mis à jour.
      */
-    @Operation(
-            summary = "Modifier les informations d'un joueur",
-            description = "Permet de modifier le nom et/ou les informations principales d'un joueur."
-    )
+    @Operation(summary = "Modifier les infos", description = "Modifie le nom/prénom du joueur connecté.")
     @PatchMapping("/{idJoueur}/name")
-    public Joueur editNameJoueur(@RequestBody EditJoueurDTO nameDTO, @PathVariable long idJoueur) { return joueurService.editName(nameDTO, idJoueur);}
+    @PreAuthorize("isAuthenticated()")
+    public Joueur editNameJoueur(@RequestBody EditJoueurDTO nameDTO, @PathVariable long idJoueur) {
+        return joueurService.editName(nameDTO, idJoueur);
+    }
 
     /**
-     * Retire un joueur de son équipe actuelle.
+     * Retire un joueur d'une équipe.
+     * Réservé aux administrateurs.
      *
-     * @param idJoueur Identifiant unique du joueur à retirer.
-     * @param idEquipe Identifiant unique de l'équipe dont le joueur est retiré.
-     * @return L'{@link Equipe} mise à jour après le retrait du joueur.
+     * @param idJoueur Identifiant du joueur.
+     * @param idEquipe Identifiant de l'équipe.
+     * @return L'équipe mise à jour.
      */
-    @Operation(
-            summary = "Retirer un joueur de son équipe",
-            description = "Supprime l'association entre un joueur et une équipe."
-    )
+    @Operation(summary = "Retirer un joueur d'une équipe", description = "Supprime le lien entre un joueur et une équipe. Réservé aux administrateurs.")
     @DeleteMapping("/{idJoueur}/equipe/{idEquipe}")
-    public Equipe deleteEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) { return joueurService.deleteEquipe(idJoueur, idEquipe); }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public Equipe deleteEquipe(@PathVariable Long idJoueur, @PathVariable Long idEquipe) {
+        return joueurService.deleteEquipe(idJoueur, idEquipe);
+    }
 
     /**
      * Supprime définitivement un joueur.
+     * Réservé aux administrateurs.
      *
-     * @param id Identifiant unique du joueur à supprimer.
+     * @param id Identifiant du joueur à supprimer.
      */
-    @Operation(
-            summary = "Supprimer un joueur",
-            description = "Supprime définitivement le joueur correspondant à l'identifiant fourni."
-    )
+    @Operation(summary = "Supprimer un joueur", description = "Supprime définitivement un profil joueur. Réservé aux administrateurs.")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void deleteJoueur(@PathVariable Long id) {
         joueurService.deleteJoueur(id);
     }

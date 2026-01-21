@@ -3,12 +3,12 @@ import { ref } from "vue"
 import JoueurCardForm from "@/components/card/JoueurCardForm.vue"
 import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/auth";
-import api from '@/services/api' // Ajout de l'import api
+import api from '@/services/api' 
 
 const router = useRouter();
 const auth = useAuthStore();
 
-// --- ÉTATS NOTIFICATIONS (TOAST) ---
+// ... (Le code des notifications reste identique) ...
 const showToast = ref(false)
 const toastMessage = ref("")
 const toastType = ref("error")
@@ -33,15 +33,33 @@ const joueur = ref({
   clickable: true
 })
 
+// --- CORRECTION ICI : ON UTILISE LA MEME LOGIQUE QUE DANS COMPTE.VUE ---
 const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  // Axios gère automatiquement le Content-Type pour FormData
-  // Le token est géré par l'intercepteur de api.js
-  const uploadRes = await api.post(`/files/upload`, formData);
+  // On récupère le token du store
+  let token = auth.token;
+  
+  // Préparation des headers (SANS Content-Type, le navigateur le fera)
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-  return uploadRes.data.url;
+  // Utilisation de fetch au lieu de api.post pour éviter les conflits de configuration Axios
+  const res = await fetch(`/api/files/upload`, {
+    method: "POST",
+    headers: headers,
+    body: formData
+  });
+
+  if (!res.ok) {
+    throw new Error("Erreur lors de l'upload de l'image");
+  }
+
+  const data = await res.json();
+  return data.url;
 }
 
 const validerCreation = async () => {
@@ -56,11 +74,16 @@ const validerCreation = async () => {
     return
   }
 
-  let photoUrl = "/api/files/pnj.jpg";
+  let photoUrl = "/api/files/pnj.jpg"; // Image par défaut
 
   try {
+    // Si l'utilisateur a uploadé un fichier
     if (joueur.value.photoJoueur instanceof File) {
       photoUrl = await uploadFile(joueur.value.photoJoueur);
+    } 
+    // Si c'est déjà une string (ex: modif), on garde l'ancienne, sinon défaut
+    else if (typeof joueur.value.photoJoueur === 'string') {
+       photoUrl = joueur.value.photoJoueur;
     }
 
     const joueurPayload = {
@@ -70,7 +93,7 @@ const validerCreation = async () => {
       photoJoueur: photoUrl
     };
 
-    // Utilisation de api.post au lieu de fetch
+    // Pour le JSON classique, on garde api.post (Axios), c'est parfait
     await api.post("/joueur", joueurPayload);
 
     notify("Joueur créé avec succès !", "success");
