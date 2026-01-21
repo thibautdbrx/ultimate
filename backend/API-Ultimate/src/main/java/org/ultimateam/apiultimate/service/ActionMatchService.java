@@ -21,15 +21,6 @@ public class ActionMatchService {
     private final EquipeService equipeService;
     private final JoueurService joueurService;
 
-    /**
-     * Constructeur pour l'injection des dépendances du service.
-     *
-     * @param actionMatchRepository repository des actions de match.
-     * @param matchRepository       repository des matchs.
-     * @param equipeService         service de gestion des équipes.
-     * @param joueurService         service de gestion des joueurs.
-     */
-
     public ActionMatchService(ActionMatchRepository actionMatchRepository, MatchRepository matchRepository,
                               EquipeService equipeService, JoueurService joueurService) {
         this.actionMatchRepository = actionMatchRepository;
@@ -97,15 +88,8 @@ public class ActionMatchService {
      */
     public List<ActionMatch> findByActionAndJoueurAndMatchId(ActionTypeDTO actionTypeDTO, Long matchId, Long joueurId){ return actionMatchRepository.findByTypeAndJoueur_IdJoueurAndMatch_IdMatch(actionTypeDTO, joueurId, matchId);}
 
-    /**
-     * Ajoute un point pour un joueur dans un match et une équipe donnés.
-     *
-     * @param id_match      identifiant du match.
-     * @param id_equipe     identifiant de l'équipe.
-     * @param matchPointDTO DTO contenant l'identifiant du joueur qui marque le point.
-     * @return l'action {@link ActionMatch} créée et sauvegardée.
-     * @throws ResponseStatusException si le match, l'équipe ou le joueur n'existe pas, si le match n'est pas en cours, ou si le joueur ne fait pas partie du match.
-     */
+
+
     public ActionMatch addPoint(long id_match, long id_equipe, MatchPointDTO matchPointDTO) {
         Match match = matchRepository.findById(id_match).orElse(null);
         if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
@@ -122,27 +106,6 @@ public class ActionMatchService {
      * @throws ResponseStatusException si le match, l'équipe ou le joueur n'existe pas, si le match n'est pas en cours, ou si le joueur ne fait pas partie du match.
      */
     public ActionMatch addFaute(long id_match, long id_equipe, MatchFauteDTO matchFauteDTO) {
-        Match match = matchRepository.findById(id_match).orElse(null);
-        if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
-        return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE, match.getDatePause());
-    }
-
-    /**
-     * Méthode générique pour ajouter une action (point, faute, etc.) à un match.
-     * Vérifie l'existence du match, de l'équipe et du joueur, que le match est en cours,
-     * que l'équipe fait partie du match, et que le joueur appartient à l'une des équipes.
-     *
-     * @param id_match   identifiant du match.
-     * @param id_equipe  identifiant de l'équipe réalisant l'action.
-     * @param id_joueur  identifiant du joueur réalisant l'action.
-     * @param type       type de l'action ({@link ActionTypeDTO}).
-     * @return l'action créée et persistée.
-     * @throws ResponseStatusException si le match, l'équipe ou le joueur n'existe pas,
-     *                                 si le match n'est pas en cours,
-     *                                 ou si l'équipe ne participe pas au match,
-     *                                 ou si le joueur n'appartient à aucune des équipes du match.
-     */
-    public ActionMatch addAction(long id_match, long id_equipe, long id_joueur, ActionTypeDTO type) {
         Match match = matchRepository.findById(id_match).orElse(null);
         if (match == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le match n'existe pas");
         return addAction(id_match, id_equipe, matchFauteDTO.getIdJoueur(), ActionTypeDTO.FAUTE, match.getDatePause());

@@ -12,13 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Service gérant les opérations liées aux compétitions.
- *
- * Ce service fournit des méthodes pour récupérer, créer, supprimer des compétitions,
- * générer les matchs d'une compétition (tournoi ou championnat) et récupérer les matchs
- * liés à une compétition.
- */
 @Service
 public class CompetitionService {
 
@@ -108,23 +101,7 @@ public class CompetitionService {
         competitionRepository.deleteById(id);
     }
 
-    /**
-     * Génère les matchs d'une compétition (tournoi ou championnat) et crée les entrées de classement.
-     *
-     * <p>Le service :
-     * <ol>
-     *   <li>vérifie l'existence de la compétition;</li>
-     *   <li>récupère les participations et les équipes participantes;</li>
-     *   <li>construit les classements initiaux pour chaque participation;</li>
-     *   <li>appelle le scheduler pour générer les horaires en respectant les indisponibilités;</li>
-     *   <li>associe la compétition aux matchs générés et persiste les matchs et indisponibilités.</li>
-     * </ol>
-     * </p>
-     *
-     * @param idCompetition identifiant de la compétition pour laquelle générer le planning
-     * @return la liste des {@link Match} générés et persistés
-     * @throws ResponseStatusException si la compétition n'existe pas ou si le type de compétition est invalide
-     */
+
     public List<Match> genererCompetition(Long idCompetition) {
 
         Competition competition = getCompetitionById(idCompetition);
@@ -161,8 +138,7 @@ public class CompetitionService {
 
         ScheduleResult scheduleResult;
         if (Objects.equals(competition.getTypeCompetition(), "Tournoi")) {
-            scheduleResult = scheduler.generateSchedule(equipes, competition.getDateDebut(), competition.getDateFin(), true, indispo);
-            List<Match> matchs = scheduleResult.getMatchs();
+            scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), true, indispo, indispoTerrains);
         }
         else if (Objects.equals(competition.getTypeCompetition(), "Championnat")){
             scheduleResult = scheduler.generateSchedule(equipes, terrains, competition.getDateDebut(), competition.getDateFin(), false, indispo, indispoTerrains);
@@ -268,15 +244,12 @@ public class CompetitionService {
         }
 
         List<Match> matchs = matchRepository.findByIdCompetition_IdCompetition(idCompetition);
+        if (matchs == null || matchs.isEmpty() || matchs.size() ==0)competition.setCommencer(false);
 
-        competition.setCommencer(false);
-
-        if (matchs != null && !matchs.isEmpty()) {
+        else {
             for (Match match : matchs) {
-                if (match.getStatus() != Match.Status.WAITING){
+                if (match.getStatus() != Match.Status.WAITING)
                     competition.setCommencer(true);
-                    break;
-                }
             }
         }
 

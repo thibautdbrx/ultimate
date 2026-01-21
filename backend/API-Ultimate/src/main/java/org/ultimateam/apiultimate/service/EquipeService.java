@@ -143,7 +143,7 @@ public class EquipeService {
      * @param equipe L'équipe dont le genre doit être recalculé.
      * @return L'équipe sauvegardée avec le genre mis à jour.
      */
-
+    /*
     public Equipe updateGenre(Equipe equipe) {
         List<Joueur> joueurs = equipe.getJoueurs();
 
@@ -173,6 +173,8 @@ public class EquipeService {
 
         return equipeRepository.save(equipe);
     }
+
+     */
 
     /**
      * Compte le nombre de joueurs liés à une équipe donnée.
