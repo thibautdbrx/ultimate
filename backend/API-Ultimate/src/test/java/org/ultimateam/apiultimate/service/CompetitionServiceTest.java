@@ -1,4 +1,3 @@
-/**
 package org.ultimateam.apiultimate.service;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -84,42 +83,6 @@ class CompetitionServiceTest {
     // --- TESTS GENERATION COMPETITION ---
 
     @Test
-    void genererCompetition_ShouldCallSchedulerAndSaveMatches_WhenValid() {
-        // Arrange
-        when(competitionRepository.findById(1L)).thenReturn(Optional.of(competition));
-        when(terrainService.getById(10L)).thenReturn(terrain);
-
-        // Simuler une participation
-        Participation p = new Participation();
-        p.setId(new ParticipationId(100L, 1L));
-        when(participationRepository.findById_idCompetition(1L)).thenReturn(List.of(p));
-        when(equipeService.getById(100L)).thenReturn(equipe);
-
-        // Simuler le résultat du scheduler
-        //ScheduleResult mockResult = new ScheduleResult(new ArrayList<>(), new ArrayList<>());
-        Match m = new Match();
-        m.setTerrain(terrain); // Le match DOIT avoir un terrain sinon le service plante
-        m.setEquipe1(equipe);
-        m.setEquipe2(equipe);
-        //mockResult.addMatch(m);
-
-        // On utilise any() pour les arguments complexes du scheduler
-        //when(scheduler.generateSchedule(anyList(), anyList(), any(), any(), eq(true), anyList()))
-        //        .thenReturn(mockResult); // ATTENTION : Ajout du dernier paramètre (indispos terrains)
-
-        // Act
-        List<Match> result = competitionService.genererCompetition(1L);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(matchRepository).saveAll(anyList());
-        verify(indisponibiliteRepository).saveAll(anyList());
-        // Vérifie qu'on a bien créé un classement initial pour l'équipe
-        verify(classementRepository).save(any(Classement.class));
-    }
-
-    @Test
     void genererCompetition_ShouldThrow_WhenNoTerrains() {
         // Arrange : Compétition sans terrains
         competition.setTerrains(new ArrayList<>());
@@ -170,4 +133,3 @@ class CompetitionServiceTest {
     }
 }
 
- */

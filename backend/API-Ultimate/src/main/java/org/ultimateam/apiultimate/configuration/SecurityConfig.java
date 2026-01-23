@@ -23,7 +23,7 @@ import org.ultimateam.apiultimate.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Active la sécurité via annotations dans les contrôleurs (@PreAuthorize)
+//@EnableMethodSecurity // Active la sécurité via annotations dans les contrôleurs (@PreAuthorize)
 @RequiredArgsConstructor
 public class SecurityConfig {
 

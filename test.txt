@@ -1,0 +1,429 @@
+2026-01-21 | CAUDRON Corentin | fix: problème footer stick bas de page
+2026-01-21 | DEBREUX Thibaut | fix:footer passe devant l'overlay selection joueur
+2026-01-21 | DEBREUX Thibaut | fix:recupération équipes postuler à rejoindre une équipe
+2026-01-21 | DEBREUX Thibaut | fix:recuperations joueurs ajout dans l'équipe
+2026-01-21 | DEBREUX Thibaut | fix:recuperations joueurs open
+2026-01-21 | loup | supp btt ajouter joueru sur overlay jeouru
+2026-01-21 | loup | steky footer
+2026-01-21 | loup | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | loup | ajout commentaire
+2026-01-21 | DEBREUX Thibaut | Merge branch 'fix/forbiden' into 'dev'
+2026-01-21 | CAUDRON Corentin | fini ?
+2026-01-21 | DEBREUX Thibaut | update:security match
+2026-01-21 | CAUDRON Corentin | fix: correction faute match (en non sécurisé)
+2026-01-21 | CAUDRON Corentin | en pls
+2026-01-21 | CAUDRON Corentin | fix: correction upload
+2026-01-21 | CAUDRON Corentin | fix: première correction.. ou pas
+2026-01-21 | e62189u | slider
+2026-01-21 | CAUDRON Corentin | fix(back): changement autorisation requete
+2026-01-21 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | DEBREUX Thibaut | fix:upload image
+2026-01-21 | CAUDRON Corentin | fusion avec le code
+2026-01-21 | CAUDRON Corentin | feat(back): sécurisation des controleurs via @PreAuthorize, suppression rôle Arbitre et ajout données pour swagger
+2026-01-21 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | DEBREUX Thibaut | fix:page request
+2026-01-21 | JosephSchenfeigel Simeon | Merge branch 'feature/javadocS' into 'dev'
+2026-01-21 | e62189u | Javadoc générée
+2026-01-21 | JosephSchenfeigel Simeon | Merge branch 'feature/javadocS' into 'dev'
+2026-01-21 | e62189u | Javadoc
+2026-01-21 | CAUDRON Corentin | fix(back): competition commencer quand sa date de debut est supérieur a la date actuel V2
+2026-01-21 | loup | fix: plus d'appel de verification si compet deja comencé ou non, à répétition mais appel que quand on essaye de supp des trucs
+2026-01-21 | loup | ajout de la date de competition
+2026-01-21 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | DEBREUX Thibaut | fix: erreurs 401
+2026-01-21 | CAUDRON Corentin | fix(back): competition commencer quand sa date de debut est supérieur a la date actuel
+2026-01-21 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | DEBREUX Thibaut | fix:recupérer les equipes pleines
+2026-01-21 | loup | fix: forbidden
+2026-01-21 | DEBREUX Thibaut | fix:correction merge
+2026-01-21 | loup | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | loup | modif et je sais plus quoi
+2026-01-21 | loup | modif et je sais plus quoi
+2026-01-21 | Valentine THIRION | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev "Conflit..."
+2026-01-21 | Valentine THIRION | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-21 | loup | affichage si competition deja commmencé et correction css affichage buggé
+2026-01-21 | loup | suppression et regeneration des matchs pour les compet pas deja commencé
+2026-01-21 | Valentine THIRION | Javadoc2
+2026-01-21 | Valentine THIRION | Javadoc
+2026-01-21 | Valentine THIRION | Descriptions pour javadoc
+2026-01-21 | CAUDRON Corentin | fix: correction checkVictory
+2026-01-21 | DEBREUX Thibaut | edit: gitignore
+2026-01-20 | CAUDRON Corentin | Merge branch 'feature/gestion-competition' into 'dev'
+2026-01-20 | CAUDRON Corentin | feat(back): Ajout check d'une competition et les endpoints pour check et delete les matchs et indisponibilite
+2026-01-20 | DEBREUX Thibaut | fix:correction merge front
+2026-01-20 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-20 | DEBREUX Thibaut | fix:utilisation de axios + gestion secu (normalement ca marche)
+2026-01-20 | GICQUEL Loup | Merge branch 'feature/terrains' into 'dev'
+2026-01-20 | GICQUEL Loup | Merge branch 'dev' into 'feature/terrains'
+2026-01-20 | CAUDRON Corentin | Merge branch 'dev' into 'feature/gestion-competition'
+2026-01-20 | loup | refactorisation page competitiondetail
+2026-01-20 | CAUDRON Corentin | feat(back): Ajout gestion des competitions commencer.
+2026-01-20 | loup | factorisation de terrain et petit modif dans compet detail pour futur ajout de bouton supp match
+2026-01-20 | DEBREUX Thibaut | fix:correction date pause action match V2
+2026-01-20 | DEBREUX Thibaut | fix:correction date pause action match
+2026-01-20 | JosephSchenfeigel Simeon | Merge branch 'fix/test' into 'dev'
+2026-01-20 | e62189u | jsp
+2026-01-20 | JosephSchenfeigel Simeon | Merge branch 'feature/testsControlleurs' into 'dev'
+2026-01-20 | e62189u | test des controlleurs
+2026-01-20 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-20 | DEBREUX Thibaut | fix:mise a jour de la date de pause dans l'action
+2026-01-20 | loup | re ajout de supprimer et selection terrain pour une compet vu que ca a tout niqué le tru c d'avant
+2026-01-20 | JosephSchenfeigel Simeon | Merge branch 'feature/tempsAction' into 'dev'
+2026-01-20 | e62189u | temps des actions mieux
+2026-01-20 | loup | merge bizzare avec le conflit de tibo
+2026-01-20 | e62189u | jsp
+2026-01-20 | loup | ajout et modification des terrains sur la page competitoin_details
+2026-01-20 | e62189u | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-20 | e62189u | curseur
+2026-01-20 | CAUDRON Corentin | Merge branch 'feature/terrains' into 'dev'
+2026-01-20 | CAUDRON Corentin | feat(back): Ajout de suppresion des anciens matchs et disponnibilités (equipes et matchs) lié a une compétition, a l'appel de la méthode genererCompetition
+2026-01-20 | DEBREUX Thibaut | feat:creation des test (sans controller)
+2026-01-20 | CAUDRON Corentin | feat(back): Indisponibilité terrains et equipes fonctionnels. Aucun chevauchement durant les matchs.
+2026-01-20 | CAUDRON Corentin | feat(back): Ajout indisponnibilité des terrains en cours
+2026-01-20 | DEBREUX Thibaut | Merge branch 'feature/terrains' into 'dev'
+2026-01-20 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/terrains'
+2026-01-20 | DEBREUX Thibaut | docker install
+2026-01-19 | DEBREUX Thibaut | Merge branch 'feature/condition-recrutement' into 'dev'
+2026-01-19 | DEBREUX Thibaut | edit:alert pour tout le front
+2026-01-19 | DEBREUX Thibaut | edit:alert AjoutEquipe + NouveauJoueur
+2026-01-19 | DEBREUX Thibaut | edit:confirmation lorsqu'un admin accepte la condidature + suppression des autres request lorsque l'on en accepte une
+2026-01-19 | DEBREUX Thibaut | feat:message lorsque qu'un joueur postule et acces à la compétition depuis match
+2026-01-19 | DEBREUX Thibaut | feat:message d'absence de match dans la page Matchs
+2026-01-19 | DEBREUX Thibaut | fix:obligation que l'équipe soit pleine pour l'ajhouter à une compétition
+2026-01-19 | DEBREUX Thibaut | feat:accessibilité à la page mon compte
+2026-01-19 | DEBREUX Thibaut | feat:page mon compte pour les joueurs
+2026-01-18 | CAUDRON Corentin | feat(front): ajout de la page terrains avec la gestion d'admin
+2026-01-18 | DEBREUX Thibaut | fix:affichage des équipes qu'un joueur peut rejoindre
+2026-01-17 | DEBREUX Thibaut | feat:ajout de la date de pause dans l'action du match
+2026-01-16 | loup | fix: lower et uppercase
+2026-01-16 | e62189u | corentin2
+2026-01-15 | e62189u | corentin
+2026-01-15 | e62189u | corentin
+2026-01-15 | CAUDRON Corentin | Merge branch 'feature/gestion-terrain' into 'dev'
+2026-01-15 | CAUDRON Corentin | fix: Correction avec DB, quelques corrections coté front
+2026-01-15 | DEBREUX Thibaut | fix:retirer uppercase et lowercaser carte joueur
+2026-01-15 | CAUDRON Corentin | Merge branch 'dev' into 'feature/gestion-terrain'
+2026-01-15 | CAUDRON Corentin | Merge branch 'feature/gestion-terrain' into 'dev'
+2026-01-14 | e62189u | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-14 | e62189u | image
+2026-01-14 | loup | minuscule carte joueru
+2026-01-14 | e62189u | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-14 | e62189u | image
+2026-01-14 | GICQUEL Loup | Merge branch 'feature/modif_de_zgeg' into 'dev'
+2026-01-14 | loup | fix:test_date pour ajouter compet
+2026-01-14 | DEBREUX Thibaut | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-14 | DEBREUX Thibaut | fix:obligation de donner des dates de compétitions
+2026-01-14 | loup | ajout competition reparer
+2026-01-14 | loup | Merge branch 'feature/modif_de_zgeg' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into feature/modif_de_zgeg
+2026-01-14 | loup | ajout equipe ca fonctionne ? et modif de plein de truc
+2026-01-14 | e62189u | boutons actions + commentaires de code
+2026-01-14 | DEBREUX Thibaut | Merge branch 'feature/compte-joueur' into 'feature/modif_de_zgeg'
+2026-01-14 | DEBREUX Thibaut | fix:suppression genre homme et mixte
+2026-01-14 | DEBREUX Thibaut | edit:nettoyage code
+2026-01-14 | DEBREUX Thibaut | Merge branch 'feature/compte-joueur' into 'feature/modif_de_zgeg'
+2026-01-14 | DEBREUX Thibaut | feat:recuperer les joueurs solos qui correspondent à l'équipe
+2026-01-14 | DEBREUX Thibaut | feat:conditions genre equipe
+2026-01-14 | JosephSchenfeigel Simeon | Merge branch 'feature/timer' into 'dev'
+2026-01-14 | e62189u | timer match fini
+2026-01-14 | DEBREUX Thibaut | fix:date pause & duree pause totale dans json
+2026-01-14 | DEBREUX Thibaut | feat:obtention matchs joueur
+2026-01-14 | e62189u | conditions auth
+2026-01-14 | JosephSchenfeigel Simeon | Merge branch 'feature/modif_page_match' into 'dev'
+2026-01-14 | e62189u | page match et conditions admin
+2026-01-13 | DEBREUX Thibaut | Merge branch 'feature/compte-joueur' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into feature/compte-joueur
+2026-01-13 | DEBREUX Thibaut | feat:limite nb joueurs dans une equipe
+2026-01-13 | CAUDRON Corentin | edit: probleme DB terrain null
+2026-01-13 | DEBREUX Thibaut | Merge branch 'feature/compte-joueur' into 'dev'
+2026-01-13 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/compte-joueur'
+2026-01-13 | DEBREUX Thibaut | fix:correction nom joueur dans tableau admin
+2026-01-12 | GICQUEL Loup | Merge branch 'feature/inscription' into 'dev'
+2026-01-12 | loup | inscription classique
+2026-01-12 | loup | ajout appel api pour la meteo (bridé avec valeur par defaut en attendant correction du back
+2026-01-12 | DEBREUX Thibaut | feat:inscription d'un joueur dans le front
+2026-01-12 | DEBREUX Thibaut | feat:request rejoindre une équipe pour un joueur avec un compte
+2026-01-10 | loup | fix: page accueil matchs fini uniquement
+2026-01-08 | e62189u | faute et timer et tout
+2026-01-07 | loup | ameliration page fausse pub
+2026-01-07 | CAUDRON Corentin | feat: implémentation de la gestion des terrains création du model service, utilisation api pour donner directement le lieu en fonction des coordonnee ou inversement. Modification competition, match pour integrer les terrains
+2026-01-07 | e62189u | ajout actions
+2026-01-07 | e62189u | ajout actions
+2026-01-07 | loup | fix:nom_compet des matchs page acceuil
+2026-01-07 | DEBREUX Thibaut | fix:duree match
+2026-01-07 | DEBREUX Thibaut | fix:duree match
+2026-01-07 | e62189u | ajout bouton joueurs
+2026-01-07 | loup | ajout prank audio
+2026-01-07 | e62189u | temps qui avance
+2026-01-07 | loup | ajout erreur404 et pub
+2026-01-07 | loup | fix:largeur slider page competdetails
+2026-01-07 | JosephSchenfeigel Simeon | Merge branch 'dev' into 'feature/modif_page_match'
+2026-01-07 | e62189u | actualise quand il faut
+2026-01-07 | DEBREUX Thibaut | fix:empecher points négatif match
+2026-01-07 | CAUDRON Corentin | Merge branch 'feature/match' into 'dev'
+2026-01-07 | CAUDRON Corentin | Merge branch 'dev' into 'feature/match'
+2026-01-07 | e62189u | truc
+2026-01-07 | e62189u | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2026-01-07 | e62189u | Authentification
+2026-01-04 | loup | refont page match et fix:redirection page matchs vers match
+2025-12-30 | DEBREUX Thibaut | fix:requete joueur mixte
+2025-12-30 | loup | petite page contact
+2025-12-29 | loup | ptit modif tah les cartes de match et la page competdetail spour cliquer sur les matchs et rafraichir la page une fois match généré - probleme affichage jolie de la page encore
+2025-12-29 | DEBREUX Thibaut | Merge branch 'fix/controller-competition' into 'dev'
+2025-12-29 | DEBREUX Thibaut | fix:creation indisponibilité équipe
+2025-12-29 | DEBREUX Thibaut | edit:tournois en tournoi
+2025-12-29 | DEBREUX Thibaut | fix:nom methode tournoiscontroller
+2025-12-29 | DEBREUX Thibaut | fix:nettoyage du code
+2025-12-29 | DEBREUX Thibaut | fix:service tournoi et championnat ont étés fusionnés dans competition
+2025-12-29 | DEBREUX Thibaut | fix:indisponibilités dans la génération matchs + mélange matchs
+2025-12-28 | GICQUEL Loup | Merge branch 'feature/filtre_compet' into 'dev'
+2025-12-28 | loup | dynamique generation
+2025-12-26 | loup | fix: affichage des matchs d'une compétition et preshoot ajout de flo dans le back pour changer les images de fond dans la page competition
+2025-12-26 | DEBREUX Thibaut | Merge branch 'fix/generation-match' into 'dev'
+2025-12-26 | DEBREUX Thibaut | fix: génération match - Mise en place de l'id dynamique dans le front
+2025-12-25 | loup | debut de l'ajout avec le type, attend la modif Backend
+2025-12-25 | loup | fix:filtre ajout équipe modifier pour plus voir les équipes déja inscrite et fix pas de suppression possible d'équipe si compet commencé (ui pas ux)
+2025-12-25 | DEBREUX Thibaut | fix:suppression participation
+2025-12-24 | loup | generer match mais l'api fonctinone pas...
+2025-12-24 | loup | modif endpoint apres merge de flo
+2025-12-24 | BECKER Florent | Merge branch 'feature/modif_controller' into 'dev'
+2025-12-24 | loup | ajout du classement dans competition
+2025-12-22 | loup | protection modification compete si deja commencé
+2025-12-17 | CAUDRON Corentin | feat: Ajout de la table pour les actions (faute/point) durant un match. Endpoints pour filtrer.
+2025-12-17 | Valentine THIRION | Match action et tout
+2025-12-17 | loup | mioss clic
+2025-12-17 | loup | ajout indisponibilité des équipes
+2025-12-17 | florent | workingnow
+2025-12-17 | Valentine THIRION | Action match et pitié ca marche
+2025-12-17 | CAUDRON Corentin | Merge branch 'feature/classement' into 'dev'
+2025-12-17 | CAUDRON Corentin | Fix conflicts and sync with dev
+2025-12-17 | florent | ptitmodif
+2025-12-17 | CAUDRON Corentin | conflict controller
+2025-12-17 | CAUDRON Corentin | feat: Ajout fonctionnement classement, classement mis à jour automatiquement après la fin d'un match, rang mis a jour a chaque get
+2025-12-17 | florent | Quick fix generate pair match
+2025-12-17 | DEBREUX Thibaut | Merge branch 'fix/get-match' into 'dev'
+2025-12-17 | DEBREUX Thibaut | fix:get match en attente max 2 jours
+2025-12-16 | loup | fix:larguer carte_match et clic match page acceuil
+2025-12-16 | JosephSchenfeigel Simeon | Merge branch 'fix/jsp' into 'dev'
+2025-12-16 | e62189u | corrections
+2025-12-16 | e62189u | corrections
+2025-12-16 | JosephSchenfeigel Simeon | Merge branch 'feature/page_match' into 'dev'
+2025-12-16 | JosephSchenfeigel Simeon | Merge branch 'dev' into 'feature/page_match'
+2025-12-13 | DEBREUX Thibaut | Merge branch 'fix/javadoc' into 'dev'
+2025-12-13 | DEBREUX Thibaut | fix:update javadoc + description controllers
+2025-12-13 | loup | ajout page matchs + filtre et link des carte de la page d'acc
+2025-12-11 | e62189u | corrections
+2025-12-11 | DEBREUX Thibaut | feat:endpoint pour obtenir matchs fini
+2025-12-10 | e62189u | modif style
+2025-12-10 | e62189u | ajout boutons
+2025-12-10 | DEBREUX Thibaut | fix:modification nom repositoryCompetition
+2025-12-10 | e62189u | ajout boutons match
+2025-12-10 | loup | fix homme femme femmme blabla de toutes les pages et ajout filtre de genre sur les overlay + correction de l'overlay ajout joueur (pour foncitonner avec l'auth et l'ajout d'img
+2025-12-10 | Valentine THIRION | Ajouter des fautes et assigner points/fautes aux joueurs
+2025-12-10 | BECKER Florent | Merge branch 'feature/new_controller' into 'dev'
+2025-12-10 | florent | PifPouf
+2025-12-10 | BECKER Florent | Merge branch 'dev' into 'feature/new_controller'
+2025-12-10 | BECKER Florent | Merge branch 'feature/new_controller' into 'dev'
+2025-12-10 | e62189u | erreurs noms de variables
+2025-12-10 | florent | CompetitionController fait
+2025-12-10 | DEBREUX Thibaut | Merge branch 'fix/ennum-genre' into 'dev'
+2025-12-10 | DEBREUX Thibaut | feat:utilisation d'une ennum HOMME,FEMME,MIXTE
+2025-12-10 | loup | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2025-12-10 | loup | header modif
+2025-12-10 | e62189u | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2025-12-10 | e62189u | MALE -> HOMME FEMALE -> FEMME dans créer joueur
+2025-12-10 | JosephSchenfeigel Simeon | Merge branch 'feature/upload_image' into 'dev'
+2025-12-10 | e62189u | MALE -> HOMME
+2025-12-10 | JosephSchenfeigel Simeon | Merge branch 'feature/upload_image' into 'dev'
+2025-12-10 | loup | plus de v7 ou V7 minuscule majuscule que des maj
+2025-12-10 | e62189u | boutton supprimer image
+2025-12-10 | e62189u | petit truc
+2025-12-10 | e62189u | preview image
+2025-12-10 | florent | Creation fichier
+2025-12-10 | e62189u | upload image
+2025-12-10 | loup | fix:date des matchs sur l'accueil
+2025-12-10 | CAUDRON Corentin | Merge branch 'classement' into 'dev'
+2025-12-10 | CAUDRON Corentin | Merge branch 'dev' into 'classement'
+2025-12-10 | e62189u | upload d'image fonctionne
+2025-12-10 | loup | fix:creation compete sans forcement d'équipe
+2025-12-10 | DEBREUX Thibaut | Merge branch 'revert-aa0dd0ea' into 'dev'
+2025-12-10 | DEBREUX Thibaut | Revert "Merge branch 'feature/envoi_image' into 'dev'"
+2025-12-10 | JosephSchenfeigel Simeon | Merge branch 'feature/envoi_image' into 'dev'
+2025-12-10 | e62189u | upload
+2025-12-10 | CAUDRON Corentin | feat: Ajout get joueur par genre et par genre solo
+2025-12-10 | loup | fix: ajout d'équipe dans la compet selon genre
+2025-12-09 | DEBREUX Thibaut | fix:modification vérifications ajout equipe à une participation + fix:enregistrement liste inscription
+2025-12-09 | DEBREUX Thibaut | fix:modification requestbody suppression participation
+2025-12-09 | DEBREUX Thibaut | fix:modification appel repository Appel de la requête JPA dans le service et pas dans le controller
+2025-12-09 | DEBREUX Thibaut | Merge branch 'feature/requete-genre-equipe' into 'dev'
+2025-12-09 | DEBREUX Thibaut | feat:tri des équipes par genre
+2025-12-09 | loup | fix: modif nom/desc equipe
+2025-12-09 | DEBREUX Thibaut | fix:suppression participation
+2025-12-09 | DEBREUX Thibaut | fix:creation joueur
+2025-12-08 | GICQUEL Loup | Merge branch 'feature/modifcompet' into 'dev'
+2025-12-08 | loup | presque fini mais le back fonctinne pas j'ai besoin de pull dev sur les correction
+2025-12-05 | loup | ca commence
+2025-12-05 | loup | fix:page accueil-modif_equipe
+2025-12-04 | CAUDRON Corentin | feat(classement): implémentation complète du service et controleur
+2025-12-03 | DEBREUX Thibaut | Merge branch 'feature/edit-name-description' into 'dev'
+2025-12-03 | DEBREUX Thibaut | feat:possibilité de modifier le nom et description des équipes, tournois, chamionnats, joueurs
+2025-12-03 | loup | modification d'équipe fonctionnel
+2025-12-03 | DEBREUX Thibaut | fix:envoie du token sur un port spécifique
+2025-12-03 | GICQUEL Loup | Merge branch 'feature/supp_joueur' into 'dev'
+2025-12-03 | GICQUEL Loup | Merge branch 'dev' into 'feature/supp_joueur'
+2025-12-03 | BECKER Florent | Merge branch 'feature/generation-match' into 'dev'
+2025-12-03 | loup | ca fonctionne
+2025-12-03 | florent | Generation RoundRobin fonctionnelle
+2025-12-03 | DEBREUX Thibaut | feat:ajout d'une liste d'équipe à associer à une compétition
+2025-12-03 | DEBREUX Thibaut | Merge branch 'feature/images-model' into 'dev'
+2025-12-03 | e62189u | petit probleme
+2025-12-03 | e62189u | ajout d'un import partout
+2025-12-03 | GICQUEL Loup | Merge branch 'feature/ajoutcompet' into 'dev'
+2025-12-03 | GICQUEL Loup | Merge branch 'dev' into 'feature/ajoutcompet'
+2025-12-03 | loup | changement avant merge
+2025-12-03 | loup | pas fini mais besoin de pull
+2025-12-03 | DEBREUX Thibaut | fix:envoie des equipes dans le get participation/competition
+2025-12-03 | JosephSchenfeigel Simeon | Merge branch 'feature/authfront' into 'dev'
+2025-12-03 | JosephSchenfeigel Simeon | Merge branch 'dev' into 'feature/authfront'
+2025-12-03 | e62189u | modif vite fait
+2025-12-03 | e62189u | Bouton connexion / deconnexion
+2025-12-03 | DEBREUX Thibaut | feat:editer une image d'un joueur
+2025-12-03 | e62189u | authentification encore
+2025-12-03 | DEBREUX Thibaut | feat:ajout attribut photoJoueur dans joueur
+2025-12-01 | loup | les fichiers et les premices
+2025-11-30 | DEBREUX Thibaut | fix:conflit merge
+2025-11-30 | DEBREUX Thibaut | Merge branch 'feature/nom-description-competition' into 'dev'
+2025-11-30 | DEBREUX Thibaut | Merge branch 'fix/json-id' into 'dev'
+2025-11-30 | DEBREUX Thibaut | Merge branch 'feature/upload-images' into 'dev'
+2025-11-30 | DEBREUX Thibaut | feat:ajout nom et description competition
+2025-11-30 | DEBREUX Thibaut | fix:suppression des id dans le swagger (json a envoyer)
+2025-11-30 | DEBREUX Thibaut | feat:upload images
+2025-11-29 | DEBREUX Thibaut | Merge branch 'feature/creation-championnat' into 'dev'
+2025-11-29 | DEBREUX Thibaut | feat:ajout controller classement pour swagger
+2025-11-29 | DEBREUX Thibaut | fix:nom controllers swagger
+2025-11-29 | DEBREUX Thibaut | feat:ajout creation championnat
+2025-11-29 | loup | fix:appel api tournois
+2025-11-29 | GICQUEL Loup | Merge branch 'feature/correctif_ajout_equipe' into 'dev'
+2025-11-28 | loup | creation joueur possible et test doublons
+2025-11-27 | loup | corretif de la page et test de verif
+2025-11-27 | thibautdbrx | fix:désactivation securité
+2025-11-27 | DEBREUX Thibaut | Merge branch 'feature/generation-match' into 'dev'
+2025-11-27 | DEBREUX Thibaut | Merge branch 'feature/authfront' into 'dev'
+2025-11-27 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/authfront'
+2025-11-27 | thibautdbrx | fix:creation tournoi
+2025-11-27 | thibautdbrx | fix:Obtention role user dans le back
+2025-11-27 | thibautdbrx | fix:Obtention role user dans le front
+2025-11-26 | florent | Modification genererRoundRobin pour gerer indispo + poffinage testUnitaire+ annotation
+2025-11-26 | Simeon | essai de fixer des trucs
+2025-11-26 | THIRION Valentine | Merge branch 'classement' into 'dev'
+2025-11-26 | Valentine THIRION | classement finitoooo
+2025-11-26 | loup | petite modif visuelle
+2025-11-26 | loup | ajout page nouveau joueur
+2025-11-26 | GICQUEL Loup | Merge branch 'feature/ajoutequipe' into 'dev'
+2025-11-26 | loup | feat:page pas trop mal et debut page nouveau joueur
+2025-11-26 | DEBREUX Thibaut | Merge branch 'feature/joueurs-seuls' into 'dev'
+2025-11-26 | thibautdbrx | feat:Obtenir joueurs sans équipes
+2025-11-26 | Simeon | Authentification
+2025-11-26 | thibautdbrx | fix:indisponibilite equipes generation tournoi
+2025-11-25 | thibautdbrx | feat:Generation roundrobin
+2025-11-25 | DEBREUX Thibaut | Merge branch 'feature/creation-tournoi' into 'dev'
+2025-11-23 | thibautdbrx | feat:Obtenir les matchs d'un même tournoi dans l'ordre croissant (date prévisionnelle)
+2025-11-23 | thibautdbrx | feat:Associer idCompetition à un match + obtenir le nombre de joueurs
+2025-11-23 | thibautdbrx | feat:Génération d'un tounoi + participation sans match qui renvoie une liste d'équipe
+2025-11-23 | loup | ajout de la page et selection joueur OK
+2025-11-22 | thibautdbrx | feat:Creation participation avec vérification du genre tournoi et equipe
+2025-11-22 | GICQUEL Loup | Merge branch 'page_equipe_detail' into 'dev'
+2025-11-22 | loup | re tentative correctif mapping
+2025-11-22 | loup | refont de la page equipedetail et correctif mapping equipe
+2025-11-19 | loup | Merge branch 'dev' of https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate into dev
+2025-11-19 | thibautdbrx | fix:gitignore
+2025-11-19 | thibautdbrx | fix:changement bdd
+2025-11-19 | loup | modifier le nom des var json vu que Tib's les a modifier en camelCase
+2025-11-19 | GICQUEL Loup | Merge branch 'fix/sauvetage_page' into 'dev'
+2025-11-19 | GICQUEL Loup | Merge branch 'dev' into 'fix/sauvetage_page'
+2025-11-19 | loup | push dans le dev ? enfin genre j'ajoute les fix d'apres le probleme
+2025-11-19 | thibautdbrx | fix:match model
+2025-11-19 | BECKER Florent | Merge branch 'feature/participation' into 'dev'
+2025-11-19 | BECKER Florent | Merge branch 'dev' into 'feature/participation'
+2025-11-19 | loup | correctif du fix et modification slider
+2025-11-19 | CAUDRON Corentin | Feat: ajout de l'activation/desactivation securite
+2025-11-19 | florent | Pariticipation + Tournoi Fonctionnel :)
+2025-11-19 | Simeon | erreur de casse
+2025-11-19 | thibautdbrx | fix:.idea dans .gitgnore
+2025-11-19 | GICQUEL Loup | Merge branch 'feature/test_appel_api' into 'dev'
+2025-11-19 | loup | ca avance
+2025-11-19 | DEBREUX Thibaut | Merge branch 'fix/controller-path' into 'dev'
+2025-11-19 | florent | Ajout repo+autre
+2025-11-18 | thibautdbrx | fix:renvoie erreur si inexistant deletemapping
+2025-11-17 | thibautdbrx | fix:dateDebut indisponibilité < dateFin
+2025-11-17 | thibautdbrx | fix:controllers Indisponibilite & Equipe & Joueur + RESTful
+2025-11-17 | thibautdbrx | fix:wrapper auth
+2025-11-17 | CAUDRON Corentin | Fix: confliy pour merge
+2025-11-17 | CAUDRON Corentin | Fix: correction et changement
+2025-11-16 | thibautdbrx | fix:Envoie Json point
+2025-11-16 | thibautdbrx | fix:Erreurs throw
+2025-11-16 | thibautdbrx | fix:timer match + pauses
+2025-11-16 | loup | appel api pour page équipe
+2025-11-15 | loup | api page acceuil + page inscription
+2025-11-15 | CAUDRON Corentin | feat: Met en place l'authentification JWT avec Spring Security
+2025-11-15 | thibautdbrx | fix:nom controllers wrappers
+2025-11-15 | DEBREUX Thibaut | Merge branch 'fix/controller-path' into 'dev'
+2025-11-15 | thibautdbrx | feat:Ajout wrapper
+2025-11-15 | thibautdbrx | fix:controller match + kamelCase
+2025-11-15 | GICQUEL Loup | Merge branch 'feature/page_acc' into 'dev'
+2025-11-15 | loup | correction slider vertical
+2025-11-13 | florent | Ajout ParticipationController
+2025-11-12 | florent | Ajout Table Participation
+2025-11-12 | CAUDRON Corentin | Feat : Ajout class User & essai d'utilisation de spring-boot-security
+2025-11-12 | loup | maintenant ca marche mieux
+2025-11-12 | Valentine THIRION | Classement et tout le titouin
+2025-11-12 | loup | ca marche po
+2025-11-12 | florent | Creation Particiaption
+2025-11-12 | florent | Poffinage + debut algo
+2025-11-12 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/tournois'
+2025-11-12 | florent | modif
+2025-11-12 | florent | Creation Tournois un peu plus
+2025-11-12 | thibautdbrx | Fix:Compilation Classement
+2025-11-12 | DEBREUX Thibaut | Merge branch 'main' into 'dev'
+2025-11-12 | DEBREUX Thibaut | Merge branch 'feature/requetes-front' into 'dev'
+2025-11-12 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/requetes-front'
+2025-11-12 | thibautdbrx | Feat:Requetes nb matchs commencés & en cours
+2025-11-12 | DEBREUX Thibaut | Merge branch 'feature/indisponibilite-equipe' into 'dev'
+2025-11-12 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/indisponibilite-equipe'
+2025-11-12 | Valentine THIRION | val
+2025-11-11 | Valentine THIRION | classement valentine
+2025-11-11 | loup | ajout de page competitions et details competition (sans) api mais valeur default en exemple
+2025-11-11 | thibautdbrx | Fix:Renvoie Erreurs 400 au lieu de 500
+2025-11-10 | loup | ajout page de connexion
+2025-11-10 | loup | corretif svg
+2025-11-10 | florent | Ajout structure classe Tournois
+2025-11-10 | loup | page d'accueil preview avant API
+2025-11-08 | thibautdbrx | Fix:Erreur 500 changement equipe
+2025-11-08 | loup | ajout du header et du footer, et feuille de page vide
+2025-11-08 | CAUDRON Corentin | Feat: Ajout de la JavaDoc & Update du README
+2025-11-07 | thibautdbrx | Feat:Ajout indisponibilités + Edit: Noms id
+2025-11-05 | thibautdbrx | Fix:Utilisation Services-Model-Controller -> Match
+2025-11-05 | loup | j'ajoute une branche pour faire la page d'accueil
+2025-11-05 | CAUDRON Corentin | Feat: Creation competition
+2025-11-05 | DEBREUX Thibaut | Merge branch 'dev' into 'main'
+2025-11-05 | thibautdbrx | init frontend
+2025-11-04 | DEBREUX Thibaut | Merge branch 'feature/creation-match' into 'dev'
+2025-11-04 | DEBREUX Thibaut | Merge branch 'dev' into 'feature/creation-match'
+2025-11-04 | thibautdbrx | Feat:Gestion match + correction jouer/equipe
+2025-11-04 | thibautdbrx | Fix:@Getter & @Serrer
+2025-11-04 | CAUDRON Corentin | Fix: README & JoueurController (POST --> PUT)
+2025-11-04 | CAUDRON Corentin | Feat: README API
+2025-11-03 | thibautdbrx | Fix:Gestion match Post
+2025-11-03 | CAUDRON Corentin | Feat:Ajout Match a corriger
+2025-11-03 | DEBREUX Thibaut | Merge branch 'feature/ajout-equipe' into 'dev'
+2025-11-03 | thibautdbrx | Feat:Enlever joueur équipe
+2025-11-03 | thibautdbrx | Ajout base de données
+2025-11-03 | DEBREUX Thibaut | Merge branch 'feature/ajout-equipe' into 'dev'
+2025-11-03 | thibautdbrx | Fix: ajout joueur dans l'équipe + json
+2025-11-03 | CAUDRON Corentin | Edit README.md
+2025-11-03 | CAUDRON Corentin | Edit README.md
+2025-11-02 | thibautdbrx | Ajout équipe + association joueur équipe
+2025-11-02 | DEBREUX Thibaut | Merge branch 'feature/ajout-joueur' into 'dev'
+2025-11-02 | thibautdbrx | Fix:Controller pour ajouter joueur
+2025-11-02 | thibautdbrx | Ajouter un jouer sans équipe
+2025-11-02 | DEBREUX Thibaut | Edit README.md
+2025-11-02 | thibautdbrx | init
+2025-10-10 | Corentin | add README

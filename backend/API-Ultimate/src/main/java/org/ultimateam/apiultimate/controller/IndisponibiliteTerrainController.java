@@ -1,5 +1,6 @@
 package org.ultimateam.apiultimate.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * Contrôleur REST responsable de la gestion des indisponibilités des terrains.
  */
+@Hidden
 @RestController
 @RequestMapping("/api/indisponibilites-terrain")
 @RequiredArgsConstructor

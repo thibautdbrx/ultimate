@@ -20,7 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-/**
+
 @ExtendWith(MockitoExtension.class)
 class ParticipationServiceTest {
 
@@ -40,11 +40,11 @@ class ParticipationServiceTest {
         equipe = mock(Equipe.class);
         // CORRECTION 1 : lenient() pour éviter UnnecessaryStubbingException
         lenient().when(equipe.getIdEquipe()).thenReturn(10L);
-        lenient().when(equipe.getGenre()).thenReturn(Genre.HOMME);
+        lenient().when(equipe.getGenre()).thenReturn(Genre.OPEN);
 
         competition = new Tournoi();
         competition.setIdCompetition(20L);
-        competition.setGenre(Genre.HOMME);
+        competition.setGenre(Genre.OPEN);
         competition.setDateDebut(LocalDate.now().plusDays(10));
 
         participationId = new ParticipationId(10L, 20L);
@@ -55,7 +55,7 @@ class ParticipationServiceTest {
         when(equipe.isFull()).thenReturn(true);
         // CORRECTION : Mockito strict n'aime pas quand on mélange des objets réels et des mocks stricts
         // On s'assure que equipe.getGenre() renvoie bien HOMME pour passer la condition du service
-        lenient().when(equipe.getGenre()).thenReturn(Genre.HOMME);
+        lenient().when(equipe.getGenre()).thenReturn(Genre.OPEN);
 
         when(equipeRepository.findById(10L)).thenReturn(Optional.of(equipe));
         when(competitionRepository.findById(20L)).thenReturn(Optional.of(competition));
@@ -99,7 +99,7 @@ class ParticipationServiceTest {
     void addParticipation_ShouldThrow_WhenGenreMismatch() {
         when(equipe.isFull()).thenReturn(true);
         when(equipe.getGenre()).thenReturn(Genre.FEMME);
-        competition.setGenre(Genre.HOMME);
+        competition.setGenre(Genre.OPEN);
 
         when(equipeRepository.findById(10L)).thenReturn(Optional.of(equipe));
         when(competitionRepository.findById(20L)).thenReturn(Optional.of(competition));
@@ -151,4 +151,4 @@ class ParticipationServiceTest {
         // On vérifie que l'équipe retournée est bien celle mockée
         assertEquals(equipe, result.get(0));
     }
-}*/
+}
