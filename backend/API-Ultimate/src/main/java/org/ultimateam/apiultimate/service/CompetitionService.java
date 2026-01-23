@@ -172,6 +172,9 @@ public class CompetitionService {
         }
 
         List<Indisponibilite> indisponibilites = scheduleResult.getIndisponibilites();
+        if (matchs.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Les équipes ou terrains ne sont pas disponibles pour cette date.");
+        }
 
         matchRepository.saveAll(matchs);
         indisponibiliteRepository.saveAll(indisponibilites);
