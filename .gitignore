@@ -51,7 +51,8 @@ Desktop.ini
 application.yml
 .env
 
-
+.yml
+.DS_Store
 
 
 misc.xml
