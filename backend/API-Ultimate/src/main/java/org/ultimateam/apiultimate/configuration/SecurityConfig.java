@@ -54,10 +54,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        // --- MODE DEV : Si app.security.enabled=false, on ouvre tout le pare-feu ---
+        // --- MODE DEV : Si app.security.enabled=false ---
         if (!securityEnabled) {
             return http
                     .csrf(AbstractHttpConfigurer::disable)
+                    // AJOUT ICI : Même en mode dev, H2 a besoin des frames
+                    .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                     .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .build();
@@ -65,45 +67,38 @@ public class SecurityConfig {
 
         // --- MODE PROD : Règles de sécurité ---
         return http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        // AJOUT ICI : On désactive le CSRF spécifiquement pour H2
+                        .ignoringRequestMatchers("/h2-console/**")
+                        .disable()
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // 1. PUBLIC : Authentification, Swagger, et FICHIERS (Upload/Download)
+                        // 1. PUBLIC : Authentification, Swagger, Fichiers ET H2
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/documentation/**",
-                                "/api/files/**"
+                                "/api/files/**",
+                                "/h2-console/**" // AJOUT ICI : Autorise l'accès à la console
                         ).permitAll()
 
-                        // 2. PUBLIC (LECTURE SEULE)
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/participation/**",
-                                "/api/equipe/**",
-                                "/api/competition/**",
-                                "/api/joueur/**",
-                                "/api/match/**",
-                                "/api/terrain/**",
-                                "/api/classement/**",
-                                "/api/action-match/**"
-                        ).permitAll()
-
-                        // 3. ACTIONS UTILISATEURS (Connecté)
+                        // ... reste de tes règles existantes (GET, PATCH, etc.)
+                        .requestMatchers(HttpMethod.GET, "/api/participation/**", "/api/equipe/**", "/api/competition/**", "/api/joueur/**", "/api/match/**", "/api/terrain/**", "/api/classement/**", "/api/action-match/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/joueur/{idJoueur}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "api/joueur/request/{idJoueur}/equipe/{idEquipe}").permitAll()
-
-                        // 4. ADMIN (Tout le reste : Création, Suppression, Gestion des matchs)
                         .requestMatchers("/api/match/**", "/api/action-match/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/**").hasAuthority("ROLE_ADMIN")
-
-                        // 5. Sécurité par défaut pour tout ce qui n'est pas listé
                         .anyRequest().authenticated()
                 )
+                // AJOUT ICI : Autoriser les frames pour éviter l'erreur "X-Frame-Options"
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
