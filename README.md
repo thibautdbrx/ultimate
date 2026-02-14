@@ -1,145 +1,88 @@
+# 🥏 Ultimate Tournament Manager
 
-# 🥏 Ultimate - Projet Web & API
-
-## 📌 Description
-Ce projet est composé de deux parties :
-- **backend/** → API REST développée avec **Spring Boot**
-- **frontend/** → Site web qui consomme l’API
+### 📌 Présentation
 
 L’objectif est de faciliter la gestion des tournois d’Ultimate (équipes, matchs, résultats, etc.).
+
+- **Backend :** API REST avec Spring Boot.
+- **Frontend :** Interface réactive et moderne développée avec Vue.js.
 
 ---
 
 ## ⚙️ Installation du projet
 
-### 1️⃣ Cloner le dépôt
+### 1. Cloner le dépôt
+
 ```bash
-git clone https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate.git
-cd pierre-ludmann-ultimate
+git clone https://github.com/thibautdbrx/ultimate.git
+cd gestion-ultimate
 ```
 
-### 2️⃣ Installation du backend
+### 2. Lancer le Backend (API)
+
+Le backend utilise une base de données **H2 (en mémoire)** par défaut pour le développement. Aucune installation de base de données n'est requise.
+
 ```bash
 cd backend/API-Ultimate
 mvn clean install
-```
-
-💡 *Si Maven n’est pas installé :*
-- **Mac** → `brew install maven`
-- **Windows** → [télécharger Maven](https://maven.apache.org/download.cgi)
-
-Lancer ensuite le serveur :
-```bash
 mvn spring-boot:run
 ```
-➡️ L’API sera accessible sur [http://localhost:8080](http://localhost:8080)
 
-### 3️⃣ Installation du frontend
+API : http://localhost:8080
 
-C’est un projet avec un framework (Vue) :
+Console H2 : http://localhost:8080/h2-console
+
+Swagger UI : http://localhost:8080/documentation
+
+### 3. Lancer le Frontend (Web)
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
----
-
-## 🌳 Workflow Git – Organisation du projet
-
-### 🧱 Structure des branches
-
-| Branche | Rôle |
-|----------|------|
-| **main** | Version stable, validée et livrable |
-| **dev** | Branche principale de développement |
-| **feature/...** | Nouvelle fonctionnalité |
-| **fix/...** | Correction de bug |
+L'application est disponible sur : `http://localhost:5173` (ou port affiché dans le terminal).
 
 ---
 
-### 🧩 Règles à suivre
+## 🛠 Architecture & Workflow
 
-1. **Ne jamais travailler directement sur `main`**
-2. Toujours créer une branche à partir de `dev`
-3. Une fois la fonctionnalité terminée, faire une **Merge Request** vers `dev`
-4. `dev` → `main` uniquement quand le projet est stable et validé
+### 🌳 Stratégie de Branches
 
----
+| Branche     | Usage                                                          |
+| ----------- | -------------------------------------------------------------- |
+| `main`      | **Production** : Code stable et testé.                         |
+| `dev`       | **Développement** : Intégration des nouvelles fonctionnalités. |
+| `feature/*` | **Features** : Branches isolées pour chaque tâche.             |
+| `fix/*`     | **Hotfix** : Corrections de bugs.                              |
 
-### 🚀 Commandes utiles
+### 🧩 Workflow Git
 
-Créer et passer sur une branche de développement :
-```bash
-git checkout dev
-git pull
-git checkout -b feature/nom-fonctionnalite
-```
-
-Vérifier les branches existantes :
-```bash
-git branch -a
-```
-
-Sauvegarder ton travail :
-```bash
-git add .
-git commit -m "Ajout de la fonctionnalité X"
-git push -u origin feature/nom-fonctionnalite
-```
-
-Fusionner ta branche dans `dev` :
-```bash
-git checkout dev
-git pull
-git merge feature/nom-fonctionnalite
-git push
-```
-
-Supprimer une branche locale et distante une fois fusionnée :
-```bash
-git branch -d feature/nom-fonctionnalite
-git push origin --delete feature/nom-fonctionnalite
-```
+1. **Pull** : systématique avant de coder et push : `git pull origin dev`
+2. **Feature branching** : Créer une branche explicite (`feature/api-auth`).
+3. **Commits** : Messages clairs et précis.
+4. **Pull Requests** : Fusion vers la branche après relecture.
 
 ---
 
-### 🧠 Bonnes pratiques Git
+## 💻 Aperçu des fonctionnalités
 
-- Toujours faire un `git pull` avant de commencer à coder  
-- Nommer clairement les branches :  
-  - `feature/backend-api`  
-  - `feature/frontend-login`  
-  - `fix/navbar-bug`  
-- Commits fréquents avec des messages explicites  
-- Une seule fonctionnalité par branche  
-- Merge uniquement via des **Merge Requests** (pas de push direct sur `main`)
+- ✅ Gestion des équipes et des joueurs.
+- ✅ Génération de calendriers de matchs.
+- ✅ Saisie des scores et mise à jour automatique des classements.
+- ✅ Dashboard administrateur.
+- ✅ Swagger disponible.
 
 ---
 
-## 👥 Équipe
+## 👥 L'Équipe
 
-- Becker Florent
-- Caudron Corentin
-- Debreux Thibaut
-- Gicquel Loup
-- Joseph-Schenfeigel Simeon
-- Thirion Valentine
+Projet réalisé par :
 
----
-
-✅ **Résumé rapide :**
-```bash
-# Cloner le projet
-git clone https://gitlab.univ-lorraine.fr/coll/l-inp/polytech/ia2r-fise-promo-2027/pierre-ludmann-ultimate.git
-cd pierre-ludmann-ultimate
-
-# Créer une branche
-git checkout dev
-git checkout -b feature/ma-fonction
-
-# Travailler puis envoyer
-git add .
-git commit -m "Ajout de ma fonctionnalité"
-git push -u origin feature/ma-fonction
-```
+- Florent Becker
+- Thibaut Debreux ([@thibautdbrx](https://github.com/thibautdbrx))
+- Loup Gicquel
+- Simeon Joseph-Schenfeigel
+- Valentine Thirion
+- Corentin Caudron ([@CaudronCorentin](https://github.com/CaudronCorentin))
